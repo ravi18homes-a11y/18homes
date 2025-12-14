@@ -106,7 +106,7 @@ export default function Navbar({ color }) {
             <IoMdClose />
           ) : (
             <GiHamburgerMenu
-              className={`${!isScrolled ? "text-white" : "text-black"}`}
+              className={`${!isScrolled ? "text-black" : "text-black"}`}
             />
           )}
         </button>
@@ -128,12 +128,12 @@ export default function Navbar({ color }) {
           <Link href="/" onClick={() => setOpen(false)}>
             होम
           </Link>
-          <Link href="/about" onClick={() => setOpen(false)}>
+          {/* <Link href="/about" onClick={() => setOpen(false)}>
             हमारे बारे में
-          </Link>
+          </Link> */}
 
           {/* SERVICES ACCORDION */}
-          <div className="flex flex-col">
+          {/* <div className="flex flex-col">
             <Link
               href={"/service"}
               onClick={() => setShowServices(!showServices)}
@@ -141,8 +141,12 @@ export default function Navbar({ color }) {
             >
               हमारी सेवाएँ
             </Link>
-          </div>
+          </div> */}
 
+              <Link href="/service/house">buy</Link>
+            
+              <Link href="/service/house">Sell</Link>
+         
           <Link href="/contact" onClick={() => setOpen(false)}>
             संपर्क करें
           </Link>
@@ -153,7 +157,7 @@ export default function Navbar({ color }) {
           >
             अभी बुक करें
           </Link>
-          <Link
+          {/* <Link
             href="https://wa.me/+917827602246"
             className="px-7 py-2 font-bold border w-[180px] flex gap-2 items-center border-[#43b852] text-[#2fb464] bg-[white] rounded-full text-[18px] hover:border-[#3be8f3]  hover:text-[black] transition"
           >
@@ -164,7 +168,7 @@ export default function Navbar({ color }) {
             className="w-[120px] px-7 py-2 border-[red] border text-black rounded-full"
           >
             कॉल करें
-          </a>
+          </a> */}
         </div>
       </div>
     </nav>
