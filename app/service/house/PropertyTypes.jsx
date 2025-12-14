@@ -26,7 +26,7 @@ export default function PropertyTypes() {
       title: "4+ BHK",
     },
     {
-      img: "https://images.unsplash.com/photo-1560185127-6ed189bf02ec?w=800",
+      img: "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800",
       title: "Budget House",
     },
     {

@@ -18,7 +18,7 @@ export default function Footer() {
           <Link href="/">
             <img
               src={
-                "https://res.cloudinary.com/dxlykgx6w/image/upload/v1765113787/18home_nfbc2b.jpg"
+                "https://res.cloudinary.com/dxlykgx6w/image/upload/v1765721624/18homess-removebg-preview_kqdv2j.png"
               }
               alt="logo"
               className="w-[80px] h-[80px] object-contain"
