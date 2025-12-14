@@ -41,7 +41,7 @@ export default function Navbar({ color }) {
             
         w-full fixed top-0 left-0 z-50 
         transition-all duration-300  
-        ${isScrolled ? "bg-white shadow-md" : "bg-transparent"}
+        ${isScrolled ? "bg-white shadow-md" : "bg-white"}
       `}
     >
       <div className="max-w-[1720px] mx-auto flex items-center justify-between lg:px-14 px-4 py-2">
@@ -51,7 +51,7 @@ export default function Navbar({ color }) {
           <Link href="/">
             <Image
               src={
-                "https://res.cloudinary.com/dxlykgx6w/image/upload/v1765113787/18home_nfbc2b.jpg"
+                "https://res.cloudinary.com/dxlykgx6w/image/upload/v1765721624/18homess-removebg-preview_kqdv2j.png"
               }
               alt="Logo"
               width={70}
@@ -62,19 +62,25 @@ export default function Navbar({ color }) {
 
           <ul
             className={`desktop-menu hidden lg:flex items-center gap-8 ${
-              isScrolled ? "text-black" : `text-${color}`
+              isScrolled ? "text-black" : `text-black`
             } text-[18px]`}
           >
             <li>
               <Link href="/">होम</Link>
             </li>
             <li>
+              <Link href="/service/house">buy</Link>
+            </li>
+            <li>
+              <Link href="/service/house">Sell</Link>
+            </li>
+            {/* <li>
               <Link href="/about">हमारे बारे में</Link>
-            </li>
+            </li> */}
 
-            <li className="relative group cursor-pointer">
+            {/* <li className="relative group cursor-pointer">
               <Link href="/service">हमारी सेवाएँ</Link>
-            </li>
+            </li> */}
 
             <li>
               <Link href="/contact">संपर्क करें</Link>
@@ -89,19 +95,6 @@ export default function Navbar({ color }) {
             className="px-7 py-2 font-bold border border-[#8c4bdc] text-[#8c4bdc] rounded-full text-[18px] hover:border-[#c04b7e] hover:bg-[#c04b7e] hover:text-[black] transition"
           >
             अभी बुक करें
-          </Link>
-
-          <a
-            href="tel:+917827602246"
-            className="px-7 py-2 font-bold bg-[#c04b7e] border-[#c04b7e] text-[#101010] rounded-full text-[18px] border hover:border-[#8c4bdc] hover:bg-transparent hover:text-[#8c4bdc] transition"
-          >
-            कॉल करें
-          </a>
-          <Link
-            href="https://wa.me/+917827602246"
-            className="px-7 py-2 font-bold border w-[200px] gap-2 flex border-[#43b852] text-[#2fb464] bg-[white] rounded-full text-[18px] hover:border-[#3be8f3]  hover:text-[black] transition"
-          >
-            <FaWhatsapp size={24}/> <span>Whatsapp</span>
           </Link>
         </div>
 
@@ -164,7 +157,7 @@ export default function Navbar({ color }) {
             href="https://wa.me/+917827602246"
             className="px-7 py-2 font-bold border w-[180px] flex gap-2 items-center border-[#43b852] text-[#2fb464] bg-[white] rounded-full text-[18px] hover:border-[#3be8f3]  hover:text-[black] transition"
           >
-            <FaWhatsapp size={28}/> <span>Whatsapp</span>
+            <FaWhatsapp size={28} /> <span>Whatsapp</span>
           </Link>
           <a
             href="tel:+917827602246"
@@ -177,3 +170,4 @@ export default function Navbar({ color }) {
     </nav>
   );
 }
+
