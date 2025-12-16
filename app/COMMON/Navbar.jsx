@@ -69,18 +69,12 @@ export default function Navbar({ color }) {
               <Link href="/">होम</Link>
             </li>
             <li>
-              <Link href="/service/house">buy</Link>
+              <Link href="/buy">खरीदें</Link>
             </li>
             <li>
-              <Link href="/service/house">Sell</Link>
+              <Link href="/sell">बेचें</Link>
             </li>
-            {/* <li>
-              <Link href="/about">हमारे बारे में</Link>
-            </li> */}
-
-            {/* <li className="relative group cursor-pointer">
-              <Link href="/service">हमारी सेवाएँ</Link>
-            </li> */}
+           
 
             <li>
               <Link href="/contact">संपर्क करें</Link>
@@ -96,6 +90,13 @@ export default function Navbar({ color }) {
           >
             अभी बुक करें
           </Link>
+          <Link
+            href={"/login-signup"}
+            className="px-7 py-2 font-bold border border-[#8c4bdc] text-[#8c4bdc] rounded-full text-[18px] hover:border-[#c04b7e] hover:bg-[#c04b7e] hover:text-[black] transition"
+          >
+            Login
+          </Link>
+          
         </div>
 
         <button
@@ -128,22 +129,9 @@ export default function Navbar({ color }) {
           <Link href="/" onClick={() => setOpen(false)}>
             होम
           </Link>
-          {/* <Link href="/about" onClick={() => setOpen(false)}>
-            हमारे बारे में
-          </Link> */}
+          
 
-          {/* SERVICES ACCORDION */}
-          {/* <div className="flex flex-col">
-            <Link
-              href={"/service"}
-              onClick={() => setShowServices(!showServices)}
-              className="flex justify-between items-center w-full"
-            >
-              हमारी सेवाएँ
-            </Link>
-          </div> */}
-
-              <Link href="/service/house">buy</Link>
+              <Link href="/buy">buy</Link>
             
               <Link href="/service/house">Sell</Link>
          
@@ -156,6 +144,12 @@ export default function Navbar({ color }) {
             className="w-[153px] px-7 mt-4 py-2 border border-[black] text-[black] rounded-full"
           >
             अभी बुक करें
+          </Link>
+          <Link
+            href={"/login-signup"}
+            className="w-[153px] px-7 mt-4 py-2 border border-[black] text-[black] rounded-full"
+          >
+            Login
           </Link>
           {/* <Link
             href="https://wa.me/+917827602246"
