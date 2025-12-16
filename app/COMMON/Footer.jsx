@@ -100,7 +100,7 @@ export default function Footer() {
       <div className="max-w-[1450px] mx-auto px-6 lg:px-12 py-8 flex flex-col md:flex-row items-center justify-between gap-6 text-black">
         <p className="text-[15px] font-normal">
           Copyright © 2025 <span className="font-semibold">18Homes </span>
-          सभी अधिकार सुरक्षित। Design by IK
+          सभी अधिकार सुरक्षित। Design by RS
         </p>
 
         <div className="flex items-center gap-4">
