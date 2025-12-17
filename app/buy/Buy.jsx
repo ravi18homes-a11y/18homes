@@ -153,7 +153,7 @@ const BuyPage = () => {
 
           {/* Search Bar */}
           <div className="flex gap-2 ">
-            <div className="flex-1 max-w-[1720px] w-[700px] relative">
+            <div className="flex-1 max-w-[1720px] w-[250px] md:w-[700px] relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
