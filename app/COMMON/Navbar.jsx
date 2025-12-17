@@ -74,7 +74,6 @@ export default function Navbar({ color }) {
             <li>
               <Link href="/sell">बेचें</Link>
             </li>
-           
 
             <li>
               <Link href="/contact">संपर्क करें</Link>
@@ -96,7 +95,6 @@ export default function Navbar({ color }) {
           >
             Login
           </Link>
-          
         </div>
 
         <button
@@ -129,12 +127,11 @@ export default function Navbar({ color }) {
           <Link href="/" onClick={() => setOpen(false)}>
             होम
           </Link>
-          
 
-              <Link href="/buy">buy</Link>
-            
-              <Link href="/service/house">Sell</Link>
-         
+          <Link onClick={() => setOpen(false)} href="/buy">खरीदें</Link>
+
+          <Link onClick={() => setOpen(false)} href="/sell">बेचें</Link>
+
           <Link href="/contact" onClick={() => setOpen(false)}>
             संपर्क करें
           </Link>
@@ -168,4 +165,3 @@ export default function Navbar({ color }) {
     </nav>
   );
 }
-
