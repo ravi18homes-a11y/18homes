@@ -1,18 +1,11 @@
 "use client";
-import React, { useState } from "react";
-import {
-  Eye,
-  EyeOff,
-  Home,
-  Mail,
-  Lock,
-  User,
-  Phone,
-  AlertCircle,
-  CheckCircle,
-} from "lucide-react";
+
+import React, { useState } from 'react';
+import { Eye, EyeOff, Home, Mail, Lock, User, Phone, AlertCircle, CheckCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function AuthPage() {
+  const router = useRouter();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -172,9 +165,11 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+      
       <div className="w-full max-w-6xl bg-white rounded-2xl shadow-2xl overflow-hidden grid md:grid-cols-2">
         {/* Left Side - Branding */}
-        <div className="bg-gradient-to-br from-green-600 to-green-800 p-12 text-white flex flex-col justify-around relative overflow-hidden">
+        <div className="bg-gradient-to-br from-green-600 gap-[20px] to-green-800 p-12 text-white flex flex-col justify-around relative overflow-hidden">
+          <button className='bg-[#f3bdf3] text-black p-2 cursor-pointer'  onClick={() => router.back()} >Back</button>
           <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mr-32 -mt-32"></div>
           <div className="absolute bottom-0 left-0 w-96 h-96 bg-white opacity-5 rounded-full -ml-48 -mb-48"></div>
 

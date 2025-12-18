@@ -15,26 +15,16 @@ import {
   Plus,
   Camera,
 } from "lucide-react";
+import Link from "next/link";
 
 const RealEstateApp = () => {
-  const [currentPage, setCurrentPage] = useState("sell"); // 'buy' or 'sell'
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState({
-    propertyType: "all",
-    minPrice: "",
-    maxPrice: "",
-    bedrooms: "any",
-    bathrooms: "any",
-    minArea: "",
-    maxArea: "",
-    sortBy: "newest",
-  });
+  const [currentPage, setCurrentPage] = useState("sell"); 
+
   const [favorites, setFavorites] = useState([]);
+
 
   const databaseUrl = process.env.NEXT_PUBLIC_APP_DATABASE_URL
 
-  // Sell Form State
   const [sellForm, setSellForm] = useState({
     title: "",
     description: "",
@@ -147,62 +137,13 @@ const RealEstateApp = () => {
     }
   };
 
-  // const filteredProperties = properties
-  //   .filter((property) => {
-  //     const matchesSearch =
-  //       property.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-  //       property.location.toLowerCase().includes(searchQuery.toLowerCase());
-  //     const matchesType =
-  //       filters.propertyType === "all" ||
-  //       property.type === filters.propertyType;
-  //     const matchesPrice =
-  //       (!filters.minPrice || property.price >= parseInt(filters.minPrice)) &&
-  //       (!filters.maxPrice || property.price <= parseInt(filters.maxPrice));
-  //     const matchesBed =
-  //       filters.bedrooms === "any" ||
-  //       property.bedrooms >= parseInt(filters.bedrooms);
-  //     const matchesBath =
-  //       filters.bathrooms === "any" ||
-  //       property.bathrooms >= parseInt(filters.bathrooms);
-  //     const matchesArea =
-  //       (!filters.minArea || property.area >= parseInt(filters.minArea)) &&
-  //       (!filters.maxArea || property.area <= parseInt(filters.maxArea));
-
-  //     return (
-  //       matchesSearch &&
-  //       matchesType &&
-  //       matchesPrice &&
-  //       matchesBed &&
-  //       matchesBath &&
-  //       matchesArea
-  //     );
-  //   })
-  //   .sort((a, b) => {
-  //     // Apply sorting based on user's selection
-  //     switch (filters.sortBy) {
-  //       case "price-low":
-  //         return a.price - b.price;
-  //       case "price-high":
-  //         return b.price - a.price;
-  //       case "area":
-  //         return b.area - a.area;
-  //       case "newest":
-  //       default:
-  //         return b.id - a.id; // newest first
-  //     }
-  //   });
-
-  // const formatPrice = (price) => {
-  //   if (price >= 10000000) return `₹${(price / 10000000).toFixed(2)} Cr`;
-  //   return `₹${(price / 100000).toFixed(2)} Lac`;
-  // };
 
   return (
     <div className="min-h-screen bg-gray-50">
+
       {/* Header */}
       <header className="bg-white shadow-sm  mt-20"></header>
 
-      {/* Sell Page Content */}
       {currentPage === "sell" && (
         <div className="max-w-4xl mx-auto px-4 py-8">
           {/* Success Message */}
@@ -373,7 +314,7 @@ const RealEstateApp = () => {
                     कीमत (₹) *
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     required
                     value={sellForm.price}
                     onChange={(e) =>
@@ -490,13 +431,12 @@ const RealEstateApp = () => {
               </div>
 
               <div className="flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setCurrentPage("buy")}
+                <Link href={"/"} 
+                                  
                   className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
                 >
                   रद्द करें
-                </button>
+                </Link>
 
                 <button
                   type="submit"
