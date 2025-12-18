@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState } from 'react';
 import { Eye, EyeOff, Home, Mail, Lock, User, Phone, AlertCircle, CheckCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -8,42 +9,46 @@ export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState({ type: '', text: '' });
+  const [message, setMessage] = useState({ type: "", text: "" });
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    password: '',
-    confirmPassword: ''
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
+    confirmPassword: "",
   });
 
-  const API_BASE_URL = 'http://localhost:5000/api/auth'; 
+  // const API_BASE_URL = 'http://localhost:5000/api/auth';
+  const API_BASE_URL = process.env.NEXT_PUBLIC_APP_DATABASE_URL;
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
-    setMessage({ type: '', text: '' }); 
+    setMessage({ type: "", text: "" });
   };
 
   const validateForm = () => {
     if (!formData.email || !formData.password) {
-      setMessage({ type: 'error', text: 'Email और Password आवश्यक हैं' });
+      setMessage({ type: "error", text: "Email और Password आवश्यक हैं" });
       return false;
     }
 
     if (!isLogin) {
       if (!formData.name || !formData.phone) {
-        setMessage({ type: 'error', text: 'सभी फील्ड भरना आवश्यक है' });
+        setMessage({ type: "error", text: "सभी फील्ड भरना आवश्यक है" });
         return false;
       }
       if (formData.password !== formData.confirmPassword) {
-        setMessage({ type: 'error', text: 'Passwords मेल नहीं खाते' });
+        setMessage({ type: "error", text: "Passwords मेल नहीं खाते" });
         return false;
       }
       if (formData.password.length < 6) {
-        setMessage({ type: 'error', text: 'Password कम से कम 6 अक्षर का होना चाहिए' });
+        setMessage({
+          type: "error",
+          text: "Password कम से कम 6 अक्षर का होना चाहिए",
+        });
         return false;
       }
     }
@@ -53,12 +58,12 @@ export default function AuthPage() {
   const handleRegister = async () => {
     try {
       setLoading(true);
-      setMessage({ type: '', text: '' });
+      setMessage({ type: "", text: "" });
 
-      const response = await fetch(`${API_BASE_URL}/register`, {
-        method: 'POST',
+      const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           name: formData.name,
@@ -71,25 +76,31 @@ export default function AuthPage() {
       const data = await response.json();
 
       if (data.success) {
-        setMessage({ type: 'success', text: data.message || 'Registration successful! Please login.' });
+        setMessage({
+          type: "success",
+          text: data.message || "Registration successful! Please login.",
+        });
         // Clear form and switch to login after 2 seconds
         setTimeout(() => {
           setFormData({
-            name: '',
+            name: "",
             email: formData.email, // Keep email for login
-            phone: '',
-            password: '',
-            confirmPassword: ''
+            phone: "",
+            password: "",
+            confirmPassword: "",
           });
           setIsLogin(true);
-          setMessage({ type: '', text: '' });
+          setMessage({ type: "", text: "" });
         }, 2000);
       } else {
-        setMessage({ type: 'error', text: data.message || 'Registration failed' });
+        setMessage({
+          type: "error",
+          text: data.message || "Registration failed",
+        });
       }
     } catch (error) {
-      setMessage({ type: 'error', text: 'Network error. Please try again.' });
-      console.error('Registration error:', error);
+      setMessage({ type: "error", text: "Network error. Please try again." });
+      console.error("Registration error:", error);
     } finally {
       setLoading(false);
     }
@@ -98,12 +109,12 @@ export default function AuthPage() {
   const handleLogin = async () => {
     try {
       setLoading(true);
-      setMessage({ type: '', text: '' });
+      setMessage({ type: "", text: "" });
 
-      const response = await fetch(`${API_BASE_URL}/login`, {
-        method: 'POST',
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           email: formData.email,
@@ -114,19 +125,23 @@ export default function AuthPage() {
       const data = await response.json();
 
       if (data.success && data.data?.token) {
-        setMessage({ type: 'success', text: data.message || 'Login successful!' });
-        // Store token in localStorage
-        localStorage.setItem('authToken', data.data.token);
-        // Redirect to dashboard or home page after 1.5 seconds
+        // token store
+        localStorage.setItem("authToken", data.data.token);
+
+        // user store
+        localStorage.setItem("user", JSON.stringify(data.data.user));
+
+        setMessage({ type: "success", text: "Login successful!" });
+
         setTimeout(() => {
-          window.location.href = '/'; // Change this to your dashboard route
+          window.location.href = "/";
         }, 1500);
       } else {
-        setMessage({ type: 'error', text: data.message || 'Login failed' });
+        setMessage({ type: "error", text: data.message || "Login failed" });
       }
     } catch (error) {
-      setMessage({ type: 'error', text: 'Network error. Please try again.' });
-      console.error('Login error:', error);
+      setMessage({ type: "error", text: "Network error. Please try again." });
+      console.error("Login error:", error);
     } finally {
       setLoading(false);
     }
@@ -143,7 +158,7 @@ export default function AuthPage() {
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleSubmit();
     }
   };
@@ -152,13 +167,12 @@ export default function AuthPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
       
       <div className="w-full max-w-6xl bg-white rounded-2xl shadow-2xl overflow-hidden grid md:grid-cols-2">
-        
         {/* Left Side - Branding */}
         <div className="bg-gradient-to-br from-green-600 gap-[20px] to-green-800 p-12 text-white flex flex-col justify-around relative overflow-hidden">
           <button className='bg-[#f3bdf3] text-black p-2 cursor-pointer'  onClick={() => router.back()} >Back</button>
           <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mr-32 -mt-32"></div>
           <div className="absolute bottom-0 left-0 w-96 h-96 bg-white opacity-5 rounded-full -ml-48 -mb-48"></div>
-          
+
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-8">
               <div className="bg-white p-2 rounded-lg">
@@ -166,10 +180,12 @@ export default function AuthPage() {
               </div>
               <h1 className="text-3xl font-bold">18Homes</h1>
             </div>
-            
+
             <div className="space-y-4">
               <h2 className="text-4xl font-bold leading-tight">
-                आपका सपनों का<br />घर यहाँ है
+                आपका सपनों का
+                <br />
+                घर यहाँ है
               </h2>
               <p className="text-green-100 text-lg">
                 Ghaziabad | Noida Special
@@ -186,25 +202,27 @@ export default function AuthPage() {
           </div>
 
           <div className="relative z-10">
-            
             <div
-  className="backdrop-blur-sm rounded-xl p-6 border border-white border-opacity-20"
-  style={{
-    backgroundImage: `
+              className="backdrop-blur-sm rounded-xl p-6 border border-white border-opacity-20"
+              style={{
+                backgroundImage: `
       linear-gradient(
         rgba(0,0,0,0.6),
         rgba(0,0,0,0.6)
       ),
       url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200')
     `,
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    backgroundRepeat: "no-repeat",
-  }}
->
-              <p className="text-sm mb-2 text-green-100">हमारे क्लाइंट क्या कहते हैं</p>
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+              }}
+            >
+              <p className="text-sm mb-2 text-green-100">
+                हमारे क्लाइंट क्या कहते हैं
+              </p>
               <p className="text-white italic">
-                "18Homes ने हमारे सपनों का घर ढूंढने में बहुत मदद की। बिना ब्रोकर के सीधे मकान मालिक से बात करना बहुत आसान था।"
+                "18Homes ने हमारे सपनों का घर ढूंढने में बहुत मदद की। बिना
+                ब्रोकर के सीधे मकान मालिक से बात करना बहुत आसान था।"
               </p>
               <p className="text-green-200 mt-3 font-semibold">Ravi Sharma</p>
             </div>
@@ -215,28 +233,32 @@ export default function AuthPage() {
         <div className="p-12 flex flex-col justify-center">
           <div className="mb-8">
             <h2 className="text-3xl font-bold text-gray-800 mb-2">
-              {isLogin ? 'Welcome Back!' : 'Create Account'}
+              {isLogin ? "Welcome Back!" : "Create Account"}
             </h2>
             <p className="text-gray-600">
-              {isLogin ? 'अपने अकाउंट में लॉगिन करें' : 'नया अकाउंट बनाएं'}
+              {isLogin ? "अपने अकाउंट में लॉगिन करें" : "नया अकाउंट बनाएं"}
             </p>
           </div>
 
           {/* Alert Messages */}
           {message.text && (
-            <div className={`mb-6 p-4 rounded-lg flex items-start gap-3 ${
-              message.type === 'success' 
-                ? 'bg-green-50 border border-green-200' 
-                : 'bg-red-50 border border-red-200'
-            }`}>
-              {message.type === 'success' ? (
+            <div
+              className={`mb-6 p-4 rounded-lg flex items-start gap-3 ${
+                message.type === "success"
+                  ? "bg-green-50 border border-green-200"
+                  : "bg-red-50 border border-red-200"
+              }`}
+            >
+              {message.type === "success" ? (
                 <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
               ) : (
                 <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
               )}
-              <p className={`text-sm ${
-                message.type === 'success' ? 'text-green-800' : 'text-red-800'
-              }`}>
+              <p
+                className={`text-sm ${
+                  message.type === "success" ? "text-green-800" : "text-red-800"
+                }`}
+              >
                 {message.text}
               </p>
             </div>
@@ -311,7 +333,7 @@ export default function AuthPage() {
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
@@ -326,7 +348,11 @@ export default function AuthPage() {
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   disabled={loading}
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
                 </button>
               </div>
             </div>
@@ -339,7 +365,7 @@ export default function AuthPage() {
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <input
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleChange}
@@ -360,9 +386,11 @@ export default function AuthPage() {
                     className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
                     disabled={loading}
                   />
-                  <span className="ml-2 text-sm text-gray-600">Remember me</span>
+                  <span className="ml-2 text-sm text-gray-600">
+                    Remember me
+                  </span>
                 </label>
-                <button 
+                <button
                   className="text-sm text-green-600 hover:text-green-700 font-medium"
                   disabled={loading}
                 >
@@ -375,19 +403,35 @@ export default function AuthPage() {
               onClick={handleSubmit}
               disabled={loading}
               className={`w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-3 rounded-lg font-semibold transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 ${
-                loading ? 'opacity-70 cursor-not-allowed' : 'hover:from-green-700 hover:to-green-800'
+                loading
+                  ? "opacity-70 cursor-not-allowed"
+                  : "hover:from-green-700 hover:to-green-800"
               }`}
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
                   <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      fill="none"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
                   </svg>
-                  {isLogin ? 'लॉगिन हो रहा है...' : 'साइन अप हो रहा है...'}
+                  {isLogin ? "लॉगिन हो रहा है..." : "साइन अप हो रहा है..."}
                 </span>
+              ) : isLogin ? (
+                "लॉगिन करें"
               ) : (
-                isLogin ? 'लॉगिन करें' : 'साइन अप करें'
+                "साइन अप करें"
               )}
             </button>
           </div>
@@ -399,18 +443,18 @@ export default function AuthPage() {
                 onClick={() => {
                   setIsLogin(!isLogin);
                   setFormData({
-                    name: '',
-                    email: '',
-                    phone: '',
-                    password: '',
-                    confirmPassword: ''
+                    name: "",
+                    email: "",
+                    phone: "",
+                    password: "",
+                    confirmPassword: "",
                   });
-                  setMessage({ type: '', text: '' });
+                  setMessage({ type: "", text: "" });
                 }}
                 className="ml-2 text-green-600 hover:text-green-700 font-semibold"
                 disabled={loading}
               >
-                {isLogin ? 'साइन अप करें' : 'लॉगिन करें'}
+                {isLogin ? "साइन अप करें" : "लॉगिन करें"}
               </button>
             </p>
           </div>
