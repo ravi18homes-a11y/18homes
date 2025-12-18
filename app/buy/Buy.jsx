@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Search,
@@ -11,9 +11,11 @@ import {
   Heart,
   ChevronDown,
   X,
+  Loader2,
 } from "lucide-react";
 
 const BuyPage = () => {
+  const databaseUrl = process.env.NEXT_PUBLIC_APP_DATABASE_URL
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
@@ -27,9 +29,17 @@ const BuyPage = () => {
     sortBy: "newest",
   });
   const [favorites, setFavorites] = useState([]);
+  const [properties, setProperties] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState({
+    total: 0,
+    page: 1,
+    pages: 1,
+    limit: 10,
+  });
 
-  // Sample property data
-  const properties = [
+  // Static property data (fallback)
+  const staticProperties = [
     {
       id: 1,
       title: "आधुनिक 3BHK फ्लैट",
@@ -115,39 +125,86 @@ const BuyPage = () => {
     },
   ];
 
+  // Fetch properties from API
+  const fetchProperties = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      
+      if (searchQuery) params.append("search", searchQuery);
+      if (filters.propertyType !== "all") params.append("propertyType", filters.propertyType);
+      if (filters.minPrice) params.append("minPrice", filters.minPrice);
+      if (filters.maxPrice) params.append("maxPrice", filters.maxPrice);
+      if (filters.bedrooms !== "any") params.append("bedrooms", filters.bedrooms);
+      
+      // Map sortBy to API sort parameter
+      let sortParam = "-createdAt";
+      if (filters.sortBy === "price-low") sortParam = "price";
+      if (filters.sortBy === "price-high") sortParam = "-price";
+      if (filters.sortBy === "area") sortParam = "-area";
+      params.append("sort", sortParam);
+      
+      params.append("page", pagination.page);
+      params.append("limit", pagination.limit);
+
+      const response = await fetch(`${databaseUrl}/api/properties?${params.toString()}`);
+      const data = await response.json();
+
+      if (data.success && data.data.properties.length > 0) {
+        // Transform API data to match component structure
+        const transformedProperties = data.data.properties.map((prop) => ({
+          id: prop._id,
+          title: prop.title,
+          location: `${prop.address?.locality || ""}, ${prop.address?.city || ""}`,
+          price: prop.price,
+          bedrooms: prop.bedrooms,
+          bathrooms: prop.bathrooms || 0,
+          area: prop.area || 0,
+          type: prop.propertyType,
+          image: prop.images?.[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800",
+          status: prop.purpose === "rent" ? "For Rent" : "For Sale",
+          featured: false,
+        }));
+        
+        setProperties(transformedProperties);
+        setPagination(data.data.pagination);
+      } else {
+        // If API returns no results, use static data
+        setProperties(staticProperties);
+      }
+    } catch (error) {
+      console.error("Error fetching properties:", error);
+      // On error, use static data
+      setProperties(staticProperties);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch properties on component mount and when filters change
+  useEffect(() => {
+    fetchProperties();
+  }, [searchQuery, filters, pagination.page]);
+
   const toggleFavorite = (id) => {
     setFavorites((prev) =>
       prev.includes(id) ? prev.filter((fav) => fav !== id) : [...prev, id]
     );
   };
 
+  // Client-side filtering for static properties (when API returns nothing)
   const filteredProperties = properties.filter((property) => {
-    const matchesSearch =
-      property.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      property.location.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType =
-      filters.propertyType === "all" || property.type === filters.propertyType;
-    const matchesPrice =
-      (!filters.minPrice || property.price >= parseInt(filters.minPrice)) &&
-      (!filters.maxPrice || property.price <= parseInt(filters.maxPrice));
-    const matchesBed =
-      filters.bedrooms === "any" ||
-      property.bedrooms >= parseInt(filters.bedrooms);
-    const matchesBath =
-      filters.bathrooms === "any" ||
-      property.bathrooms >= parseInt(filters.bathrooms);
-    const matchesArea =
-      (!filters.minArea || property.area >= parseInt(filters.minArea)) &&
-      (!filters.maxArea || property.area <= parseInt(filters.maxArea));
-
-    return (
-      matchesSearch &&
-      matchesType &&
-      matchesPrice &&
-      matchesBed &&
-      matchesBath &&
-      matchesArea
-    );
+    // Only apply client-side filters if using static data
+    if (properties === staticProperties) {
+      const matchesBath =
+        filters.bathrooms === "any" ||
+        property.bathrooms >= parseInt(filters.bathrooms);
+      const matchesArea =
+        (!filters.minArea || property.area >= parseInt(filters.minArea)) &&
+        (!filters.maxArea || property.area <= parseInt(filters.maxArea));
+      return matchesBath && matchesArea;
+    }
+    return true;
   });
 
   const formatPrice = (price) => {
@@ -370,97 +427,114 @@ const BuyPage = () => {
         {/* Results Header */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-800">
-            {filteredProperties.length} प्रॉपर्टीज उपलब्ध
+            {loading ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="w-6 h-6 animate-spin" />
+                लोड हो रहा है...
+              </span>
+            ) : (
+              `${filteredProperties.length} प्रॉपर्टीज उपलब्ध`
+            )}
           </h2>
         </div>
 
-        {/* Property Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProperties.map((property) => (
-            <div
-              key={property.id}
-              className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow"
-            >
-              <div className="relative">
-                <img
-                  src={property.image}
-                  alt={property.title}
-                  className="w-full h-48 object-cover"
-                />
-                <button
-                  onClick={() => toggleFavorite(property.id)}
-                  className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-md hover:bg-gray-100"
-                >
-                  <Heart
-                    className={`w-5 h-5 ${
-                      favorites.includes(property.id)
-                        ? "fill-red-600 text-red-600"
-                        : "text-gray-600"
-                    }`}
-                  />
-                </button>
-                {property.featured && (
-                  <span className="absolute top-3 left-3 px-3 py-1 bg-red-600 text-white text-sm rounded-full">
-                    Featured
-                  </span>
-                )}
-                <span className="absolute bottom-3 left-3 px-3 py-1 bg-green-600 text-white text-sm rounded-full">
-                  {property.status}
-                </span>
-              </div>
-
-              <div className="p-4">
-                <h3 className="text-xl font-bold text-gray-800 mb-2">
-                  {property.title}
-                </h3>
-                <div className="flex items-center text-gray-600 mb-3">
-                  <MapPin className="w-4 h-4 mr-1" />
-                  <span className="text-sm">{property.location}</span>
-                </div>
-
-                <div className="flex items-center justify-between mb-3 pb-3 border-b">
-                  <div className="flex items-center gap-4 text-sm text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <Bed className="w-4 h-4" />
-                      <span>{property.bedrooms} BHK</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Bath className="w-4 h-4" />
-                      <span>{property.bathrooms}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Square className="w-4 h-4" />
-                      <span>{property.area} sqft</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="text-2xl font-bold text-red-600">
-                    {formatPrice(property.price)}
-                  </div>
-                  <Link
-                    href={`/buy/property-details?id=${property.id}`}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 block text-center"
-                  >
-                    विवरण देखें
-                  </Link>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {filteredProperties.length === 0 && (
-          <div className="text-center py-16">
-            <Home className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">
-              कोई प्रॉपर्टी नहीं मिली
-            </h3>
-            <p className="text-gray-600">
-              कृपया अपने फ़िल्टर बदलें या अलग खोज का प्रयास करें
-            </p>
+        {/* Loading State */}
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <Loader2 className="w-12 h-12 animate-spin text-red-600" />
           </div>
+        ) : (
+          <>
+            {/* Property Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProperties.map((property) => (
+                <div
+                  key={property.id}
+                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow"
+                >
+                  <div className="relative">
+                    <img
+                      src={property.image}
+                      alt={property.title}
+                      className="w-full h-48 object-cover"
+                    />
+                    <button
+                      onClick={() => toggleFavorite(property.id)}
+                      className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-md hover:bg-gray-100"
+                    >
+                      <Heart
+                        className={`w-5 h-5 ${
+                          favorites.includes(property.id)
+                            ? "fill-red-600 text-red-600"
+                            : "text-gray-600"
+                        }`}
+                      />
+                    </button>
+                    {property.featured && (
+                      <span className="absolute top-3 left-3 px-3 py-1 bg-red-600 text-white text-sm rounded-full">
+                        Featured
+                      </span>
+                    )}
+                    <span className="absolute bottom-3 left-3 px-3 py-1 bg-green-600 text-white text-sm rounded-full">
+                      {property.status}
+                    </span>
+                  </div>
+
+                  <div className="p-4">
+                    <h3 className="text-xl font-bold text-gray-800 mb-2">
+                      {property.title}
+                    </h3>
+                    <div className="flex items-center text-gray-600 mb-3">
+                      <MapPin className="w-4 h-4 mr-1" />
+                      <span className="text-sm">{property.location}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between mb-3 pb-3 border-b">
+                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                        <div className="flex items-center gap-1">
+                          <Bed className="w-4 h-4" />
+                          <span>{property.bedrooms} BHK</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Bath className="w-4 h-4" />
+                          <span>{property.bathrooms}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Square className="w-4 h-4" />
+                          <span>{property.area} sqft</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="text-2xl font-bold text-red-600">
+                        {formatPrice(property.price)}
+                      </div>
+                      <Link
+                        href={`/buy/property-details?id=${property.id}`}
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 block text-center"
+                      >
+                        विवरण देखें
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Empty State */}
+            {filteredProperties.length === 0 && (
+              <div className="text-center py-16">
+                <Home className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                  कोई प्रॉपर्टी नहीं मिली
+                </h3>
+                <p className="text-gray-600">
+                  कृपया अपने फ़िल्टर बदलें या अलग खोज का प्रयास करें
+                </p>
+              </div>
+            )}
+          </>
         )}
       </div>
 
