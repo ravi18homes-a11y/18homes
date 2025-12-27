@@ -34,3 +34,34 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+---
+
+## Environment variables and local backend setup 🔧
+
+- Frontend (Next.js):
+  - Create a file `.env.local` at the project root and add:
+
+```env
+NEXT_PUBLIC_API_BASE_URL=http://localhost:5000
+```
+
+- The frontend will use `process.env.NEXT_PUBLIC_API_BASE_URL` (exposed to client code) to send auth and API requests.
+
+- Backend (API server) - separate process (Express / Node):
+  - Copy `.env.example` to your backend repo or a `.env` file and set real secrets:
+
+```env
+PORT=5000
+MONGO_URI="mongodb+srv://<username>:<password>@cluster0.dxxn4on.mongodb.net/18homes?appName=Cluster0"
+JWT_SECRET=supersecretkey
+```
+
+- **Do not commit** `.env` with real credentials. Use `.env.example` for reference only.
+
+- Quick test:
+  1. Start your backend on port 5000 (make sure it reads `process.env.PORT`, `process.env.MONGO_URI` and `process.env.JWT_SECRET`).
+  2. Start the Next.js app (`npm run dev`).
+  3. The login form (in `app/login-signup/LoginSignComp.jsx`) now uses `process.env.NEXT_PUBLIC_API_BASE_URL` and will call e.g. `http://localhost:5000/api/auth/login`.
+
+If you want, I can scaffold a minimal Express auth server in this repo (register/login using MongoDB + JWT) and wire it to these envs — tell me if you'd like that.
