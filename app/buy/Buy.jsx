@@ -15,7 +15,9 @@ import {
 } from "lucide-react";
 
 const BuyPage = () => {
-  const databaseUrl = process.env.NEXT_PUBLIC_APP_DATABASE_URL
+  const DEFAULT_IMAGE =
+    "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800";
+  const databaseUrl = process.env.NEXT_PUBLIC_APP_DATABASE_URL;
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
@@ -129,51 +131,102 @@ const BuyPage = () => {
   const fetchProperties = async () => {
     setLoading(true);
     try {
+      // Check if database URL is configured
+      if (!databaseUrl) {
+        console.warn("Database URL not configured, using static properties");
+        setProperties(staticProperties);
+        setLoading(false);
+        return;
+      }
+
       const params = new URLSearchParams();
-      
+
       if (searchQuery) params.append("search", searchQuery);
-      if (filters.propertyType !== "all") params.append("propertyType", filters.propertyType);
+      // Add purpose - default to 'sell' if not specified
+      params.append("purpose", "sell");
+      if (filters.propertyType !== "all")
+        params.append("propertyType", filters.propertyType);
       if (filters.minPrice) params.append("minPrice", filters.minPrice);
       if (filters.maxPrice) params.append("maxPrice", filters.maxPrice);
-      if (filters.bedrooms !== "any") params.append("bedrooms", filters.bedrooms);
-      
+      if (filters.bedrooms !== "any")
+        params.append("bedrooms", filters.bedrooms);
+
       // Map sortBy to API sort parameter
       let sortParam = "-createdAt";
       if (filters.sortBy === "price-low") sortParam = "price";
       if (filters.sortBy === "price-high") sortParam = "-price";
       if (filters.sortBy === "area") sortParam = "-area";
       params.append("sort", sortParam);
-      
+
       params.append("page", pagination.page);
       params.append("limit", pagination.limit);
 
-      const response = await fetch(`${databaseUrl}/api/properties?${params.toString()}`);
-      const data = await response.json();
+      const apiUrl = `${databaseUrl}/api/properties?${params.toString()}`;
+      console.log("Fetching from:", apiUrl);
 
-      if (data.success && data.data.properties.length > 0) {
+      const response = await fetch(apiUrl);
+      
+      if (!response.ok) {
+        console.error("API response not ok:", response.status);
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("API Response:", data);
+
+      if (data.success && data.data && data.data.properties && data.data.properties.length > 0) {
         // Transform API data to match component structure
-        const transformedProperties = data.data.properties.map((prop) => ({
-          id: prop._id,
-          title: prop.title,
-          location: `${prop.address?.locality || ""}, ${prop.address?.city || ""}`,
-          price: prop.price,
-          bedrooms: prop.bedrooms,
-          bathrooms: prop.bathrooms || 0,
-          area: prop.area || 0,
-          type: prop.propertyType,
-          image: prop.images?.[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800",
-          status: prop.purpose === "rent" ? "For Rent" : "For Sale",
-          featured: false,
-        }));
-        
+        const transformedProperties = data.data.properties
+          .map((prop) => {
+            // Handle area - it comes as object with unit, extract numeric value or use 0
+            let areaValue = 0;
+            if (typeof prop.area === 'object' && prop.area !== null) {
+              areaValue = prop.area.value || 0;
+            } else if (typeof prop.area === 'number') {
+              areaValue = prop.area;
+            }
+
+            // Filter out blob URLs and invalid images
+            let validImages = [];
+            if (prop.images && Array.isArray(prop.images)) {
+              validImages = prop.images.filter(
+                (img) => img && !img.startsWith('blob:') && img.trim() !== ''
+              );
+            }
+
+            // Get owner name or location
+            const ownerInfo = prop.owner 
+              ? `${prop.owner.name}, ${prop.owner.phone}` 
+              : 'Owner info not available';
+
+            return {
+              id: prop._id || prop.id,
+              title: prop.title || "No Title",
+              // Use owner name and phone as location, fallback to property type
+              location: ownerInfo,
+              price: prop.price || 0,
+              bedrooms: prop.bedrooms || 0,
+              bathrooms: prop.bathrooms || 0,
+              area: areaValue,
+              type: prop.propertyType || "apartment",
+              image: validImages.length > 0 ? validImages[0] : DEFAULT_IMAGE,
+              status: prop.purpose === "rent" ? "For Rent" : "For Sale",
+              featured: prop.featured || false,
+            };
+          });
+
+        console.log("Transformed properties:", transformedProperties);
         setProperties(transformedProperties);
-        setPagination(data.data.pagination);
+        if (data.data.pagination) {
+          setPagination(data.data.pagination);
+        }
       } else {
-        // If API returns no results, use static data
+        console.log("No properties found from API, using static data");
         setProperties(staticProperties);
       }
     } catch (error) {
-      console.error("Error fetching properties:", error);
+      console.error("Error fetching properties from API:", error);
+      console.log("Falling back to static properties");
       // On error, use static data
       setProperties(staticProperties);
     } finally {
@@ -208,8 +261,19 @@ const BuyPage = () => {
   });
 
   const formatPrice = (price) => {
-    if (price >= 10000000) return `₹${(price / 10000000).toFixed(2)} Cr`;
-    return `₹${(price / 100000).toFixed(2)} Lac`;
+    // Handle case where price is an object with unit property
+    if (typeof price === 'object' && price !== null && price.unit) {
+      return `${price.value} ${price.unit}`;
+    }
+    
+    // Handle null or undefined
+    if (!price || price === 0) return 'न्यूनतम मूल्य';
+    
+    const numPrice = Number(price);
+    if (isNaN(numPrice)) return 'मूल्य अनुपलब्ध';
+    
+    if (numPrice >= 10000000) return `₹${(numPrice / 10000000).toFixed(2)} Cr`;
+    return `₹${(numPrice / 100000).toFixed(2)} Lac`;
   };
 
   return (
@@ -454,8 +518,11 @@ const BuyPage = () => {
                 >
                   <div className="relative">
                     <img
-                      src={property.image}
+                      src={property.image || DEFAULT_IMAGE}
                       alt={property.title}
+                      onError={(e) => {
+                        e.target.src = DEFAULT_IMAGE;
+                      }}
                       className="w-full h-48 object-cover"
                     />
                     <button
@@ -512,7 +579,7 @@ const BuyPage = () => {
                       </div>
                       <Link
                         href={`/buy/property-details?id=${property.id}`}
-                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 block text-center"
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg"
                       >
                         विवरण देखें
                       </Link>
