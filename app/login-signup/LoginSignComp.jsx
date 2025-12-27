@@ -1,8 +1,8 @@
 "use client";
-
 import React, { useState } from 'react';
 import { Eye, EyeOff, Home, Mail, Lock, User, Phone, AlertCircle, CheckCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+
 
 export default function AuthPage() {
   const router = useRouter();
@@ -18,8 +18,13 @@ export default function AuthPage() {
     confirmPassword: "",
   });
 
-  // const API_BASE_URL = 'http://localhost:5000/api/auth';
-  const API_BASE_URL = process.env.NEXT_PUBLIC_APP_DATABASE_URL;
+
+  const API_BASE_URL =
+    (process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000") +
+    "/api/auth";
+  console.log("API_BASE_URL (LoginSignComp):", API_BASE_URL);
+
+
 
   const handleChange = (e) => {
     setFormData({
@@ -60,7 +65,8 @@ export default function AuthPage() {
       setLoading(true);
       setMessage({ type: "", text: "" });
 
-      const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+      console.log("Attempting register to:", `${API_BASE_URL}/register`);
+      const response = await fetch(`${API_BASE_URL}/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -73,7 +79,22 @@ export default function AuthPage() {
         }),
       });
 
-      const data = await response.json();
+      const text = await response.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        data = { success: false, message: text || response.statusText };
+      }
+
+      if (!response.ok) {
+        console.error("Registration failed:", response.status, data);
+        setMessage({
+          type: "error",
+          text: data.message || `Request failed: ${response.status}`,
+        });
+        return;
+      }
 
       if (data.success) {
         setMessage({
@@ -99,8 +120,11 @@ export default function AuthPage() {
         });
       }
     } catch (error) {
-      setMessage({ type: "error", text: "Network error. Please try again." });
-      console.error("Registration error:", error);
+      console.error("Registration/network error:", error);
+      setMessage({
+        type: "error",
+        text: "Network error. " + (error.message || "Please try again."),
+      });
     } finally {
       setLoading(false);
     }
@@ -111,7 +135,8 @@ export default function AuthPage() {
       setLoading(true);
       setMessage({ type: "", text: "" });
 
-      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+      console.log("Attempting login to:", `${API_BASE_URL}/login`);
+      const response = await fetch(`${API_BASE_URL}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -122,26 +147,45 @@ export default function AuthPage() {
         }),
       });
 
-      const data = await response.json();
+      const text = await response.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        data = { success: false, message: text || response.statusText };
+      }
+
+      if (!response.ok) {
+        // Response HTTP error (4xx/5xx) — show server message if available
+        console.error("Login failed:", response.status, data);
+        setMessage({
+          type: "error",
+          text: data.message || `Request failed: ${response.status}`,
+        });
+        return;
+      }
 
       if (data.success && data.data?.token) {
-        // token store
+        setMessage({
+          type: "success",
+          text: data.message || "Login successful!",
+        });
+        // Store token in localStorage
         localStorage.setItem("authToken", data.data.token);
-
-        // user store
-        localStorage.setItem("user", JSON.stringify(data.data.user));
-
-        setMessage({ type: "success", text: "Login successful!" });
-
+        // Redirect to dashboard or home page after 1.5 seconds
         setTimeout(() => {
-          window.location.href = "/";
+          window.location.href = "/"; // Change this to your dashboard route
         }, 1500);
       } else {
         setMessage({ type: "error", text: data.message || "Login failed" });
       }
     } catch (error) {
-      setMessage({ type: "error", text: "Network error. Please try again." });
-      console.error("Login error:", error);
+      // Network or parsing error
+      console.error("Network/login error:", error);
+      setMessage({
+        type: "error",
+        text: "Network error. " + (error.message || "Please try again."),
+      });
     } finally {
       setLoading(false);
     }
@@ -165,11 +209,15 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
-      
       <div className="w-full max-w-6xl bg-white rounded-2xl shadow-2xl overflow-hidden grid md:grid-cols-2">
         {/* Left Side - Branding */}
         <div className="bg-gradient-to-br from-green-600 gap-[20px] to-green-800 p-12 text-white flex flex-col justify-around relative overflow-hidden">
-          <button className='bg-[#f3bdf3] text-black p-2 cursor-pointer'  onClick={() => router.back()} >Back</button>
+          <button
+            className="bg-[#f3bdf3] text-black p-2 cursor-pointer"
+            onClick={() => router.back()}
+          >
+            Back
+          </button>
           <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mr-32 -mt-32"></div>
           <div className="absolute bottom-0 left-0 w-96 h-96 bg-white opacity-5 rounded-full -ml-48 -mb-48"></div>
 

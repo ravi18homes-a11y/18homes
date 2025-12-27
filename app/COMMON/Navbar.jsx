@@ -7,11 +7,27 @@ import { GiHamburgerMenu } from "react-icons/gi";
 import { IoMdClose } from "react-icons/io";
 import { MdLogin, MdPhone } from "react-icons/md";
 
-export default function Navbar({ color }) {
+export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const profileMenuRef = useRef(null);
+
+  // Track auth state from localStorage (login saves 'authToken')
+  useEffect(() => {
+    const checkAuth = () => {
+      try {
+        setIsLoggedIn(!!localStorage.getItem("authToken"));
+      } catch (e) {
+        setIsLoggedIn(false);
+      }
+    };
+
+    checkAuth();
+    window.addEventListener("storage", checkAuth);
+    return () => window.removeEventListener("storage", checkAuth);
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -40,7 +56,10 @@ export default function Navbar({ color }) {
   // Close profile menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target)
+      ) {
         setShowProfileMenu(false);
       }
     };
@@ -58,7 +77,6 @@ export default function Navbar({ color }) {
       `}
     >
       <div className="max-w-[1720px] mx-auto flex items-center justify-between lg:px-14 px-4 py-2">
-       
         <div className="flex items-center gap-10">
           {/* Logo */}
           <Link href="/">
@@ -91,89 +109,99 @@ export default function Navbar({ color }) {
           </ul>
         </div>
 
-      
         <div className="flex gap-5">
           <div className=" lg:flex items-center gap-4">
-          {/* <Link
-            href="/contact"
-            className="px-7 py-2 font-bold border border-[#8c4bdc] text-[#8c4bdc] rounded-full text-[18px] hover:border-[#c04b7e] hover:bg-[#c04b7e] hover:text-black transition"
-          >
-            अभी बुक करें
-          </Link> */}
+            <div className="relative" ref={profileMenuRef}>
+              <button
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                className="w-12 h-12 rounded-full border-2 border-[#8c4bdc] overflow-hidden hover:border-[#c04b7e] transition"
+              >
+                <Image
+                  src="https://res.cloudinary.com/dxlykgx6w/image/upload/v1766862633/business-man-avatar-profile_1133257-2431_dygzgs.avif"
+                  alt="Profile"
+                  width={48}
+                  height={48}
+                  className="object-cover"
+                  onError={(e) => {
+                    e.target.src =
+                      "https://res.cloudinary.com/dxlykgx6w/image/upload/v1766862633/business-man-avatar-profile_1133257-2431_dygzgs.avif";
+                  }}
+                />
+              </button>
 
-          {/* Profile Dropdown */}
-          <div className="relative" ref={profileMenuRef}>
-            <button
-              onClick={() => setShowProfileMenu(!showProfileMenu)}
-              className="w-12 h-12 rounded-full border-2 border-[#8c4bdc] overflow-hidden hover:border-[#c04b7e] transition"
-            >
-              <Image
-                src=""
-                alt="Profile"
-                width={48}
-                height={48}
-                className="object-cover"
-                onError={(e) => {
-                  e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='none' stroke='%238c4bdc' stroke-width='2'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'%3E%3C/path%3E%3Ccircle cx='12' cy='7' r='4'%3E%3C/circle%3E%3C/svg%3E";
-                }}
-              />
-            </button>
+              {/* Dropdown Menu */}
+              {showProfileMenu && (
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
+                  {!isLoggedIn && (
+                    <Link
+                      href="/login-signup"
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
+                      onClick={() => setShowProfileMenu(false)}
+                    >
+                      <MdLogin className="text-[#8c4bdc] text-xl" />
+                      <span className="text-black">Login</span>
+                    </Link>
+                  )}
 
-            {/* Dropdown Menu */}
-            {showProfileMenu && (
-              <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
-                <Link
-                  href="/login-signup"
-                  className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
-                  onClick={() => setShowProfileMenu(false)}
-                >
-                  <MdLogin className="text-[#8c4bdc] text-xl" />
-                  <span className="text-black">Login</span>
-                </Link>
+                  <Link
+                    href="/contact"
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
+                    onClick={() => setShowProfileMenu(false)}
+                  >
+                    <MdPhone className="text-[#8c4bdc] text-xl" />
+                    <span className="text-black">अभी बुक करें</span>
+                  </Link>
 
-                <Link
-                  href="/contact"
-                  className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
-                  onClick={() => setShowProfileMenu(false)}
-                >
-                  <MdPhone className="text-[#8c4bdc] text-xl" />
-                  <span className="text-black">अभी बुक करें</span>
-                </Link>
+                  {isLoggedIn && (
+                    <Link
+                      href="/edit-profile"
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
+                      onClick={() => setShowProfileMenu(false)}
+                    >
+                      <FaEdit className="text-[#8c4bdc] text-xl" />
+                      <span className="text-black">Edit Profile</span>
+                    </Link>
+                  )}
 
-                <Link
-                  href="/profile/edit"
-                  className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
-                  onClick={() => setShowProfileMenu(false)}
-                >
-                  <FaEdit className="text-[#8c4bdc] text-xl" />
-                  <span className="text-black">Edit Profile</span>
-                </Link>
+                  {isLoggedIn && (
+                    <button
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition w-full text-left"
+                      onClick={() => {
+                        localStorage.removeItem("authToken");
+                        setIsLoggedIn(false);
+                        setShowProfileMenu(false);
+                        window.location.href = "/";
+                      }}
+                    >
+                      <FaUser className="text-[#8c4bdc] text-xl" />
+                      <span className="text-black">Logout</span>
+                    </button>
+                  )}
 
-                <div className="border-t border-gray-200 my-2"></div>
+                  <div className="border-t border-gray-200 my-2"></div>
 
-                <Link
-                  href="/settings"
-                  className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
-                  onClick={() => setShowProfileMenu(false)}
-                >
-                  <FaCog className="text-[#8c4bdc] text-xl" />
-                  <span className="text-black">Settings</span>
-                </Link>
-              </div>
-            )}
+                  <Link
+                    href="/setting"
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
+                    onClick={() => setShowProfileMenu(false)}
+                  >
+                    <FaCog className="text-[#8c4bdc] text-xl" />
+                    <span className="text-black">Setting</span>
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
 
-        <button
-          className="hamburger-icon lg:hidden text-black text-4xl"
-          onClick={() => setOpen(!open)}
-        >
-          {open ? <IoMdClose /> : <GiHamburgerMenu />}
-        </button>
+          <button
+            className="hamburger-icon lg:hidden text-black text-4xl"
+            onClick={() => setOpen(!open)}
+          >
+            {open ? <IoMdClose /> : <GiHamburgerMenu />}
+          </button>
         </div>
       </div>
 
-    
       {open && (
         <div
           className="fixed inset-0 z-40 transition-opacity duration-300"
@@ -210,14 +238,26 @@ export default function Navbar({ color }) {
           >
             अभी बुक करें
           </Link>
-          
-          <Link
-            href="/login-signup"
-            className="w-[153px] px-7 mt-4 py-2 border border-[black] text-[black] rounded-full"
-            onClick={() => setOpen(false)}
-          >
-            Login
-          </Link>
+
+          {!isLoggedIn && (
+            <Link
+              href="/login-signup"
+              className="w-[153px] px-7 mt-4 py-2 border border-[black] text-[black] rounded-full"
+              onClick={() => setOpen(false)}
+            >
+              Login
+            </Link>
+          )}
+
+          {isLoggedIn && (
+            <Link
+              href="/edit-profile"
+              className="w-[153px] px-7 mt-4 py-2 border border-[black] text-[black] rounded-full"
+              onClick={() => setOpen(false)}
+            >
+              Edit Profile
+            </Link>
+          )}
         </div>
       </div>
     </nav>
