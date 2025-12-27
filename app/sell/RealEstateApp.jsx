@@ -22,6 +22,9 @@ const RealEstateApp = () => {
 
   const [favorites, setFavorites] = useState([]);
 
+
+  const databaseUrl = process.env.NEXT_PUBLIC_APP_DATABASE_URL
+
   const [sellForm, setSellForm] = useState({
     title: "",
     description: "",
@@ -38,8 +41,6 @@ const RealEstateApp = () => {
     images: [],
   });
   const [submitSuccess, setSubmitSuccess] = useState(false);
-
-
 
   const toggleFavorite = (id) => {
     setFavorites((prev) =>
@@ -67,66 +68,81 @@ const RealEstateApp = () => {
     }));
   };
 
-  const handleSubmitProperty = (e) => {
+  const handleSubmitProperty = async (e) => {
     e.preventDefault();
 
-    const newProperty = {
-      id: properties.length + 1,
-      title: sellForm.title,
-      location: sellForm.location,
-      price: parseInt(sellForm.price),
-      bedrooms: parseInt(sellForm.bedrooms),
-      bathrooms: parseInt(sellForm.bathrooms),
-      area: parseInt(sellForm.area),
-      type: sellForm.propertyType,
-      image:
-        sellForm.images[0] ||
-        "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800",
-      status:
-        sellForm.status === "ready" ? "Ready to Move" : "Under Construction",
-      featured: false,
-      userSubmitted: true,
-      description: sellForm.description,
-      ownerName: sellForm.ownerName,
-      ownerPhone: sellForm.ownerPhone,
-      ownerEmail: sellForm.ownerEmail,
-      allImages: sellForm.images,
-    };
+    try {
+      const token = localStorage.getItem("authToken");
 
-    setProperties((prev) => [newProperty, ...prev]);
-    setSubmitSuccess(true);
+      if (!token) {
+        alert("Please login first");
+        return;
+      }
 
-    // Reset form
-    setSellForm({
-      title: "",
-      description: "",
-      propertyType: "apartment",
-      price: "",
-      location: "",
-      bedrooms: "1",
-      bathrooms: "1",
-      area: "",
-      status: "ready",
-      ownerName: "",
-      ownerPhone: "",
-      ownerEmail: "",
-      images: [],
-    });
+      const response = await fetch(
+        `${databaseUrl}/api/properties`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            title: sellForm.title,
+            description: sellForm.description,
+            propertyType: sellForm.propertyType,
+            price: sellForm.price,
+            location: sellForm.location,
+            bedrooms: sellForm.bedrooms,
+            bathrooms: sellForm.bathrooms,
+            area: sellForm.area,
+            status: sellForm.status,
+            images: sellForm.images,
+          }),
+        }
+      );
 
+      const data = await response.json();
 
-    setTimeout(() => {
-      setSubmitSuccess(false);
-      setCurrentPage("buy");
-    }, 3000);
+      if (data.success) {
+        setSubmitSuccess(true);
+
+        // reset form
+        setSellForm({
+          title: "",
+          description: "",
+          propertyType: "apartment",
+          price: "",
+          location: "",
+          bedrooms: "1",
+          bathrooms: "1",
+          area: "",
+          status: "ready",
+          ownerName: "",
+          ownerPhone: "",
+          ownerEmail: "",
+          images: [],
+        });
+
+        setTimeout(() => {
+          setSubmitSuccess(false);
+          setCurrentPage("buy");
+        }, 3000);
+      } else {
+        alert(data.message || "Property create failed");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Server error");
+    }
   };
 
 
   return (
     <div className="min-h-screen bg-gray-50">
- 
-      <header className="bg-white shadow-sm  mt-20">
-       
-      </header>
+
+      {/* Header */}
+      <header className="bg-white shadow-sm  mt-20"></header>
 
       {currentPage === "sell" && (
         <div className="max-w-4xl mx-auto px-4 py-8">

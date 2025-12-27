@@ -1,17 +1,8 @@
 "use client";
-import React, { useState } from "react";
-import {
-  Eye,
-  EyeOff,
-  Home,
-  Mail,
-  Lock,
-  User,
-  Phone,
-  AlertCircle,
-  CheckCircle,
-} from "lucide-react";
-import { useRouter } from "next/navigation";
+import React, { useState } from 'react';
+import { Eye, EyeOff, Home, Mail, Lock, User, Phone, AlertCircle, CheckCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+
 
 export default function AuthPage() {
   const router = useRouter();
@@ -27,10 +18,13 @@ export default function AuthPage() {
     confirmPassword: "",
   });
 
+
   const API_BASE_URL =
     (process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000") +
     "/api/auth";
   console.log("API_BASE_URL (LoginSignComp):", API_BASE_URL);
+
+
 
   const handleChange = (e) => {
     setFormData({
