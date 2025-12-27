@@ -18,26 +18,23 @@ import {
 import Link from "next/link";
 
 const RealEstateApp = () => {
-  const [currentPage, setCurrentPage] = useState("sell"); 
+  const [currentPage, setCurrentPage] = useState("sell");
 
   const [favorites, setFavorites] = useState([]);
 
-
-  const databaseUrl = process.env.NEXT_PUBLIC_APP_DATABASE_URL
+  const databaseUrl = process.env.NEXT_PUBLIC_APP_DATABASE_URL;
 
   const [sellForm, setSellForm] = useState({
     title: "",
     description: "",
+    purpose: "sell", // ✅ required by backend
     propertyType: "apartment",
     price: "",
-    location: "",
+    area: "",
     bedrooms: "1",
     bathrooms: "1",
-    area: "",
-    status: "ready",
-    ownerName: "",
-    ownerPhone: "",
-    ownerEmail: "",
+    furnishing: "unfurnished", // ✅ required by backend
+    address: "", // ✅ backend expects `address`, not location
     images: [],
   });
   const [submitSuccess, setSubmitSuccess] = useState(false);
@@ -79,28 +76,26 @@ const RealEstateApp = () => {
         return;
       }
 
-      const response = await fetch(
-        `${databaseUrl}/api/properties`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            title: sellForm.title,
-            description: sellForm.description,
-            propertyType: sellForm.propertyType,
-            price: sellForm.price,
-            location: sellForm.location,
-            bedrooms: sellForm.bedrooms,
-            bathrooms: sellForm.bathrooms,
-            area: sellForm.area,
-            status: sellForm.status,
-            images: sellForm.images,
-          }),
-        }
-      );
+      const response = await fetch(`${databaseUrl}/api/properties`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title: sellForm.title,
+          description: sellForm.description,
+          purpose: sellForm.purpose, // ✅ REQUIRED
+          propertyType: sellForm.propertyType,
+          price: Number(sellForm.price),
+          area: Number(sellForm.area),
+          bedrooms: Number(sellForm.bedrooms),
+          bathrooms: Number(sellForm.bathrooms),
+          furnishing: sellForm.furnishing, // ✅ REQUIRED
+          address: sellForm.address, // ✅ REQUIRED
+          images: sellForm.images,
+        }),
+      });
 
       const data = await response.json();
 
@@ -111,16 +106,14 @@ const RealEstateApp = () => {
         setSellForm({
           title: "",
           description: "",
+          purpose: "sell",
           propertyType: "apartment",
           price: "",
-          location: "",
+          area: "",
           bedrooms: "1",
           bathrooms: "1",
-          area: "",
-          status: "ready",
-          ownerName: "",
-          ownerPhone: "",
-          ownerEmail: "",
+          furnishing: "unfurnished",
+          address: "",
           images: [],
         });
 
@@ -137,10 +130,8 @@ const RealEstateApp = () => {
     }
   };
 
-
   return (
     <div className="min-h-screen bg-gray-50">
-
       {/* Header */}
       <header className="bg-white shadow-sm  mt-20"></header>
 
@@ -300,9 +291,9 @@ const RealEstateApp = () => {
                   <input
                     type="text"
                     required
-                    value={sellForm.location}
+                    value={sellForm.address}
                     onChange={(e) =>
-                      handleSellFormChange("location", e.target.value)
+                      handleSellFormChange("address", e.target.value)
                     }
                     placeholder="जैसे: सेक्टर 62, नोएडा"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
@@ -382,6 +373,24 @@ const RealEstateApp = () => {
                 </div>
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Furnishing *
+                </label>
+                <select
+                  required
+                  value={sellForm.furnishing}
+                  onChange={(e) =>
+                    handleSellFormChange("furnishing", e.target.value)
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                >
+                  <option value="unfurnished">Unfurnished</option>
+                  <option value="semi-furnished">Semi Furnished</option>
+                  <option value="fully-furnished">Fully Furnished</option>
+                </select>
+              </div>
+
               {/* Owner Details */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
@@ -431,8 +440,8 @@ const RealEstateApp = () => {
               </div>
 
               <div className="flex justify-end gap-3">
-                <Link href={"/"} 
-                                  
+                <Link
+                  href={"/"}
                   className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
                 >
                   रद्द करें
