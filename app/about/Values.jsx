@@ -1,7 +1,7 @@
 "use client"
 import React from 'react'
 
-function Values() {
+function Values() { 
     return (
         <div>
             <section className="w-full bg-[#F5F5F5] lg:py-16 py-10 ">
