@@ -172,6 +172,7 @@ export default function AuthPage() {
         });
         // Store token in localStorage
         localStorage.setItem("authToken", data.data.token);
+        localStorage.setItem("userData", JSON.stringify(data.data.user));
         // Redirect to dashboard or home page after 1.5 seconds
         setTimeout(() => {
           window.location.href = "/"; // Change this to your dashboard route
@@ -440,7 +441,8 @@ export default function AuthPage() {
                 </label>
                 <button
                   className="text-sm text-green-600 hover:text-green-700 font-medium"
-                  disabled={loading}
+                  // disabled={loading}
+                  onClick={() => router.push("/forgot-password")}
                 >
                   पासवर्ड भूल गए?
                 </button>
