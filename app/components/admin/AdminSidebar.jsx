@@ -16,16 +16,14 @@ export default function AdminLayout({ children }) {
   const router = useRouter();
 
   const logout = () => {
-    localStorage.removeItem("authToken");
+    if (typeof window !== "undefined") localStorage.removeItem("authToken");
     router.push("/login-signup");
   };
 
   return (
     <div className="flex h-screen bg-gray-100">
-
       {/* ================= SIDEBAR ================= */}
       <aside className="fixed left-0 top-0 h-screen w-64 bg-green-700 text-white flex flex-col">
-
         {/* LOGO */}
         <div className="flex items-center gap-3 p-5 border-b border-green-600">
           <Image
@@ -82,9 +80,7 @@ export default function AdminLayout({ children }) {
       </aside>
 
       {/* ================= MAIN CONTENT ================= */}
-      <main className="ml-64 flex-1 overflow-y-auto">
-        {children}
-      </main>
+      <main className="ml-64 flex-1 overflow-y-auto">{children}</main>
     </div>
   );
 }
@@ -96,9 +92,7 @@ function NavItem({ href, active, icon, label }) {
     <Link
       href={href}
       className={`flex items-center gap-3 px-4 py-2 rounded transition ${
-        active
-          ? "bg-white text-green-700 font-semibold"
-          : "hover:bg-green-600"
+        active ? "bg-white text-green-700 font-semibold" : "hover:bg-green-600"
       }`}
     >
       {icon}

@@ -1,12 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import {
-  Users,
-  Home,
-  MessageSquare,
-  AlertTriangle,
-} from "lucide-react";
+import { Users, Home, MessageSquare, AlertTriangle } from "lucide-react";
 
 import {
   BarChart,
@@ -31,7 +26,8 @@ export default function AdminDashboard() {
 
   /* ================= SAFE FETCH ================= */
   const safeFetch = async (url) => {
-    const token = localStorage.getItem("authToken");
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
 
     const res = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
@@ -61,28 +57,18 @@ export default function AdminDashboard() {
         if (!alive) return;
 
         /* ===== NORMALIZE ARRAYS (🔥 MAIN FIX) ===== */
-        const users =
-          usersRes?.data?.users ??
-          usersRes?.data ??
-          [];
+        const users = usersRes?.data?.users ?? usersRes?.data ?? [];
 
         const properties =
-          propertiesRes?.data?.properties ??
-          propertiesRes?.data ??
-          [];
+          propertiesRes?.data?.properties ?? propertiesRes?.data ?? [];
 
-        const contacts =
-          contactsRes?.data?.contacts ??
-          contactsRes?.data ??
-          [];
+        const contacts = contactsRes?.data?.contacts ?? contactsRes?.data ?? [];
 
         if (!Array.isArray(users) || !Array.isArray(properties)) {
           throw new Error("Invalid API structure");
         }
 
-        const blockedUsers = users.filter(
-          (u) => u?.isBlocked === true
-        ).length;
+        const blockedUsers = users.filter((u) => u?.isBlocked === true).length;
 
         const flaggedProperties = properties.filter(
           (p) => p?.isFlagged === true
@@ -131,15 +117,10 @@ export default function AdminDashboard() {
   /* ================= UI STATES ================= */
   if (loading) return <Skeleton />;
   if (error)
-    return (
-      <div className="p-10 text-red-600 font-semibold">
-        {error}
-      </div>
-    );
+    return <div className="p-10 text-red-600 font-semibold">{error}</div>;
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-8">
-
       {/* ===== STATS ===== */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Stat title="Total Users" value={stats.users} icon={<Users />} />
@@ -163,7 +144,6 @@ export default function AdminDashboard() {
 
       {/* ===== CHARTS ===== */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
         <div className="bg-white p-6 rounded-xl shadow">
           <h3 className="font-bold mb-4">Users Overview</h3>
           <ResponsiveContainer width="100%" height={260}>
@@ -191,15 +171,10 @@ export default function AdminDashboard() {
               <XAxis dataKey="name" />
               <YAxis />
               <Tooltip />
-              <Bar
-                dataKey="value"
-                fill="#2563eb"
-                radius={[6, 6, 0, 0]}
-              />
+              <Bar dataKey="value" fill="#2563eb" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
-
       </div>
     </div>
   );
@@ -229,10 +204,7 @@ function Skeleton() {
   return (
     <div className="max-w-7xl mx-auto p-6 grid grid-cols-4 gap-6">
       {[1, 2, 3, 4].map((i) => (
-        <div
-          key={i}
-          className="h-24 bg-gray-200 rounded-xl animate-pulse"
-        />
+        <div key={i} className="h-24 bg-gray-200 rounded-xl animate-pulse" />
       ))}
     </div>
   );
