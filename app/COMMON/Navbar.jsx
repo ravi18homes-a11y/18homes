@@ -6,12 +6,14 @@ import { FaWhatsapp, FaUser, FaEdit, FaCog } from "react-icons/fa";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { IoMdClose } from "react-icons/io";
 import { MdLogin, MdPhone } from "react-icons/md";
+import { RiAdminLine } from "react-icons/ri";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState("");
   const profileMenuRef = useRef(null);
 
   // Track auth state from localStorage (login saves 'authToken')
@@ -19,6 +21,7 @@ export default function Navbar() {
     const checkAuth = () => {
       try {
         setIsLoggedIn(!!localStorage.getItem("authToken"));
+        setUser(JSON.parse(localStorage.getItem("userData")));
       } catch (e) {
         setIsLoggedIn(false);
       }
@@ -153,14 +156,27 @@ export default function Navbar() {
                   </Link>
 
                   {isLoggedIn && (
-                    <Link
-                      href="/edit-profile"
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
-                      onClick={() => setShowProfileMenu(false)}
-                    >
-                      <FaEdit className="text-[#8c4bdc] text-xl" />
-                      <span className="text-black">Edit Profile</span>
-                    </Link>
+                    <>
+                      <Link
+                        href="/edit-profile"
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
+                        onClick={() => setShowProfileMenu(false)}
+                      >
+                        <FaEdit className="text-[#8c4bdc] text-xl" />
+                        <span className="text-black">Edit Profile</span>
+                      </Link>
+
+                      {user?.role === "admin" && (
+                        <Link
+                          href="/admin"
+                          className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
+                          onClick={() => setShowProfileMenu(false)}
+                        >
+                          <RiAdminLine className="text-[#8c4bdc] text-xl" />
+                          <span className="text-black">Admin Dashbaord</span>
+                        </Link>
+                      )}
+                    </>
                   )}
 
                   {isLoggedIn && (

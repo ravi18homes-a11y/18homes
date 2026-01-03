@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Search,
   MapPin,
@@ -14,29 +14,54 @@ import {
   Upload,
   Plus,
   Camera,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 
 const RealEstateApp = () => {
   const [currentPage, setCurrentPage] = useState("sell");
-
   const [favorites, setFavorites] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const databaseUrl = process.env.NEXT_PUBLIC_APP_DATABASE_URL;
+  const [token, setToken] = useState("");
+
+  // Track auth state from localStorage (login saves 'authToken')
+  useEffect(() => {
+    const checkAuth = () => {
+      try {
+        setToken(localStorage.getItem("authToken"));
+      } catch (e) {
+        setToken("");
+      }
+    };
+
+    checkAuth();
+    window.addEventListener("storage", checkAuth);
+    return () => window.removeEventListener("storage", checkAuth);
+  }, []);
+
+  // const databaseUrl = process.env.NEXT_PUBLIC_APP_DATABASE_URL || "http://localhost:5000";
+  const databaseUrl = "http://localhost:5000";
 
   const [sellForm, setSellForm] = useState({
     title: "",
     description: "",
-    purpose: "sell", // ✅ required by backend
+    purpose: "sell",
     propertyType: "apartment",
     price: "",
     area: "",
     bedrooms: "1",
     bathrooms: "1",
-    furnishing: "unfurnished", // ✅ required by backend
-    address: "", // ✅ backend expects `address`, not location
+    furnishing: "unfurnished",
+    address: "",
     images: [],
+    videos: [],
+    ownerName: "",
+    ownerPhone: "",
+    ownerEmail: "",
   });
+
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
   const toggleFavorite = (id) => {
@@ -49,13 +74,69 @@ const RealEstateApp = () => {
     setSellForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
-    const imageUrls = files.map((file) => URL.createObjectURL(file));
-    setSellForm((prev) => ({
-      ...prev,
-      images: [...prev.images, ...imageUrls].slice(0, 5), // Max 5 images
-    }));
+
+    if (files.length === 0) return;
+
+    // Check if total media (images + videos) will exceed 15
+    const currentMediaCount = sellForm.images.length + sellForm.videos.length;
+    if (currentMediaCount + files.length > 15) {
+      alert(
+        `अधिकतम 15 इमेज/वीडियो अपलोड कर सकते हैं। आप ${
+          15 - currentMediaCount
+        } और अपलोड कर सकते हैं।`
+      );
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      // Create FormData for upload
+      const formData = new FormData();
+      files.forEach((file) => {
+        formData.append("files", file);
+      });
+
+      // Upload to backend
+      const response = await fetch(`${databaseUrl}/api/media/upload`, {
+        method: "POST",
+        body: formData,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Separate images and videos based on type from response
+        const newImages = [];
+        const newVideos = [];
+
+        data.data.media.forEach((item) => {
+          if (item.type === "image") {
+            newImages.push(item.url);
+          } else if (item.type === "video") {
+            newVideos.push(item.url);
+          }
+        });
+
+        setSellForm((prev) => ({
+          ...prev,
+          images: [...prev.images, ...newImages],
+          videos: [...prev.videos, ...newVideos],
+        }));
+      } else {
+        alert(data.message || "Upload failed");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("अपलोड में समस्या आई। कृपया दोबारा प्रयास करें।");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const removeImage = (index) => {
@@ -65,16 +146,29 @@ const RealEstateApp = () => {
     }));
   };
 
+  const removeVideo = (index) => {
+    setSellForm((prev) => ({
+      ...prev,
+      videos: prev.videos.filter((_, i) => i !== index),
+    }));
+  };
+
   const handleSubmitProperty = async (e) => {
     e.preventDefault();
+
+    setIsSubmitting(true);
 
     try {
       const token = localStorage.getItem("authToken");
 
       if (!token) {
-        alert("Please login first");
+        alert("कृपया पहले लॉगिन करें");
+        setIsSubmitting(false);
         return;
       }
+
+      // Combine images and videos for backend
+      const allMedia = [...sellForm.images, ...sellForm.videos];
 
       const response = await fetch(`${databaseUrl}/api/properties`, {
         method: "POST",
@@ -85,15 +179,18 @@ const RealEstateApp = () => {
         body: JSON.stringify({
           title: sellForm.title,
           description: sellForm.description,
-          purpose: sellForm.purpose, // ✅ REQUIRED
+          purpose: sellForm.purpose,
           propertyType: sellForm.propertyType,
           price: Number(sellForm.price),
           area: Number(sellForm.area),
           bedrooms: Number(sellForm.bedrooms),
           bathrooms: Number(sellForm.bathrooms),
-          furnishing: sellForm.furnishing, // ✅ REQUIRED
-          address: sellForm.address, // ✅ REQUIRED
-          images: sellForm.images,
+          furnishing: sellForm.furnishing,
+          address: sellForm.address,
+          images: allMedia, // Send all media URLs
+          ownerName: sellForm.ownerName,
+          ownerPhone: sellForm.ownerPhone,
+          ownerEmail: sellForm.ownerEmail,
         }),
       });
 
@@ -102,7 +199,7 @@ const RealEstateApp = () => {
       if (data.success) {
         setSubmitSuccess(true);
 
-        // reset form
+        // Reset form
         setSellForm({
           title: "",
           description: "",
@@ -115,6 +212,10 @@ const RealEstateApp = () => {
           furnishing: "unfurnished",
           address: "",
           images: [],
+          videos: [],
+          ownerName: "",
+          ownerPhone: "",
+          ownerEmail: "",
         });
 
         setTimeout(() => {
@@ -122,18 +223,20 @@ const RealEstateApp = () => {
           setCurrentPage("buy");
         }, 3000);
       } else {
-        alert(data.message || "Property create failed");
+        alert(data.message || "प्रॉपर्टी सबमिट करने में समस्या आई");
       }
     } catch (error) {
       console.error(error);
-      alert("Server error");
+      alert("सर्वर में समस्या है। कृपया बाद में प्रयास करें।");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm  mt-20"></header>
+      <header className="bg-white shadow-sm mt-20"></header>
 
       {currentPage === "sell" && (
         <div className="max-w-4xl mx-auto px-4 py-8">
@@ -170,42 +273,136 @@ const RealEstateApp = () => {
               </p>
             </div>
 
-            <form onSubmit={handleSubmitProperty} className="space-y-6">
-              {/* Property Images */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  प्रॉपर्टी की तस्वीरें (अधिकतम 5)
-                </label>
-                <div className="grid grid-cols-3 md:grid-cols-5 gap-4 mb-4">
-                  {sellForm.images.map((img, index) => (
-                    <div key={index} className="relative">
-                      <img
-                        src={img}
-                        alt={`Property ${index + 1}`}
-                        className="w-full h-24 object-cover rounded-lg"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeImage(index)}
-                        className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 hover:bg-red-700"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                  {sellForm.images.length < 5 && (
-                    <label className="border-2 border-dashed border-gray-300 rounded-lg h-24 flex flex-col items-center justify-center cursor-pointer hover:border-red-500 hover:bg-red-50">
-                      <Camera className="w-6 h-6 text-gray-400" />
-                      <span className="text-xs text-gray-500 mt-1">अपलोड</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        onChange={handleImageUpload}
-                        className="hidden"
-                      />
+            <div className="space-y-6">
+              {/* Property Images & Videos - Separate Sections */}
+              <div className="space-y-6">
+                {/* Images Section */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="block text-sm font-medium text-gray-700">
+                      📸 प्रॉपर्टी की तस्वीरें
                     </label>
-                  )}
+                    <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                      {sellForm.images.length} इमेज अपलोड की गई
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
+                    {/* Display Images */}
+                    {sellForm.images.map((img, index) => (
+                      <div key={`img-${index}`} className="relative group">
+                        <img
+                          src={img}
+                          alt={`Property ${index + 1}`}
+                          className="w-full h-24 object-cover rounded-lg border-2 border-gray-200"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 hover:bg-red-700 shadow-lg"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+
+                    {/* Image Upload Button */}
+                    {sellForm.images.length + sellForm.videos.length < 15 && (
+                      <label className="border-2 border-dashed border-blue-300 bg-blue-50 rounded-lg h-24 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 hover:bg-blue-100 transition-colors">
+                        {isUploading ? (
+                          <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
+                        ) : (
+                          <>
+                            <Camera className="w-6 h-6 text-blue-500" />
+                            <span className="text-xs text-blue-600 mt-1 font-medium">
+                              इमेज अपलोड
+                            </span>
+                          </>
+                        )}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={handleImageUpload}
+                          className="hidden"
+                          disabled={isUploading}
+                        />
+                      </label>
+                    )}
+                  </div>
+                </div>
+
+                {/* Videos Section */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="block text-sm font-medium text-gray-700">
+                      🎥 प्रॉपर्टी के वीडियो
+                    </label>
+                    <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                      {sellForm.videos.length} वीडियो अपलोड किया गया
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
+                    {/* Display Videos */}
+                    {sellForm.videos.map((video, index) => (
+                      <div key={`vid-${index}`} className="relative group">
+                        <video
+                          src={video}
+                          className="w-full h-24 object-cover rounded-lg border-2 border-gray-200"
+                        />
+                        <div className="absolute inset-0 bg-black bg-opacity-40 rounded-lg flex items-center justify-center pointer-events-none">
+                          <span className="text-white text-xs font-bold bg-red-600 px-2 py-1 rounded">
+                            VIDEO
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeVideo(index)}
+                          className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 hover:bg-red-700 shadow-lg"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+
+                    {/* Video Upload Button */}
+                    {sellForm.images.length + sellForm.videos.length < 15 && (
+                      <label className="border-2 border-dashed border-purple-300 bg-purple-50 rounded-lg h-24 flex flex-col items-center justify-center cursor-pointer hover:border-purple-500 hover:bg-purple-100 transition-colors">
+                        {isUploading ? (
+                          <Loader2 className="w-6 h-6 text-purple-500 animate-spin" />
+                        ) : (
+                          <>
+                            <Upload className="w-6 h-6 text-purple-500" />
+                            <span className="text-xs text-purple-600 mt-1 font-medium">
+                              वीडियो अपलोड
+                            </span>
+                          </>
+                        )}
+                        <input
+                          type="file"
+                          accept="video/*"
+                          multiple
+                          onChange={handleImageUpload}
+                          className="hidden"
+                          disabled={isUploading}
+                        />
+                      </label>
+                    )}
+                  </div>
+                </div>
+
+                {/* Total Media Count */}
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                  <p className="text-sm text-gray-600 text-center">
+                    <span className="font-semibold text-gray-800">
+                      कुल {sellForm.images.length + sellForm.videos.length}/15
+                      मीडिया
+                    </span>
+                    {" • "}
+                    {sellForm.images.length} इमेज और {sellForm.videos.length}{" "}
+                    वीडियो अपलोड किया गया
+                  </p>
                 </div>
               </div>
 
@@ -243,7 +440,7 @@ const RealEstateApp = () => {
                 />
               </div>
 
-              {/* Property Type and Status */}
+              {/* Property Type and Purpose */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -266,18 +463,18 @@ const RealEstateApp = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    स्थिति *
+                    उद्देश्य *
                   </label>
                   <select
                     required
-                    value={sellForm.status}
+                    value={sellForm.purpose}
                     onChange={(e) =>
-                      handleSellFormChange("status", e.target.value)
+                      handleSellFormChange("purpose", e.target.value)
                     }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   >
-                    <option value="ready">Ready to Move</option>
-                    <option value="construction">Under Construction</option>
+                    <option value="sell">बिक्री</option>
+                    <option value="rent">किराया</option>
                   </select>
                 </div>
               </div>
@@ -321,9 +518,10 @@ const RealEstateApp = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    बेडरूम
+                    बेडरूम *
                   </label>
                   <select
+                    required
                     value={sellForm.bedrooms}
                     onChange={(e) =>
                       handleSellFormChange("bedrooms", e.target.value)
@@ -340,9 +538,10 @@ const RealEstateApp = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    बाथरूम
+                    बाथरूम *
                   </label>
                   <select
+                    required
                     value={sellForm.bathrooms}
                     onChange={(e) =>
                       handleSellFormChange("bathrooms", e.target.value)
@@ -359,10 +558,11 @@ const RealEstateApp = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    क्षेत्र (sq.ft)
+                    क्षेत्र (sq.ft) *
                   </label>
                   <input
                     type="number"
+                    required
                     value={sellForm.area}
                     onChange={(e) =>
                       handleSellFormChange("area", e.target.value)
@@ -373,9 +573,10 @@ const RealEstateApp = () => {
                 </div>
               </div>
 
+              {/* Furnishing */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Furnishing *
+                  फर्निशिंग *
                 </label>
                 <select
                   required
@@ -383,7 +584,7 @@ const RealEstateApp = () => {
                   onChange={(e) =>
                     handleSellFormChange("furnishing", e.target.value)
                   }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                 >
                   <option value="unfurnished">Unfurnished</option>
                   <option value="semi-furnished">Semi Furnished</option>
@@ -392,69 +593,84 @@ const RealEstateApp = () => {
               </div>
 
               {/* Owner Details */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    मालिक का नाम
-                  </label>
-                  <input
-                    type="text"
-                    value={sellForm.ownerName}
-                    onChange={(e) =>
-                      handleSellFormChange("ownerName", e.target.value)
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                    placeholder="नाम"
-                  />
-                </div>
+              <div className="border-t pt-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                  मालिक की जानकारी
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      मालिक का नाम
+                    </label>
+                    <input
+                      type="text"
+                      value={sellForm.ownerName}
+                      onChange={(e) =>
+                        handleSellFormChange("ownerName", e.target.value)
+                      }
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                      placeholder="नाम"
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    फोन नंबर
-                  </label>
-                  <input
-                    type="tel"
-                    value={sellForm.ownerPhone}
-                    onChange={(e) =>
-                      handleSellFormChange("ownerPhone", e.target.value)
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                    placeholder="मोबाइल नंबर"
-                  />
-                </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      फोन नंबर
+                    </label>
+                    <input
+                      type="tel"
+                      value={sellForm.ownerPhone}
+                      onChange={(e) =>
+                        handleSellFormChange("ownerPhone", e.target.value)
+                      }
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                      placeholder="मोबाइल नंबर"
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    ईमेल (वैकल्पिक)
-                  </label>
-                  <input
-                    type="email"
-                    value={sellForm.ownerEmail}
-                    onChange={(e) =>
-                      handleSellFormChange("ownerEmail", e.target.value)
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                    placeholder="ईमेल"
-                  />
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      ईमेल (वैकल्पिक)
+                    </label>
+                    <input
+                      type="email"
+                      value={sellForm.ownerEmail}
+                      onChange={(e) =>
+                        handleSellFormChange("ownerEmail", e.target.value)
+                      }
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                      placeholder="ईमेल"
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3">
+              {/* Submit Buttons */}
+              <div className="flex justify-end gap-3 pt-6">
                 <Link
                   href={"/"}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   रद्द करें
                 </Link>
 
                 <button
-                  type="submit"
-                  className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                  type="button"
+                  onClick={handleSubmitProperty}
+                  disabled={isSubmitting || isUploading}
+                  className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                  सबमिट करें
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      सबमिट हो रहा है...
+                    </>
+                  ) : (
+                    "सबमिट करें"
+                  )}
                 </button>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}
