@@ -41,8 +41,8 @@ const RealEstateApp = () => {
     return () => window.removeEventListener("storage", checkAuth);
   }, []);
 
-  // const databaseUrl = process.env.NEXT_PUBLIC_APP_DATABASE_URL || "http://localhost:5000";
-  const databaseUrl = "http://localhost:5000";
+   const databaseUrl = process.env.NEXT_PUBLIC_APP_DATABASE_URL || "http://localhost:5000";
+  // const databaseUrl = "http://localhost:5000";
 
   const [sellForm, setSellForm] = useState({
     title: "",
