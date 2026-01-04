@@ -41,8 +41,9 @@ const RealEstateApp = () => {
     return () => window.removeEventListener("storage", checkAuth);
   }, []);
 
-  // const databaseUrl = process.env.NEXT_PUBLIC_APP_DATABASE_URL || "http://localhost:5000";
-  const databaseUrl = "http://localhost:5000";
+  const databaseUrl =
+    process.env.NEXT_PUBLIC_APP_DATABASE_URL || "http://localhost:5000";
+  // const databaseUrl = "http://localhost:5000";
 
   const [sellForm, setSellForm] = useState({
     title: "",
@@ -74,66 +75,68 @@ const RealEstateApp = () => {
     setSellForm((prev) => ({ ...prev, [field]: value }));
   };
 
+  const CLOUDINARY_CLOUD_NAME = "domwj0m7s";
+  const CLOUDINARY_UPLOAD_PRESET = "18homes_unsigned";
+
+  const uploadToCloudinary = async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+    formData.append("folder", "18homes/media");
+
+    const isVideo = file.type.startsWith("video");
+    const resourceType = isVideo ? "video" : "image";
+
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    if (!res.ok) {
+      throw new Error("Cloudinary upload failed");
+    }
+
+    return await res.json();
+  };
+
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
+    if (!files.length) return;
 
-    if (files.length === 0) return;
-
-    // Check if total media (images + videos) will exceed 15
     const currentMediaCount = sellForm.images.length + sellForm.videos.length;
+
     if (currentMediaCount + files.length > 15) {
-      alert(
-        `अधिकतम 15 इमेज/वीडियो अपलोड कर सकते हैं। आप ${
-          15 - currentMediaCount
-        } और अपलोड कर सकते हैं।`
-      );
+      alert("अधिकतम 15 इमेज/वीडियो अपलोड कर सकते हैं");
       return;
     }
 
     setIsUploading(true);
 
     try {
-      // Create FormData for upload
-      const formData = new FormData();
-      files.forEach((file) => {
-        formData.append("files", file);
-      });
+      const uploadedImages = [];
+      const uploadedVideos = [];
 
-      // Upload to backend
-      const response = await fetch(`${databaseUrl}/api/media/upload`, {
-        method: "POST",
-        body: formData,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      for (const file of files) {
+        const result = await uploadToCloudinary(file);
 
-      const data = await response.json();
-
-      if (data.success) {
-        // Separate images and videos based on type from response
-        const newImages = [];
-        const newVideos = [];
-
-        data.data.media.forEach((item) => {
-          if (item.type === "image") {
-            newImages.push(item.url);
-          } else if (item.type === "video") {
-            newVideos.push(item.url);
-          }
-        });
-
-        setSellForm((prev) => ({
-          ...prev,
-          images: [...prev.images, ...newImages],
-          videos: [...prev.videos, ...newVideos],
-        }));
-      } else {
-        alert(data.message || "Upload failed");
+        if (file.type.startsWith("image")) {
+          uploadedImages.push(result.secure_url);
+        } else if (file.type.startsWith("video")) {
+          uploadedVideos.push(result.secure_url);
+        }
       }
-    } catch (error) {
-      console.error(error);
-      alert("अपलोड में समस्या आई। कृपया दोबारा प्रयास करें।");
+
+      setSellForm((prev) => ({
+        ...prev,
+        images: [...prev.images, ...uploadedImages],
+        videos: [...prev.videos, ...uploadedVideos],
+      }));
+    } catch (err) {
+      console.error(err);
+      alert("Cloudinary upload failed");
     } finally {
       setIsUploading(false);
     }
@@ -181,16 +184,21 @@ const RealEstateApp = () => {
           description: sellForm.description,
           purpose: sellForm.purpose,
           propertyType: sellForm.propertyType,
-          price: Number(sellForm.price),
+
+          priceText: sellForm.price,
+          priceValue: Number(sellForm.price),
+
           area: Number(sellForm.area),
           bedrooms: Number(sellForm.bedrooms),
           bathrooms: Number(sellForm.bathrooms),
           furnishing: sellForm.furnishing,
-          address: sellForm.address,
-          images: allMedia, // Send all media URLs
-          ownerName: sellForm.ownerName,
-          ownerPhone: sellForm.ownerPhone,
-          ownerEmail: sellForm.ownerEmail,
+
+          address: {
+            city: sellForm.address,
+            locality: sellForm.address,
+          },
+
+          images: [...sellForm.images, ...sellForm.videos],
         }),
       });
 
@@ -349,6 +357,8 @@ const RealEstateApp = () => {
                       <div key={`vid-${index}`} className="relative group">
                         <video
                           src={video}
+                          muted
+                          preload="metadata"
                           className="w-full h-24 object-cover rounded-lg border-2 border-gray-200"
                         />
                         <div className="absolute inset-0 bg-black bg-opacity-40 rounded-lg flex items-center justify-center pointer-events-none">
