@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
   MapPin,
@@ -14,7 +15,62 @@ import {
   Play,
 } from "lucide-react";
 
+const staticProperties = [
+  {
+    id: "1",
+    title: "आधुनिक 3BHK फ्लैट",
+    location: "सेक्टर 62, नोएडा",
+    price: 8500000,
+    bedrooms: 3,
+    bathrooms: 2,
+    area: 1450,
+    type: "apartment",
+    image:
+      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200",
+    status: "Ready to Move",
+    featured: true,
+    description:
+      "यह एक आधुनिक 3BHK फ्लैट है जिसमें एक आरामदायक जीवन शैली और शानदार सुविधाएं हैं।",
+    owner: {
+      name: "प्रॉपर्टी मालिक",
+      phone: "+91 98765 43210",
+      email: "owner@example.com",
+    },
+    images: [
+      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200",
+      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1200",
+    ],
+  },
+  {
+    id: "2",
+    title: "लक्जरी विला",
+    location: "गोल्फ कोर्स रोड, गुड़गांव",
+    price: 25000000,
+    bedrooms: 4,
+    bathrooms: 4,
+    area: 3200,
+    type: "villa",
+    image:
+      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1200",
+    status: "Under Construction",
+    featured: true,
+    description:
+      "यह विला एक शानदार जीवन शैली प्रदान करता है, जिसमें विस्तृत कमरे और सुंदर गार्डन शामिल हैं।",
+    owner: {
+      name: "प्रॉपर्टी मालिक",
+      phone: "+91 98765 43210",
+      email: "owner@example.com",
+    },
+    images: [
+      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1200",
+      "https://images.unsplash.com/photo-1494526585095-c41746248156?w=1200",
+    ],
+  },
+];
+
 const PropertyDetailsPage = () => {
+  const searchParams = useSearchParams();
+  const id = searchParams?.get("id");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
@@ -22,19 +78,27 @@ const PropertyDetailsPage = () => {
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Get ID from URL
-  const getIdFromUrl = () => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      return params.get('id');
+  const databaseUrl = process.env.NEXT_PUBLIC_APP_DATABASE_URL || "";
+
+  const DEFAULT_IMAGE =
+    "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200";
+
+  const formatAddress = (address) => {
+    if (!address) return "Location not available";
+    if (typeof address === "string") return address;
+    if (typeof address === "object") {
+      const parts = [
+        address.locality,
+        address.city,
+        address.state,
+        address.pincode,
+      ]
+        .filter(Boolean)
+        .map((part) => String(part).trim());
+      return parts.length ? parts.join(", ") : "Location not available";
     }
-    return null;
+    return String(address);
   };
-
-  const id = getIdFromUrl();
-  const databaseUrl = process.env.NEXT_PUBLIC_APP_DATABASE_URL || 'http://localhost:3000';
-
-  const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200";
 
   useEffect(() => {
     if (!id) {
@@ -43,40 +107,58 @@ const PropertyDetailsPage = () => {
     }
 
     const fetchProperty = async () => {
-      try {
-        const res = await fetch(`${databaseUrl}/api/properties/${id}`);
-        const data = await res.json();
+      const apiUrl = databaseUrl
+        ? `${databaseUrl}/api/properties/${id}`
+        : `/api/properties/${id}`;
 
-        if (data.success && data.data) {
-          const transformedProperty = {
-            ...data.data,
-            area: typeof data.data.area === 'object' 
-              ? (data.data.area.value || 'Not specified')
-              : (data.data.area || 'Not specified'),
-            images: (data.data.images || []).filter(
-              (img) => img && !img.startsWith('blob:') && img.trim() !== ''
-            ),
-            location: data.data.address || data.data.location || 'Location not available',
-          };
-          setProperty(transformedProperty);
+      try {
+        const res = await fetch(apiUrl);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.data) {
+            const transformedProperty = {
+              ...data.data,
+              area:
+                typeof data.data.area === "object"
+                  ? data.data.area.value || "Not specified"
+                  : data.data.area || "Not specified",
+              images: (data.data.images || []).filter(
+                (img) => img && !img.startsWith("blob:") && img.trim() !== "",
+              ),
+              location: formatAddress(data.data.address || data.data.location),
+            };
+            setProperty(transformedProperty);
+            return;
+          }
         }
       } catch (err) {
         console.error("Error fetching property:", err);
-      } finally {
-        setLoading(false);
+      }
+
+      const fallbackProperty = staticProperties.find(
+        (prop) => prop.id.toString() === id.toString(),
+      );
+
+      if (fallbackProperty) {
+        setProperty({
+          ...fallbackProperty,
+          images: [fallbackProperty.image],
+          location: formatAddress(fallbackProperty.location),
+          description: fallbackProperty.description || "विवरण उपलब्ध नहीं है।",
+        });
       }
     };
 
-    fetchProperty();
+    fetchProperty().finally(() => setLoading(false));
   }, [id, databaseUrl]);
 
   const formatPrice = (price) => {
-    if (typeof price === 'object' && price !== null && price.unit) {
+    if (typeof price === "object" && price !== null && price.unit) {
       return `${price.value} ${price.unit}`;
     }
-    if (!price || price === 0) return 'न्यूनतम मूल्य';
+    if (!price || price === 0) return "न्यूनतम मूल्य";
     const numPrice = Number(price);
-    if (isNaN(numPrice)) return 'मूल्य अनुपलब्ध';
+    if (isNaN(numPrice)) return "मूल्य अनुपलब्ध";
     if (numPrice >= 10000000) return `₹${(numPrice / 10000000).toFixed(2)} Cr`;
     return `₹${(numPrice / 100000).toFixed(2)} Lac`;
   };
@@ -114,7 +196,7 @@ const PropertyDetailsPage = () => {
   }
 
   const validImages = (property.images || []).filter(
-    (img) => img && !img.startsWith('blob:') && img.trim() !== ''
+    (img) => img && !img.startsWith("blob:") && img.trim() !== "",
   );
   const images = validImages.length > 0 ? validImages : [DEFAULT_IMAGE];
 
@@ -141,7 +223,7 @@ const PropertyDetailsPage = () => {
           alt={property.title}
           className="w-full h-[500px] object-cover"
         />
-        
+
         {/* Action Buttons */}
         <div className="absolute top-4 right-4 flex gap-2">
           <button
@@ -171,7 +253,9 @@ const PropertyDetailsPage = () => {
                 key={index}
                 onClick={() => setCurrentImageIndex(index)}
                 className={`h-2 rounded-full transition-all ${
-                  currentImageIndex === index ? 'bg-white w-8' : 'bg-white/50 w-2'
+                  currentImageIndex === index
+                    ? "bg-white w-8"
+                    : "bg-white/50 w-2"
                 }`}
               />
             ))}
@@ -197,9 +281,13 @@ const PropertyDetailsPage = () => {
                   </div>
                 </div>
                 {property.status && (
-                  <span className={`px-4 py-2 rounded-full text-white font-semibold whitespace-nowrap self-start ${
-                    property.status === "Ready to Move" ? "bg-green-600" : "bg-orange-600"
-                  }`}>
+                  <span
+                    className={`px-4 py-2 rounded-full text-white font-semibold whitespace-nowrap self-start ${
+                      property.status === "Ready to Move"
+                        ? "bg-green-600"
+                        : "bg-orange-600"
+                    }`}
+                  >
                     {property.status}
                   </span>
                 )}
@@ -208,16 +296,23 @@ const PropertyDetailsPage = () => {
               <div className="flex flex-wrap items-center gap-6 py-4 border-t border-b">
                 <div className="flex items-center gap-2">
                   <Bed className="w-5 h-5 text-gray-600" />
-                  <span className="font-semibold">{property.bedrooms || 0} BHK</span>
+                  <span className="font-semibold">
+                    {property.bedrooms || 0} BHK
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Bath className="w-5 h-5 text-gray-600" />
-                  <span className="font-semibold">{property.bathrooms || 0} बाथरूम</span>
+                  <span className="font-semibold">
+                    {property.bathrooms || 0} बाथरूम
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Square className="w-5 h-5 text-gray-600" />
                   <span className="font-semibold">
-                    {typeof property.area === 'number' ? property.area : property.area} sqft
+                    {typeof property.area === "number"
+                      ? property.area
+                      : property.area}{" "}
+                    sqft
                   </span>
                 </div>
               </div>
@@ -239,32 +334,54 @@ const PropertyDetailsPage = () => {
 
             {/* Image Gallery */}
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">फोटो गैलरी</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                फोटो गैलरी
+              </h2>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {images && images.length > 0 && images[0] !== DEFAULT_IMAGE ? (
-                  images.map((image, index) => (
-                    <img
-                      key={index}
-                      src={image || DEFAULT_IMAGE}
-                      alt={`Property ${index + 1}`}
-                      onError={(e) => (e.target.src = DEFAULT_IMAGE)}
-                      className="w-full h-48 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
-                      onClick={() => setCurrentImageIndex(index)}
-                    />
-                  ))
-                ) : (
-                  <div className="col-span-full text-center py-8">
-                    <img src={DEFAULT_IMAGE} alt="Property" className="w-full h-64 object-cover rounded-lg" />
-                    <p className="text-gray-600 mt-4">असली छवि उपलब्ध नहीं है</p>
-                  </div>
-                )}
+  images.map((media, index) => {
+    const isVideo = media?.toLowerCase().endsWith(".mp4");
+
+    return isVideo ? (
+      <video
+        key={index}
+        src={media}
+        controls
+        className="w-full h-48 object-contain rounded-lg cursor-pointer"
+        onClick={() => setCurrentImageIndex(index)}
+      />
+    ) : (
+      <img
+        key={index}
+        src={media || DEFAULT_IMAGE}
+        alt={`Property ${index + 1}`}
+        onError={(e) => (e.target.src = DEFAULT_IMAGE)}
+        className="w-full h-48 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+        onClick={() => setCurrentImageIndex(index)}
+      />
+    );
+  })
+) : (
+  <div className="col-span-full text-center py-8">
+    <img
+      src={DEFAULT_IMAGE}
+      alt="Property"
+      className="w-full h-64 object-cover rounded-lg"
+    />
+    <p className="text-gray-600 mt-4">
+      असली छवि उपलब्ध नहीं है
+    </p>
+  </div>
+)}
               </div>
             </div>
 
             {/* Videos */}
             {property.videos && property.videos.length > 0 && (
               <div className="bg-white rounded-lg shadow-md p-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4">वीडियो टूर</h2>
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                  वीडियो टूर
+                </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {property.videos.map((video) => (
                     <div
@@ -281,7 +398,9 @@ const PropertyDetailsPage = () => {
                       <div className="absolute inset-0 bg-black bg-opacity-40 rounded-lg flex items-center justify-center group-hover:bg-opacity-50 transition-all">
                         <Play className="w-16 h-16 text-white" />
                       </div>
-                      <p className="mt-2 font-semibold text-gray-800">{video.title}</p>
+                      <p className="mt-2 font-semibold text-gray-800">
+                        {video.title}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -291,7 +410,9 @@ const PropertyDetailsPage = () => {
             {/* Amenities */}
             {property.amenities && property.amenities.length > 0 && (
               <div className="bg-white rounded-lg shadow-md p-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4">सुविधाएं</h2>
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                  सुविधाएं
+                </h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {property.amenities.map((amenity, index) => (
                     <div key={index} className="flex items-center gap-2">
@@ -306,14 +427,18 @@ const PropertyDetailsPage = () => {
             {/* Nearby Places */}
             {property.nearbyPlaces && property.nearbyPlaces.length > 0 && (
               <div className="bg-white rounded-lg shadow-md p-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4">आसपास की जगहें</h2>
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                  आसपास की जगहें
+                </h2>
                 <div className="space-y-3">
                   {property.nearbyPlaces.map((place, index) => (
                     <div
                       key={index}
                       className="flex items-center justify-between py-2 border-b last:border-b-0"
                     >
-                      <span className="text-gray-700 font-medium">{place.name}</span>
+                      <span className="text-gray-700 font-medium">
+                        {place.name}
+                      </span>
                       <span className="text-gray-600">{place.distance}</span>
                     </div>
                   ))}
@@ -325,19 +450,21 @@ const PropertyDetailsPage = () => {
           {/* Right Column - Contact Agent */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-md p-6 sticky top-24">
-              <h3 className="text-xl font-bold text-gray-800 mb-4">संपर्क करें</h3>
+              <h3 className="text-xl font-bold text-gray-800 mb-4">
+                संपर्क करें
+              </h3>
 
               {property.owner ? (
                 <>
                   <div className="flex items-center gap-4 mb-6">
                     <div className="w-16 h-16 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center flex-shrink-0">
                       <span className="text-white text-2xl font-bold">
-                        {property.owner.name?.charAt(0) || 'U'}
+                        {property.owner.name?.charAt(0) || "U"}
                       </span>
                     </div>
                     <div>
                       <p className="font-semibold text-gray-800">
-                        {property.owner.name || 'विक्रेता'}
+                        {property.owner.name || "विक्रेता"}
                       </p>
                       <p className="text-sm text-gray-600">संपत्ति मालिक</p>
                     </div>
@@ -350,7 +477,9 @@ const PropertyDetailsPage = () => {
                         className="flex items-center gap-3 p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                       >
                         <Phone className="w-5 h-5 text-red-600 flex-shrink-0" />
-                        <span className="text-gray-700">{property.owner.phone}</span>
+                        <span className="text-gray-700">
+                          {property.owner.phone}
+                        </span>
                       </a>
                     )}
 
@@ -360,13 +489,17 @@ const PropertyDetailsPage = () => {
                         className="flex items-center gap-3 p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                       >
                         <Mail className="w-5 h-5 text-red-600 flex-shrink-0" />
-                        <span className="text-gray-700 text-sm break-all">{property.owner.email}</span>
+                        <span className="text-gray-700 text-sm break-all">
+                          {property.owner.email}
+                        </span>
                       </a>
                     )}
                   </div>
                 </>
               ) : (
-                <p className="text-gray-600 mb-6">संपर्क जानकारी उपलब्ध नहीं है</p>
+                <p className="text-gray-600 mb-6">
+                  संपर्क जानकारी उपलब्ध नहीं है
+                </p>
               )}
 
               <button className="w-full py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors flex items-center justify-center gap-2">

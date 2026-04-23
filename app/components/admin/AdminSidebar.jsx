@@ -25,7 +25,7 @@ export default function AdminLayout({ children }) {
       {/* ================= SIDEBAR ================= */}
       <aside className="fixed left-0 top-0 h-screen w-64 bg-green-700 text-white flex flex-col">
         {/* LOGO */}
-        <div className="flex items-center gap-3 p-5 border-b border-green-600">
+        <a href="/" className="flex items-center gap-3 p-5 border-b border-green-600">
           <Image
             src="https://res.cloudinary.com/dxlykgx6w/image/upload/v1765721624/18homess-removebg-preview_kqdv2j.png"
             alt="18Homes"
@@ -34,7 +34,7 @@ export default function AdminLayout({ children }) {
             priority
           />
           <span className="text-xl font-bold">18Homes Admin</span>
-        </div>
+        </a>
 
         {/* NAV */}
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">

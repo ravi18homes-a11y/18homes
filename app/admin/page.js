@@ -14,6 +14,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
+import Link from "next/link";
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState(null);
@@ -123,23 +124,32 @@ export default function AdminDashboard() {
     <div className="max-w-7xl mx-auto p-6 space-y-8">
       {/* ===== STATS ===== */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Stat title="Total Users" value={stats.users} icon={<Users />} />
+        
+         <Link href="/admin/users" >
+          <Stat title="Total Users" value={stats.users} icon={<Users />} />
+         </Link>
         <Stat
           title="Blocked Users"
           value={stats.blockedUsers}
           danger
           icon={<AlertTriangle />}
         />
-        <Stat
+       
+        <Link href="/admin/properties" >
+           <Stat
           title="Total Properties"
           value={stats.properties}
           icon={<Home />}
         />
-        <Stat
+         </Link>
+        
+         <Link href="/admin/contacts" >
+         <Stat
           title="Contacts"
           value={stats.contacts}
           icon={<MessageSquare />}
         />
+         </Link>
       </div>
 
       {/* ===== CHARTS ===== */}

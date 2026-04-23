@@ -87,7 +87,8 @@ export default function AdminPropertiesPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Property Management</h1>
+      <div className="flex gap-6 items-center"><h1 className="text-2xl font-bold">Property Management</h1>
+      <a className=" bg-[green] text-white px-6 py-1" href="/sell">Sell</a></div>
 
       <input
         placeholder="Search title / city / locality"
@@ -119,6 +120,8 @@ export default function AdminPropertiesPage() {
           onPageChange={setPage}
         />
       )}
+
+      
     </div>
   );
 }

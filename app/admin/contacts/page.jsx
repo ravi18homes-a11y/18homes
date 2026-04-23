@@ -22,9 +22,7 @@ export default function AdminContactsPage() {
     "/api/contacts";
 
   const token =
-    typeof window !== "undefined"
-      ? localStorage.getItem("authToken")
-      : null;
+    typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
 
   /* ================= DEBOUNCE SEARCH ================= */
   useEffect(() => {
@@ -46,7 +44,7 @@ export default function AdminContactsPage() {
         {
           headers: { Authorization: `Bearer ${token}` },
           cache: "no-store",
-        }
+        },
       );
 
       const data = await res.json();
@@ -81,7 +79,6 @@ export default function AdminContactsPage() {
 
   return (
     <div className=" space-x-6">
-
       {/* ================= HEADER ================= */}
       <div className="flex flex-col md:flex-row justify-between gap-4">
         <h2 className="text-2xl font-bold">Contact Enquiries</h2>
@@ -113,7 +110,6 @@ export default function AdminContactsPage() {
             {contacts.length ? (
               contacts.map((c, index) => (
                 <tr key={c?._id} className="border-t">
-
                   {/* ===== SERIAL NUMBER ===== */}
                   <td className="p-3 font-semibold">
                     {(page - 1) * LIMIT + index + 1}
@@ -125,21 +121,15 @@ export default function AdminContactsPage() {
 
                   <td className="p-3">
                     <p>{c?.buyer?.name ?? "—"}</p>
-                    <p className="text-xs text-gray-500">
-                      {c?.buyer?.email}
-                    </p>
+                    <p className="text-xs text-gray-500">{c?.buyer?.email}</p>
                   </td>
 
                   <td className="p-3">
                     <p>{c?.owner?.name ?? "—"}</p>
-                    <p className="text-xs text-gray-500">
-                      {c?.owner?.email}
-                    </p>
+                    <p className="text-xs text-gray-500">{c?.owner?.email}</p>
                   </td>
 
-                  <td className="p-3 max-w-xs truncate">
-                    {c?.message ?? "—"}
-                  </td>
+                  <td className="p-3 max-w-xs truncate">{c?.message ?? "—"}</td>
 
                   <td className="p-3">
                     {c?.createdAt
@@ -149,9 +139,7 @@ export default function AdminContactsPage() {
 
                   <td className="p-3 flex gap-2">
                     <button
-                      onClick={() =>
-                        router.push(`/admin/contacts/${c._id}`)
-                      }
+                      onClick={() => router.push(`/admin/contacts/${c._id}`)}
                       className="px-3 py-1 bg-blue-600 text-white rounded"
                     >
                       View

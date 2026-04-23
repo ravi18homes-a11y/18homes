@@ -1,0 +1,83 @@
+// lib/store.js
+// In production, replace with your DB (MongoDB, PostgreSQL, etc.)
+
+export const pagesStore = [
+  {
+    id: "1",
+    slug: "top-mobile-app-development-in-canada-2026",
+    title: "Top Mobile App Development In Canada (2026)",
+    subtitle: "Your Trusted Technology Partner",
+    heading: "Mobile App Development That Actually Delivers",
+    description:
+      "We build high-performance iOS, Android, React Native & Flutter apps for startups and enterprises across Canada.",
+    content: `<h2>Growth of Mobile App Category</h2><p>Canada's mobile app market has exploded in 2026, with businesses of all sizes investing heavily in custom mobile solutions. The demand for skilled mobile app developers has never been higher.</p><h2>Most Common Tech Stacks</h2><p>The most popular technologies include React Native for cross-platform development, Flutter for beautiful UIs, and native iOS/Android for performance-critical applications.</p><h2>Why Choose Kushel Digi?</h2><ul><li>150+ Apps Delivered</li><li>98% Client Satisfaction</li><li>5+ Years Experience</li><li>24/7 Post-Launch Support</li></ul>`,
+    metaTitle: "Top Mobile App Development In Canada (2026) | Kushel Digi",
+    metaDescription:
+      "Looking for top mobile app development in Canada? Kushel Digi delivers iOS, Android, React Native & Flutter apps with 98% client satisfaction.",
+    coverImage: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=1200&q=80",
+    tags: ["Mobile App", "Canada", "iOS", "Android", "Flutter"],
+    author: "Admin",
+    status: "published",
+    stats: [
+      { label: "Apps Delivered", value: "150+" },
+      { label: "Client Satisfaction", value: "98%" },
+      { label: "Years Experience", value: "5+" },
+      { label: "Post-Launch Support", value: "24/7" },
+    ],
+    services: [
+      { icon: "📱", label: "iOS Development" },
+      { icon: "🤖", label: "Android Development" },
+      { icon: "⚛️", label: "React Native" },
+      { icon: "🦋", label: "Flutter Apps" },
+      { icon: "🏢", label: "Enterprise Mobility" },
+      { icon: "🎨", label: "UI/UX Design" },
+    ],
+    createdAt: "2026-01-15",
+    updatedAt: "2026-01-15",
+  },
+  {
+    id: "2",
+    slug: "best-web-development-services-toronto",
+    title: "Best Web Development Services in Toronto",
+    subtitle: "Full-Stack Solutions for Modern Businesses",
+    heading: "We Build Websites That Convert",
+    description:
+      "From landing pages to complex web apps, our Toronto-based team delivers pixel-perfect, performant websites.",
+    content: `<h2>Why Toronto Businesses Choose Us</h2><p>Our team of expert web developers has helped 200+ businesses establish their digital presence in Toronto and across Canada.</p><h2>Our Tech Stack</h2><p>We specialize in Next.js, React, Node.js, and modern cloud infrastructure to deliver blazing-fast websites.</p>`,
+    metaTitle: "Best Web Development Services Toronto | Kushel Digi",
+    metaDescription: "Top web development services in Toronto. Custom websites, web apps, and e-commerce solutions.",
+    coverImage: "https://images.unsplash.com/photo-1547658719-da2b51169166?w=1200&q=80",
+    tags: ["Web Development", "Toronto", "React", "Next.js"],
+    author: "Admin",
+    status: "published",
+    stats: [
+      { label: "Websites Built", value: "200+" },
+      { label: "Client Satisfaction", value: "97%" },
+      { label: "Years Experience", value: "5+" },
+      { label: "Support", value: "24/7" },
+    ],
+    services: [],
+    createdAt: "2026-02-10",
+    updatedAt: "2026-02-10",
+  },
+  {
+    id: "3",
+    slug: "ecommerce-development-canada-2026",
+    title: "eCommerce Development in Canada (2026)",
+    subtitle: "Sell More. Scale Faster.",
+    heading: "Custom eCommerce Solutions That Drive Revenue",
+    description:
+      "We build high-converting Shopify, WooCommerce, and custom eCommerce platforms for Canadian businesses.",
+    content: `<h2>The Canadian eCommerce Landscape</h2><p>Canada's eCommerce market is booming. Our team helps businesses capitalize on this growth with custom solutions.</p>`,
+    metaTitle: "eCommerce Development Canada 2026 | Kushel Digi",
+    metaDescription: "Custom eCommerce development in Canada. Shopify, WooCommerce & custom platforms.",
+    coverImage: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1200&q=80",
+    tags: ["eCommerce", "Shopify", "Canada", "WooCommerce"],
+    author: "Admin",
+    status: "draft",
+    stats: [],
+    services: [],
+    createdAt: "2026-03-01",
+    updatedAt: "2026-03-01",
+  },
+];
