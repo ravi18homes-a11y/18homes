@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
@@ -22,10 +24,12 @@ const BuyPage = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     propertyType: "all",
+    city: "",
     minPrice: "",
     maxPrice: "",
     bedrooms: "any",
     bathrooms: "any",
+    furnishing: "all",
     minArea: "",
     maxArea: "",
     sortBy: "newest",
@@ -36,7 +40,7 @@ const BuyPage = () => {
   const [pagination, setPagination] = useState({
     total: 0,
     page: 1,
-    pages: 1,
+    totalPages: 1,
     limit: 10,
   });
 
@@ -142,7 +146,7 @@ const BuyPage = () => {
       const params = new URLSearchParams();
 
       if (searchQuery) params.append("search", searchQuery);
-      // Add purpose - default to 'sell' if not specified
+      if (filters.city) params.append("city", filters.city);
       params.append("purpose", "sell");
       if (filters.propertyType !== "all")
         params.append("propertyType", filters.propertyType);
@@ -150,16 +154,17 @@ const BuyPage = () => {
       if (filters.maxPrice) params.append("maxPrice", filters.maxPrice);
       if (filters.bedrooms !== "any")
         params.append("bedrooms", filters.bedrooms);
+      if (filters.furnishing !== "all")
+        params.append("furnishing", filters.furnishing);
 
-      // Map sortBy to API sort parameter
       let sortParam = "-createdAt";
       if (filters.sortBy === "price-low") sortParam = "price";
       if (filters.sortBy === "price-high") sortParam = "-price";
       if (filters.sortBy === "area") sortParam = "-area";
       params.append("sort", sortParam);
 
-      params.append("page", pagination.page);
-      params.append("limit", pagination.limit);
+      params.append("page", pagination.page.toString());
+      params.append("limit", pagination.limit.toString());
 
       const apiUrl = `${databaseUrl}/api/properties`;
       console.log("Fetching from:", apiUrl);
@@ -238,10 +243,19 @@ const BuyPage = () => {
     }
   };
 
-  // Fetch properties on component mount and when filters change
+  // Reset to first page when search or filters change
+  useEffect(() => {
+    setPagination((prev) => ({ ...prev, page: 1 }));
+  }, [searchQuery, filters]);
+
+  // Fetch properties on component mount and when page changes
   useEffect(() => {
     fetchProperties();
   }, [searchQuery, filters, pagination.page]);
+
+  const handlePageChange = (newPage) => {
+    setPagination((prev) => ({ ...prev, page: newPage }));
+  };
 
   const toggleFavorite = (id) => {
     setFavorites((prev) =>
@@ -249,19 +263,14 @@ const BuyPage = () => {
     );
   };
 
-  // Client-side filtering for static properties (when API returns nothing)
   const filteredProperties = properties.filter((property) => {
-    // Only apply client-side filters if using static data
-    if (properties === staticProperties) {
-      const matchesBath =
-        filters.bathrooms === "any" ||
-        property.bathrooms >= parseInt(filters.bathrooms);
-      const matchesArea =
-        (!filters.minArea || property.area >= parseInt(filters.minArea)) &&
-        (!filters.maxArea || property.area <= parseInt(filters.maxArea));
-      return matchesBath && matchesArea;
-    }
-    return true;
+    const matchesBath =
+      filters.bathrooms === "any" ||
+      property.bathrooms >= parseInt(filters.bathrooms);
+    const matchesArea =
+      (!filters.minArea || property.area >= parseInt(filters.minArea)) &&
+      (!filters.maxArea || property.area <= parseInt(filters.maxArea));
+    return matchesBath && matchesArea;
   });
 
   const formatPrice = (price) => {
@@ -382,6 +391,39 @@ const BuyPage = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                  शहर
+                </label>
+                <input
+                  type="text"
+                  placeholder="शहर लिखें"
+                  value={filters.city}
+                  onChange={(e) =>
+                    setFilters({ ...filters, city: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  फर्निशिंग
+                </label>
+                <select
+                  value={filters.furnishing}
+                  onChange={(e) =>
+                    setFilters({ ...filters, furnishing: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                >
+                  <option value="all">सभी</option>
+                  <option value="furnished">फर्निश्ड</option>
+                  <option value="unfurnished">अनफर्निश्ड</option>
+                  <option value="semi-furnished">सेमी फर्निश्ड</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   बेडरूम
                 </label>
                 <select
@@ -472,10 +514,12 @@ const BuyPage = () => {
                 onClick={() =>
                   setFilters({
                     propertyType: "all",
+                    city: "",
                     minPrice: "",
                     maxPrice: "",
                     bedrooms: "any",
                     bathrooms: "any",
+                    furnishing: "all",
                     minArea: "",
                     maxArea: "",
                     sortBy: "newest",
@@ -595,6 +639,31 @@ const BuyPage = () => {
                 </div>
               ))}
             </div>
+
+            {/* Pagination Controls */}
+            {filteredProperties.length > 0 && (
+              <div className="flex flex-col gap-3 mt-8 md:flex-row md:items-center md:justify-between">
+                <p className="text-sm text-gray-600">
+                  Page {pagination.page} of {pagination.totalPages}
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    disabled={pagination.page <= 1}
+                    onClick={() => handlePageChange(pagination.page - 1)}
+                    className="px-4 py-2 border rounded-lg disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    disabled={pagination.page >= pagination.totalPages}
+                    onClick={() => handlePageChange(pagination.page + 1)}
+                    className="px-4 py-2 border rounded-lg disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Empty State */}
             {filteredProperties.length === 0 && (
