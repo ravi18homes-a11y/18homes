@@ -456,6 +456,7 @@ const RealEstateApp = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     प्रॉपर्टी टाइप *
                   </label>
+                  
                   <select
                     required
                     value={sellForm.propertyType}
@@ -464,10 +465,12 @@ const RealEstateApp = () => {
                     }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   >
-                    <option value="apartment">अपार्टमेंट</option>
-                    <option value="villa">विला</option>
-                    <option value="house">हाउस</option>
-                    <option value="penthouse">पेंटहाउस</option>
+                   <option value="flat">फ्लैट</option>
+<option value="house">हाउस</option>
+<option value="plot">प्लॉट</option>
+<option value="shop">दुकान</option>
+<option value="office">ऑफिस</option>
+<option value="apartment">अपार्टमेंट</option>
                   </select>
                 </div>
 

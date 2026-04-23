@@ -161,11 +161,11 @@ const BuyPage = () => {
       params.append("page", pagination.page);
       params.append("limit", pagination.limit);
 
-      const apiUrl = `${databaseUrl}/api/properties?${params.toString()}`;
+      const apiUrl = `${databaseUrl}/api/properties`;
       console.log("Fetching from:", apiUrl);
 
       const response = await fetch(apiUrl);
-      
+
       if (!response.ok) {
         console.error("API response not ok:", response.status);
         throw new Error(`API error: ${response.status}`);
@@ -174,46 +174,50 @@ const BuyPage = () => {
       const data = await response.json();
       console.log("API Response:", data);
 
-      if (data.success && data.data && data.data.properties && data.data.properties.length > 0) {
+      if (
+        data.success &&
+        data.data &&
+        data.data.properties &&
+        data.data.properties.length > 0
+      ) {
         // Transform API data to match component structure
-        const transformedProperties = data.data.properties
-          .map((prop) => {
-            // Handle area - it comes as object with unit, extract numeric value or use 0
-            let areaValue = 0;
-            if (typeof prop.area === 'object' && prop.area !== null) {
-              areaValue = prop.area.value || 0;
-            } else if (typeof prop.area === 'number') {
-              areaValue = prop.area;
-            }
+        const transformedProperties = data.data.properties.map((prop) => {
+          // Handle area - it comes as object with unit, extract numeric value or use 0
+          let areaValue = 0;
+          if (typeof prop.area === "object" && prop.area !== null) {
+            areaValue = prop.area.value || 0;
+          } else if (typeof prop.area === "number") {
+            areaValue = prop.area;
+          }
 
-            // Filter out blob URLs and invalid images
-            let validImages = [];
-            if (prop.images && Array.isArray(prop.images)) {
-              validImages = prop.images.filter(
-                (img) => img && !img.startsWith('blob:') && img.trim() !== ''
-              );
-            }
+          // Filter out blob URLs and invalid images
+          let validImages = [];
+          if (prop.images && Array.isArray(prop.images)) {
+            validImages = prop.images.filter(
+              (img) => img && !img.startsWith("blob:") && img.trim() !== "",
+            );
+          }
 
-            // Get owner name or location
-            const ownerInfo = prop.owner 
-              ? `${prop.owner.name}, ${prop.owner.phone}` 
-              : 'Owner info not available';
+          // Get owner name or location
+          const ownerInfo = prop.owner
+            ? `${prop.owner.name}, ${prop.owner.phone}`
+            : "Owner info not available";
 
-            return {
-              id: prop._id || prop.id,
-              title: prop.title || "No Title",
-              // Use owner name and phone as location, fallback to property type
-              location: ownerInfo,
-              price: prop.price || 0,
-              bedrooms: prop.bedrooms || 0,
-              bathrooms: prop.bathrooms || 0,
-              area: areaValue,
-              type: prop.propertyType || "apartment",
-              image: validImages.length > 0 ? validImages[0] : DEFAULT_IMAGE,
-              status: prop.purpose === "rent" ? "For Rent" : "For Sale",
-              featured: prop.featured || false,
-            };
-          });
+          return {
+            id: prop._id || prop.id,
+            title: prop.title || "No Title",
+            // Use owner name and phone as location, fallback to property type
+            location: ownerInfo,
+            price: prop.price || 0,
+            bedrooms: prop.bedrooms || 0,
+            bathrooms: prop.bathrooms || 0,
+            area: areaValue,
+            type: prop.propertyType || "apartment",
+            image: validImages.length > 0 ? validImages[0] : DEFAULT_IMAGE,
+            status: prop.purpose === "rent" ? "For Rent" : "For Sale",
+            featured: prop.featured || false,
+          };
+        });
 
         console.log("Transformed properties:", transformedProperties);
         setProperties(transformedProperties);
@@ -241,7 +245,7 @@ const BuyPage = () => {
 
   const toggleFavorite = (id) => {
     setFavorites((prev) =>
-      prev.includes(id) ? prev.filter((fav) => fav !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((fav) => fav !== id) : [...prev, id],
     );
   };
 
@@ -262,16 +266,16 @@ const BuyPage = () => {
 
   const formatPrice = (price) => {
     // Handle case where price is an object with unit property
-    if (typeof price === 'object' && price !== null && price.unit) {
+    if (typeof price === "object" && price !== null && price.unit) {
       return `${price.value} ${price.unit}`;
     }
-    
+
     // Handle null or undefined
-    if (!price || price === 0) return 'न्यूनतम मूल्य';
-    
+    if (!price || price === 0) return "न्यूनतम मूल्य";
+
     const numPrice = Number(price);
-    if (isNaN(numPrice)) return 'मूल्य अनुपलब्ध';
-    
+    if (isNaN(numPrice)) return "मूल्य अनुपलब्ध";
+
     if (numPrice >= 10000000) return `₹${(numPrice / 10000000).toFixed(2)} Cr`;
     return `₹${(numPrice / 100000).toFixed(2)} Lac`;
   };
@@ -578,7 +582,10 @@ const BuyPage = () => {
                         {formatPrice(property.price)}
                       </div>
                       <Link
-                        href={`/buy/property-details?id=${property.id}`}
+                        href={{
+                          pathname: "/buy/property-details",
+                          query: { id: property.id },
+                        }}
                         className="px-4 py-2 bg-red-600 text-white rounded-lg"
                       >
                         विवरण देखें
