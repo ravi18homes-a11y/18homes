@@ -98,16 +98,16 @@ export default function Navbar() {
             } text-[18px]`}
           >
             <li>
-              <Link href="/">होम</Link>
+              <Link href="/">Home</Link>
             </li>
             <li>
-              <Link href="/buy">खरीदें</Link>
+              <Link href="/buy">Buy</Link>
             </li>
             <li>
-              <Link href="/sell">बेचें</Link>
+              <Link href="/sell">Sell</Link>
             </li>
             <li>
-              <Link href="/contact">संपर्क करें</Link>
+              <Link href="/contact">Contact</Link>
             </li>
           </ul>
         </div>
@@ -152,7 +152,7 @@ export default function Navbar() {
                     onClick={() => setShowProfileMenu(false)}
                   >
                     <MdPhone className="text-[#8c4bdc] text-xl" />
-                    <span className="text-black">अभी बुक करें</span>
+                    <span className="text-black">Book Now</span>
                   </Link>
 
                   {isLoggedIn && (
@@ -232,19 +232,19 @@ export default function Navbar() {
       >
         <div className="flex flex-col space-y-7 text-black text-[18px]">
           <Link href="/" onClick={() => setOpen(false)}>
-            होम
+            Home
           </Link>
 
           <Link onClick={() => setOpen(false)} href="/buy">
-            खरीदें
+            Buy
           </Link>
 
           <Link onClick={() => setOpen(false)} href="/sell">
-            बेचें
+            Sell
           </Link>
 
           <Link href="/contact" onClick={() => setOpen(false)}>
-            संपर्क करें
+            Contact
           </Link>
 
           <Link
@@ -252,7 +252,7 @@ export default function Navbar() {
             className="w-[153px] px-7 mt-4 py-2 border border-[black] text-[black] rounded-full"
             onClick={() => setOpen(false)}
           >
-            अभी बुक करें
+            Book Now
           </Link>
 
           {!isLoggedIn && (

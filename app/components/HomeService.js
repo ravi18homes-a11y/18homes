@@ -4,33 +4,33 @@ import Image from "next/image";
 export default function HomeServices() {
   const services = [
   {
-    title: "1 BHK फ्लैट किराये पर",
-    desc: "प्राइम लोकेशन में सुरक्षित और वेरिफाइड 1 BHK फ्लैट्स। सस्ती कीमत, मॉडर्न इंटीरियर और आरामदायक रहने की सुविधा के साथ तुरंत शिफ्ट होने का विकल्प।",
+    title: "1 BHK Flat on Rent",
+    desc: "Secure and verified 1 BHK flats in prime locations. Affordable price, modern interior, and comfortable living with ready-to-move-in option.",
     img: "https://res.cloudinary.com/dxlykgx6w/image/upload/v1764928068/3d-rendering-luxury-modern-bedroom-suite-hotel-with-tv-cabinet_105762-2280_ozfq80.avif",
   },
   {
-    title: "2 BHK फैमिली अपार्टमेंट",
-    desc: "परिवारों के लिए बेहतरीन 2 BHK विकल्प, जिसमें बड़े कमरे, पर्याप्त रोशनी और 24/7 सुरक्षा उपलब्ध है। स्कूल, मार्केट और मेट्रो के पास शानदार लोकेशन।",
+    title: "2 BHK Family Apartment",
+    desc: "Excellent 2 BHK options for families, featuring large rooms, ample natural light, and 24/7 security. Superb location near schools, markets, and metro.",
     img: "https://res.cloudinary.com/dxlykgx6w/image/upload/v1764928068/3d-rendering-luxury-modern-bedroom-suite-hotel-with-tv-cabinet_105762-2280_ozfq80.avif",
   },
   {
-    title: "3 BHK लक्ज़री फ्लैट",
-    desc: "बड़े परिवारों के लिए प्रीमियम 3 BHK अपार्टमेंट, जिसमें हाई-क्लास इंटीरियर, विशाल स्पेस और मॉडर्न सुविधाएं मौजूद हैं। एक बेहतर और आरामदायक लाइफस्टाइल के लिए परफेक्ट।",
+    title: "3 BHK Luxury Flat",
+    desc: "Premium 3 BHK apartments for large families, featuring high-class interior, spacious layout, and modern amenities. Perfect for a better and comfortable lifestyle.",
     img: "https://res.cloudinary.com/dxlykgx6w/image/upload/v1764928067/cozy-living-room-with-coral-sofa_23-2152001401_mtbfyd.avif",
   },
   {
-    title: "फ्लैट खरीदने की सुविधा",
-    desc: "Verified प्रॉपर्टी, transparent deals और आसान documentation के साथ दिल्ली-NCR में आपकी पसंद का फ्लैट खरीदने की सेवा। पहले देखें, फिर भरोसा करें।",
+    title: "Flat Buying Assistance",
+    desc: "Service to buy your preferred flat in Delhi-NCR with verified properties, transparent deals, and easy documentation. See first, then trust.",
     img: "https://res.cloudinary.com/dxlykgx6w/image/upload/v1764928067/3d-rendering-modern-dining-room-living-room-with-luxury-decor-green-sofa_105762-2140_eu0udp.avif",
   },
   {
-    title: "PG / रूम ऑन रेंट",
-    desc: "स्टूडेंट्स और बैचलर्स के लिए furnished PG और rooms। Free WiFi, housekeeping और pocket-friendly किराए के साथ तुरंत रहने की सुविधा उपलब्ध।",
+    title: "PG / Room on Rent",
+    desc: "Furnished PG and rooms for students and bachelors. Ready-to-move-in facilities with Free WiFi, housekeeping, and pocket-friendly rent.",
     img: "https://res.cloudinary.com/dxlykgx6w/image/upload/v1764928068/3d-rendering-modern-dining-room-living-room-with-luxury-decor-yellow-lamp_105762-2232_iu2qqe.avif",
   },
   {
-    title: "बिना ब्रोकरेज किराया सेवा",
-    desc: "Verified मालिकों से सीधे जुड़ें और बिना किसी extra charges के अपना फ्लैट किराये पर लें। Fast booking, easy paperwork और 100% assistance।",
+    title: "Zero Brokerage Rental Service",
+    desc: "Connect directly with verified owners and rent your flat without any extra charges. Fast booking, easy paperwork, and 100% assistance.",
     img: "https://res.cloudinary.com/dxlykgx6w/image/upload/v1764928067/comfortable-living-room-with-gray-sofa_305343-17365_zlfzp5.avif",
   },
 ];
@@ -44,7 +44,7 @@ export default function HomeServices() {
 
       <div className="text-center mb-16">
         <h3 className="text-[32px] italic text-black">Service</h3>
-        <h2 className="text-[42px] font-extrabold text-black">हमारी सेवाएँ</h2>
+        <h2 className="text-[42px] font-extrabold text-black">Our Services</h2>
       </div>
 
       <div className="max-w-[1300px] mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-15">

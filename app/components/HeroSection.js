@@ -77,17 +77,17 @@ function BannerSlide({ image }) {
           className="text-[black] text-3xl md:text-4xl font-light  mb-3"
           style={{ fontFamily: "'Dancing Script', cursive" }}
         >
-         आज का प्रीमियम ऑफर
+         Today's Premium Offer
 
 
         </h3>
 
         <h1 className="text-[black] text-5xl md:text-6xl font-bold tracking-wide">
-         लक्ज़री फ्लैट्स आपके बजट में
+         Luxury Flats In Your Budget
         </h1>
 
         <h2 className="text-[black] text-4xl md:text-4xl font-semibold mt-1">
-         अपने सपनों का घर आज ही बुक करें
+         Book Your Dream Home Today
         </h2>
 
      

@@ -4,23 +4,23 @@ import Image from "next/image";
 export default function HomeBlogs() {
  const blogs = [
   {
-    date: "31 जनवरी 2025",
-    title: "आधुनिक 1 BHK फ्लैट — इंटीरियर व स्पेस मैनेजमेंट आइडियाज़",
+    date: "31 January 2025",
+    title: "Modern 1 BHK Flat — Interior and Space Management Ideas",
     img: "https://res.cloudinary.com/dxlykgx6w/image/upload/v1764928069/3d-rendering-loft-scandinavian-living-room-with-working-table-bookshelf_105762-2162_jwxzba.avif",
   },
   {
-    date: "31 जनवरी 2025",
-    title: "परिवारों के लिए परफेक्ट 2 BHK — खरीदने से पहले ज़रूरी बातें",
+    date: "31 January 2025",
+    title: "Perfect 2 BHK for Families — Important Things Before Buying",
     img: "https://res.cloudinary.com/dxlykgx6w/image/upload/v1764928067/cozy-living-room-with-coral-sofa_23-2152001401_mtbfyd.avif",
   },
   {
-    date: "31 जनवरी 2025",
-    title: "लक्ज़री लिविंग ऑन बजट — छोटे घरों के लिए स्मार्ट इंटीरियर टिप्स",
+    date: "31 January 2025",
+    title: "Luxury Living on a Budget — Smart Interior Tips for Small Homes",
     img: "https://res.cloudinary.com/dxlykgx6w/image/upload/v1764928067/3d-rendering-modern-dining-room-living-room-with-luxury-decor-green-sofa_105762-2140_eu0udp.avif",
   },
   {
-    date: "31 जनवरी 2025",
-    title: "किराये पर घर लेने से पहले ज़रूरी चेकलिस्ट",
+    date: "31 January 2025",
+    title: "Important Checklist Before Renting a Home",
     img: "https://res.cloudinary.com/dxlykgx6w/image/upload/v1764928067/cozy-dining-room-modern-apartment_181624-61506_ykkcqt.avif",
   },
 ];
@@ -33,7 +33,7 @@ export default function HomeBlogs() {
       <div className="text-center mb-14">
         <h3 className="text-[32px] text-gray-700 mb-3"  style={{ fontFamily: "'Dancing Script', cursive" }}>Latest post</h3>
         <h2 className="text-[44px] md:text-[54px] font-bold text-black">
-          18Homes रियल एस्टेट ब्लॉग्स
+          18Homes Real Estate Blogs
         </h2>
       </div>
 

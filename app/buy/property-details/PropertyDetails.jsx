@@ -15,58 +15,58 @@ import {
   Play,
 } from "lucide-react";
 
-const staticProperties = [
-  {
-    id: "1",
-    title: "आधुनिक 3BHK फ्लैट",
-    location: "सेक्टर 62, नोएडा",
-    price: 8500000,
-    bedrooms: 3,
-    bathrooms: 2,
-    area: 1450,
-    type: "apartment",
-    image:
-      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200",
-    status: "Ready to Move",
-    featured: true,
-    description:
-      "यह एक आधुनिक 3BHK फ्लैट है जिसमें एक आरामदायक जीवन शैली और शानदार सुविधाएं हैं।",
-    owner: {
-      name: "प्रॉपर्टी मालिक",
-      phone: "+91 98765 43210",
-      email: "owner@example.com",
-    },
-    images: [
-      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200",
-      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1200",
-    ],
-  },
-  {
-    id: "2",
-    title: "लक्जरी विला",
-    location: "गोल्फ कोर्स रोड, गुड़गांव",
-    price: 25000000,
-    bedrooms: 4,
-    bathrooms: 4,
-    area: 3200,
-    type: "villa",
-    image:
-      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1200",
-    status: "Under Construction",
-    featured: true,
-    description:
-      "यह विला एक शानदार जीवन शैली प्रदान करता है, जिसमें विस्तृत कमरे और सुंदर गार्डन शामिल हैं।",
-    owner: {
-      name: "प्रॉपर्टी मालिक",
-      phone: "+91 98765 43210",
-      email: "owner@example.com",
-    },
-    images: [
-      "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1200",
-      "https://images.unsplash.com/photo-1494526585095-c41746248156?w=1200",
-    ],
-  },
-];
+// const staticProperties = [
+//   {
+//     id: "1",
+//     title: "Modern 3BHK Flat",
+//     location: "Sector 62, Noida",
+//     price: 8500000,
+//     bedrooms: 3,
+//     bathrooms: 2,
+//     area: 1450,
+//     type: "apartment",
+//     image:
+//       "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200",
+//     status: "Ready to Move",
+//     featured: true,
+//     description:
+//       "This is a modern 3BHK flat with a comfortable lifestyle and wonderful amenities.",
+//     owner: {
+//       name: "Property Owner",
+//       phone: "+91 98765 43210",
+//       email: "owner@example.com",
+//     },
+//     images: [
+//       "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200",
+//       "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1200",
+//     ],
+//   },
+//   {
+//     id: "2",
+//     title: "Luxury Villa",
+//     location: "Golf Course Road, Gurgaon",
+//     price: 25000000,
+//     bedrooms: 4,
+//     bathrooms: 4,
+//     area: 3200,
+//     type: "villa",
+//     image:
+//       "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1200",
+//     status: "Under Construction",
+//     featured: true,
+//     description:
+//       "This villa offers a luxurious lifestyle, featuring spacious rooms and a beautiful garden.",
+//     owner: {
+//       name: "Property Owner",
+//       phone: "+91 98765 43210",
+//       email: "owner@example.com",
+//     },
+//     images: [
+//       "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1200",
+//       "https://images.unsplash.com/photo-1494526585095-c41746248156?w=1200",
+//     ],
+//   },
+// ];
 
 const PropertyDetailsPage = () => {
   const searchParams = useSearchParams();
@@ -144,7 +144,7 @@ const PropertyDetailsPage = () => {
           ...fallbackProperty,
           images: [fallbackProperty.image],
           location: formatAddress(fallbackProperty.location),
-          description: fallbackProperty.description || "विवरण उपलब्ध नहीं है।",
+          description: fallbackProperty.description || "Description not available.",
         });
       }
     };
@@ -156,9 +156,9 @@ const PropertyDetailsPage = () => {
     if (typeof price === "object" && price !== null && price.unit) {
       return `${price.value} ${price.unit}`;
     }
-    if (!price || price === 0) return "न्यूनतम मूल्य";
+    if (!price || price === 0) return "Min Price";
     const numPrice = Number(price);
-    if (isNaN(numPrice)) return "मूल्य अनुपलब्ध";
+    if (isNaN(numPrice)) return "Price Unavailable";
     if (numPrice >= 10000000) return `₹${(numPrice / 10000000).toFixed(2)} Cr`;
     return `₹${(numPrice / 100000).toFixed(2)} Lac`;
   };
@@ -210,7 +210,7 @@ const PropertyDetailsPage = () => {
             className="flex items-center gap-2 text-gray-700 hover:text-red-600 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
-            <span className="font-medium">वापस जाएं</span>
+            <span className="font-medium">Go Back</span>
           </button>
         </div>
       </div>
@@ -252,11 +252,10 @@ const PropertyDetailsPage = () => {
               <button
                 key={index}
                 onClick={() => setCurrentImageIndex(index)}
-                className={`h-2 rounded-full transition-all ${
-                  currentImageIndex === index
+                className={`h-2 rounded-full transition-all ${currentImageIndex === index
                     ? "bg-white w-8"
                     : "bg-white/50 w-2"
-                }`}
+                  }`}
               />
             ))}
           </div>
@@ -282,11 +281,10 @@ const PropertyDetailsPage = () => {
                 </div>
                 {property.status && (
                   <span
-                    className={`px-4 py-2 rounded-full text-white font-semibold whitespace-nowrap self-start ${
-                      property.status === "Ready to Move"
+                    className={`px-4 py-2 rounded-full text-white font-semibold whitespace-nowrap self-start ${property.status === "Ready to Move"
                         ? "bg-green-600"
                         : "bg-orange-600"
-                    }`}
+                      }`}
                   >
                     {property.status}
                   </span>
@@ -303,7 +301,7 @@ const PropertyDetailsPage = () => {
                 <div className="flex items-center gap-2">
                   <Bath className="w-5 h-5 text-gray-600" />
                   <span className="font-semibold">
-                    {property.bathrooms || 0} बाथरूम
+                    {property.bathrooms || 0} Bathrooms
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -326,7 +324,7 @@ const PropertyDetailsPage = () => {
 
             {/* Description */}
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">विवरण</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">Description</h2>
               <p className="text-gray-700 leading-relaxed">
                 {property.description}
               </p>
@@ -335,44 +333,44 @@ const PropertyDetailsPage = () => {
             {/* Image Gallery */}
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                फोटो गैलरी
+                Photo Gallery
               </h2>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {images && images.length > 0 && images[0] !== DEFAULT_IMAGE ? (
-  images.map((media, index) => {
-    const isVideo = media?.toLowerCase().endsWith(".mp4");
+                  images.map((media, index) => {
+                    const isVideo = media?.toLowerCase().endsWith(".mp4");
 
-    return isVideo ? (
-      <video
-        key={index}
-        src={media}
-        controls
-        className="w-full h-48 object-contain rounded-lg cursor-pointer"
-        onClick={() => setCurrentImageIndex(index)}
-      />
-    ) : (
-      <img
-        key={index}
-        src={media || DEFAULT_IMAGE}
-        alt={`Property ${index + 1}`}
-        onError={(e) => (e.target.src = DEFAULT_IMAGE)}
-        className="w-full h-48 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
-        onClick={() => setCurrentImageIndex(index)}
-      />
-    );
-  })
-) : (
-  <div className="col-span-full text-center py-8">
-    <img
-      src={DEFAULT_IMAGE}
-      alt="Property"
-      className="w-full h-64 object-cover rounded-lg"
-    />
-    <p className="text-gray-600 mt-4">
-      असली छवि उपलब्ध नहीं है
-    </p>
-  </div>
-)}
+                    return isVideo ? (
+                      <video
+                        key={index}
+                        src={media}
+                        controls
+                        className="w-full h-48 object-contain rounded-lg cursor-pointer"
+                        onClick={() => setCurrentImageIndex(index)}
+                      />
+                    ) : (
+                      <img
+                        key={index}
+                        src={media || DEFAULT_IMAGE}
+                        alt={`Property ${index + 1}`}
+                        onError={(e) => (e.target.src = DEFAULT_IMAGE)}
+                        className="w-full h-48 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => setCurrentImageIndex(index)}
+                      />
+                    );
+                  })
+                ) : (
+                  <div className="col-span-full text-center py-8">
+                    <img
+                      src={DEFAULT_IMAGE}
+                      alt="Property"
+                      className="w-full h-64 object-cover rounded-lg"
+                    />
+                    <p className="text-gray-600 mt-4">
+                      Real image not available
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -380,7 +378,7 @@ const PropertyDetailsPage = () => {
             {property.videos && property.videos.length > 0 && (
               <div className="bg-white rounded-lg shadow-md p-6">
                 <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                  वीडियो टूर
+                  Video Tour
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {property.videos.map((video) => (
@@ -411,7 +409,7 @@ const PropertyDetailsPage = () => {
             {property.amenities && property.amenities.length > 0 && (
               <div className="bg-white rounded-lg shadow-md p-6">
                 <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                  सुविधाएं
+                  Amenities
                 </h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {property.amenities.map((amenity, index) => (
@@ -428,7 +426,7 @@ const PropertyDetailsPage = () => {
             {property.nearbyPlaces && property.nearbyPlaces.length > 0 && (
               <div className="bg-white rounded-lg shadow-md p-6">
                 <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                  आसपास की जगहें
+                  Nearby Places
                 </h2>
                 <div className="space-y-3">
                   {property.nearbyPlaces.map((place, index) => (
@@ -451,7 +449,7 @@ const PropertyDetailsPage = () => {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-md p-6 sticky top-24">
               <h3 className="text-xl font-bold text-gray-800 mb-4">
-                संपर्क करें
+                Contact Us
               </h3>
 
               {property.owner ? (
@@ -464,9 +462,9 @@ const PropertyDetailsPage = () => {
                     </div>
                     <div>
                       <p className="font-semibold text-gray-800">
-                        {property.owner.name || "विक्रेता"}
+                        {property.owner.name || "Seller"}
                       </p>
-                      <p className="text-sm text-gray-600">संपत्ति मालिक</p>
+                      <p className="text-sm text-gray-600">Property Owner</p>
                     </div>
                   </div>
 
@@ -498,17 +496,17 @@ const PropertyDetailsPage = () => {
                 </>
               ) : (
                 <p className="text-gray-600 mb-6">
-                  संपर्क जानकारी उपलब्ध नहीं है
+                  Contact information not available
                 </p>
               )}
 
               <button className="w-full py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors flex items-center justify-center gap-2">
                 <Phone className="w-5 h-5" />
-                अभी कॉल करें
+                Call Now
               </button>
 
               <button className="w-full mt-3 py-3 border-2 border-red-600 text-red-600 rounded-lg font-semibold hover:bg-red-50 transition-colors">
-                संदेश भेजें
+                Send Message
               </button>
             </div>
           </div>

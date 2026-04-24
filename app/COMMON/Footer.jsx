@@ -35,17 +35,17 @@ export default function Footer() {
             </h3>
             <ul className="space-y-3 text-[16px] font-normal">
               <li>
-                <Link href="/">होम</Link>
+                <Link href="/">Home</Link>
               </li>
               <li>
-                <Link href="/about">हमारे बारे में</Link>
+                <Link href="/about">About Us</Link>
               </li>
               <li className="relative group cursor-pointer">
-                <Link href="/service">हमारी सेवाएँ</Link>
+                <Link href="/service">Our Services</Link>
               </li>
 
               <li>
-                <Link href="/contact">संपर्क करें</Link>
+                <Link href="/contact">Contact Us</Link>
               </li>
             </ul>
           </div>
@@ -56,11 +56,11 @@ export default function Footer() {
               OUR SERVICE
             </h3>
             <ul className="space-y-3 text-[16px] font-normal">
-              <li>1 RK / 1 BHK फ्लैट</li>
-              <li>2 BHK फ्लैट</li>
-              <li>3 BHK फ्लैट</li>
-              <li>4+ BHK फ्लैट</li>
-              <li>बजट हाउस/लोकेशन वाइज प्रॉपर्टी</li>
+              <li>1 RK / 1 BHK Flat</li>
+              <li>2 BHK Flat</li>
+              <li>3 BHK Flat</li>
+              <li>4+ BHK Flat</li>
+              <li>Budget House / Location Wise Property</li>
             </ul>
           </div>
           <div className="text-black">
@@ -100,7 +100,7 @@ export default function Footer() {
       <div className="max-w-[1450px] mx-auto px-6 lg:px-12 py-8 flex flex-col md:flex-row items-center justify-between gap-6 text-black">
         <p className="text-[15px] font-normal">
           Copyright © 2025 <span className="font-semibold">18Homes </span>
-          सभी अधिकार सुरक्षित। Design by RS
+          All Rights Reserved. Design by RS
         </p>
 
         <div className="flex items-center gap-4">

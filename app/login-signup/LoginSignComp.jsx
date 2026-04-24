@@ -36,23 +36,23 @@ export default function AuthPage() {
 
   const validateForm = () => {
     if (!formData.email || !formData.password) {
-      setMessage({ type: "error", text: "Email और Password आवश्यक हैं" });
+      setMessage({ type: "error", text: "Email and Password are required" });
       return false;
     }
 
     if (!isLogin) {
       if (!formData.name || !formData.phone) {
-        setMessage({ type: "error", text: "सभी फील्ड भरना आवश्यक है" });
+        setMessage({ type: "error", text: "All fields are required" });
         return false;
       }
       if (formData.password !== formData.confirmPassword) {
-        setMessage({ type: "error", text: "Passwords मेल नहीं खाते" });
+        setMessage({ type: "error", text: "Passwords do not match" });
         return false;
       }
       if (formData.password.length < 6) {
         setMessage({
           type: "error",
-          text: "Password कम से कम 6 अक्षर का होना चाहिए",
+          text: "Password must be at least 6 characters long",
         });
         return false;
       }
@@ -232,9 +232,9 @@ export default function AuthPage() {
 
             <div className="space-y-4">
               <h2 className="text-4xl font-bold leading-tight">
-                आपका सपनों का
+                Your Dream
                 <br />
-                घर यहाँ है
+                Home is Here
               </h2>
               <p className="text-green-100 text-lg">
                 Ghaziabad | Noida Special
@@ -267,11 +267,10 @@ export default function AuthPage() {
               }}
             >
               <p className="text-sm mb-2 text-green-100">
-                हमारे क्लाइंट क्या कहते हैं
+                What Our Clients Say
               </p>
               <p className="text-white italic">
-                "18Homes ने हमारे सपनों का घर ढूंढने में बहुत मदद की। बिना
-                ब्रोकर के सीधे मकान मालिक से बात करना बहुत आसान था।"
+                "18Homes helped us a lot in finding our dream home. It was very easy to talk directly to the landlord without a broker."
               </p>
               <p className="text-green-200 mt-3 font-semibold">Ravi Sharma</p>
             </div>
@@ -285,7 +284,7 @@ export default function AuthPage() {
               {isLogin ? "Welcome Back!" : "Create Account"}
             </h2>
             <p className="text-gray-600">
-              {isLogin ? "अपने अकाउंट में लॉगिन करें" : "नया अकाउंट बनाएं"}
+              {isLogin ? "Login to your account" : "Create a new account"}
             </p>
           </div>
 
@@ -317,7 +316,7 @@ export default function AuthPage() {
             {!isLogin && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  पूरा नाम <span className="text-red-500">*</span>
+                  Full Name <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -327,7 +326,7 @@ export default function AuthPage() {
                     value={formData.name}
                     onChange={handleChange}
                     onKeyPress={handleKeyPress}
-                    placeholder="अपना नाम दर्ज करें"
+                    placeholder="Enter your name"
                     className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
                     disabled={loading}
                   />
@@ -337,7 +336,7 @@ export default function AuthPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                ईमेल <span className="text-red-500">*</span>
+                Email <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -357,7 +356,7 @@ export default function AuthPage() {
             {!isLogin && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  मोबाइल नंबर <span className="text-red-500">*</span>
+                  Mobile Number <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -377,7 +376,7 @@ export default function AuthPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                पासवर्ड <span className="text-red-500">*</span>
+                Password <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -409,7 +408,7 @@ export default function AuthPage() {
             {!isLogin && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  पासवर्ड कन्फर्म करें <span className="text-red-500">*</span>
+                  Confirm Password <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -444,7 +443,7 @@ export default function AuthPage() {
                   // disabled={loading}
                   onClick={() => router.push("/forgot-password")}
                 >
-                  पासवर्ड भूल गए?
+                  Forgot Password?
                 </button>
               </div>
             )}
@@ -476,19 +475,19 @@ export default function AuthPage() {
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     />
                   </svg>
-                  {isLogin ? "लॉगिन हो रहा है..." : "साइन अप हो रहा है..."}
+                  {isLogin ? "Logging in..." : "Signing up..."}
                 </span>
               ) : isLogin ? (
-                "लॉगिन करें"
+                "Login"
               ) : (
-                "साइन अप करें"
+                "Sign Up"
               )}
             </button>
           </div>
 
           <div className="mt-6 text-center">
             <p className="text-gray-600">
-              {isLogin ? "खाता नहीं है?" : "पहले से खाता है?"}
+              {isLogin ? "Don't have an account?" : "Already have an account?"}
               <button
                 onClick={() => {
                   setIsLogin(!isLogin);
@@ -504,7 +503,7 @@ export default function AuthPage() {
                 className="ml-2 text-green-600 hover:text-green-700 font-semibold"
                 disabled={loading}
               >
-                {isLogin ? "साइन अप करें" : "लॉगिन करें"}
+                {isLogin ? "Sign Up" : "Login"}
               </button>
             </p>
           </div>
