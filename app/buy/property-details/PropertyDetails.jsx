@@ -14,6 +14,7 @@ import {
   CheckCircle,
   Play,
 } from "lucide-react";
+import Link from "next/link";
 
 // const staticProperties = [
 //   {
@@ -500,14 +501,14 @@ const PropertyDetailsPage = () => {
                 </p>
               )}
 
-              <button className="w-full py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors flex items-center justify-center gap-2">
+              <a href="tel:${property.owner.phone}" className="w-full py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors flex items-center justify-center gap-2">
                 <Phone className="w-5 h-5" />
                 Call Now
-              </button>
+              </a>
 
-              <button className="w-full mt-3 py-3 border-2 border-red-600 text-red-600 rounded-lg font-semibold hover:bg-red-50 transition-colors">
+              {/* <button className="w-full mt-3 py-3 border-2 border-red-600 text-red-600 rounded-lg font-semibold hover:bg-red-50 transition-colors">
                 Send Message
-              </button>
+              </button> */}
             </div>
           </div>
         </div>
