@@ -5,10 +5,10 @@ import { IoMdCheckmarkCircleOutline } from "react-icons/io";
 
 export default function HomeAbout() {
   const points = [
-    "उत्तम लोकेशन में वेरिफाइड फ्लैट्स",
-    "आपके बजट के अनुसार रेंट व सेल विकल्प",
- "मॉडर्न सुविधाओं वाले सुरक्षित अपार्टमेंट",
-" पारदर्शी प्रक्रिया और 100% सहायता",
+    "Verified flats in prime locations",
+    "Rent and sale options according to your budget",
+    "Secure apartments with modern amenities",
+    "Transparent process and 100% assistance",
   ];
 
   return (
@@ -24,18 +24,11 @@ export default function HomeAbout() {
           </h3>
 
           <h2 className="text-[46px]  font-bold text-black leading-tight mb-4">
-            18homes – आपका सपनों का घर
+            18homes – Your Dream Home
           </h2>
 
           <p className="text-[16px] text-[#101010] leading-[1.8] max-w-[650px] mb-6">
-            18Homes दिल्ली-NCR में स्थित एक विश्वसनीय रियल एस्टेट प्लेटफ़ॉर्म
-            है, जो किराये और खरीद दोनों के लिए प्रीमियम फ्लैट्स उपलब्ध कराता है।
-            हमारा उद्देश्य हर बजट और हर परिवार के लिए एक सुरक्षित, आधुनिक और
-            आरामदायक घर प्रदान करना है। पिछले कई वर्षों से हम हज़ारों ग्राहकों
-            को सही लोकेशन, सही कीमत और सही सुविधा वाला घर दिलाने में मदद कर रहे
-            हैं। हमारी टीम यह सुनिश्चित करती है कि आपको verified प्रॉपर्टी,
-            ट्रांसपेरेंट डील और बेहतरीन सपोर्ट सर्विस मिले—ताकि घर खोजने की
-            प्रक्रिया आसान, तेज़ और भरोसेमंद बन सके।
+            18Homes is a trusted real estate platform located in Delhi-NCR, providing premium flats for both rent and purchase. Our goal is to provide a safe, modern, and comfortable home for every budget and family. For the past several years, we have been helping thousands of customers find a home with the right location, right price, and right amenities. Our team ensures that you get verified properties, transparent deals, and excellent support service—so that the process of finding a home is easy, fast, and reliable.
           </p>
 
           {/* CHECKMARKS */}

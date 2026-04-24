@@ -48,8 +48,8 @@ const BuyPage = () => {
   const staticProperties = [
     {
       id: 1,
-      title: "आधुनिक 3BHK फ्लैट",
-      location: "सेक्टर 62, नोएडा",
+      title: "Modern 3BHK Flat",
+      location: "Sector 62, Noida",
       price: 8500000,
       bedrooms: 3,
       bathrooms: 2,
@@ -62,8 +62,8 @@ const BuyPage = () => {
     },
     {
       id: 2,
-      title: "लक्जरी विला",
-      location: "गोल्फ कोर्स रोड, गुड़गांव",
+      title: "Luxury Villa",
+      location: "Golf Course Road, Gurgaon",
       price: 25000000,
       bedrooms: 4,
       bathrooms: 4,
@@ -76,8 +76,8 @@ const BuyPage = () => {
     },
     {
       id: 3,
-      title: "स्पेशियस 2BHK अपार्टमेंट",
-      location: "द्वारका, दिल्ली",
+      title: "Spacious 2BHK Apartment",
+      location: "Dwarka, Delhi",
       price: 6200000,
       bedrooms: 2,
       bathrooms: 2,
@@ -89,8 +89,8 @@ const BuyPage = () => {
     },
     {
       id: 4,
-      title: "पेंटहाउस सुइट",
-      location: "सेक्टर 50, गुड़गांव",
+      title: "Penthouse Suite",
+      location: "Sector 50, Gurgaon",
       price: 18500000,
       bedrooms: 4,
       bathrooms: 3,
@@ -103,8 +103,8 @@ const BuyPage = () => {
     },
     {
       id: 5,
-      title: "मॉडर्न स्टूडियो अपार्टमेंट",
-      location: "इंदिरापुरम, गाजियाबाद",
+      title: "Modern Studio Apartment",
+      location: "Indirapuram, Ghaziabad",
       price: 3500000,
       bedrooms: 1,
       bathrooms: 1,
@@ -117,8 +117,8 @@ const BuyPage = () => {
     },
     {
       id: 6,
-      title: "इंडिपेंडेंट हाउस",
-      location: "सेक्टर 57, नोएडा",
+      title: "Independent House",
+      location: "Sector 57, Noida",
       price: 15000000,
       bedrooms: 5,
       bathrooms: 4,
@@ -280,10 +280,10 @@ const BuyPage = () => {
     }
 
     // Handle null or undefined
-    if (!price || price === 0) return "न्यूनतम मूल्य";
+    if (!price || price === 0) return "Min Price";
 
     const numPrice = Number(price);
-    if (isNaN(numPrice)) return "मूल्य अनुपलब्ध";
+    if (isNaN(numPrice)) return "Price Unavailable";
 
     if (numPrice >= 10000000) return `₹${(numPrice / 10000000).toFixed(2)} Cr`;
     return `₹${(numPrice / 100000).toFixed(2)} Lac`;
@@ -311,7 +311,7 @@ const BuyPage = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
-                placeholder="स्थान, प्रॉपर्टी नाम खोजें..."
+                placeholder="Search location, property name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 text-white rounded-lg focus:outline-none "
@@ -322,7 +322,7 @@ const BuyPage = () => {
               className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2"
             >
               <Filter className="w-5 h-5" />
-              फ़िल्टर
+              Filter
             </button>
           </div>
         </div>
@@ -333,7 +333,7 @@ const BuyPage = () => {
         <div className="bg-white border-b shadow-lg">
           <div className="max-w-7xl mx-auto px-4 py-6">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">फ़िल्टर</h3>
+              <h3 className="text-lg font-semibold">Filter</h3>
               <button onClick={() => setShowFilters(false)}>
                 <X className="w-6 h-6 text-gray-500" />
               </button>
@@ -342,7 +342,7 @@ const BuyPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  प्रॉपर्टी टाइप
+                  Property Type
                 </label>
                 <select
                   value={filters.propertyType}
@@ -351,17 +351,17 @@ const BuyPage = () => {
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                 >
-                  <option value="all">सभी</option>
-                  <option value="apartment">अपार्टमेंट</option>
-                  <option value="villa">विला</option>
-                  <option value="house">हाउस</option>
-                  <option value="penthouse">पेंटहाउस</option>
+                  <option value="all">All</option>
+                  <option value="apartment">Apartment</option>
+                  <option value="villa">Villa</option>
+                  <option value="house">House</option>
+                  <option value="penthouse">Penthouse</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  न्यूनतम कीमत
+                  Min Price
                 </label>
                 <input
                   type="number"
@@ -376,7 +376,7 @@ const BuyPage = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  अधिकतम कीमत
+                  Max Price
                 </label>
                 <input
                   type="number"
@@ -391,11 +391,11 @@ const BuyPage = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  शहर
+                  City
                 </label>
                 <input
                   type="text"
-                  placeholder="शहर लिखें"
+                  placeholder="Enter city"
                   value={filters.city}
                   onChange={(e) =>
                     setFilters({ ...filters, city: e.target.value })
@@ -406,7 +406,7 @@ const BuyPage = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  फर्निशिंग
+                  Furnishing
                 </label>
                 <select
                   value={filters.furnishing}
@@ -415,16 +415,16 @@ const BuyPage = () => {
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                 >
-                  <option value="all">सभी</option>
-                  <option value="furnished">फर्निश्ड</option>
-                  <option value="unfurnished">अनफर्निश्ड</option>
-                  <option value="semi-furnished">सेमी फर्निश्ड</option>
+                  <option value="all">All</option>
+                  <option value="furnished">Furnished</option>
+                  <option value="unfurnished">Unfurnished</option>
+                  <option value="semi-furnished">Semi Furnished</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  बेडरूम
+                  Bedrooms
                 </label>
                 <select
                   value={filters.bedrooms}
@@ -433,7 +433,7 @@ const BuyPage = () => {
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                 >
-                  <option value="any">कोई भी</option>
+                  <option value="any">Any</option>
                   <option value="1">1+</option>
                   <option value="2">2+</option>
                   <option value="3">3+</option>
@@ -443,7 +443,7 @@ const BuyPage = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  बाथरूम
+                  Bathrooms
                 </label>
                 <select
                   value={filters.bathrooms}
@@ -452,7 +452,7 @@ const BuyPage = () => {
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                 >
-                  <option value="any">कोई भी</option>
+                  <option value="any">Any</option>
                   <option value="1">1+</option>
                   <option value="2">2+</option>
                   <option value="3">3+</option>
@@ -462,7 +462,7 @@ const BuyPage = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  न्यूनतम क्षेत्र (sq.ft)
+                  Min Area (sq.ft)
                 </label>
                 <input
                   type="number"
@@ -477,7 +477,7 @@ const BuyPage = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  अधिकतम क्षेत्र (sq.ft)
+                  Max Area (sq.ft)
                 </label>
                 <input
                   type="number"
@@ -492,7 +492,7 @@ const BuyPage = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  क्रमबद्ध करें
+                  Sort By
                 </label>
                 <select
                   value={filters.sortBy}
@@ -501,10 +501,10 @@ const BuyPage = () => {
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                 >
-                  <option value="newest">नवीनतम</option>
-                  <option value="price-low">कीमत: कम से अधिक</option>
-                  <option value="price-high">कीमत: अधिक से कम</option>
-                  <option value="area">क्षेत्रफल</option>
+                  <option value="newest">Newest</option>
+                  <option value="price-low">Price: Low to High</option>
+                  <option value="price-high">Price: High to Low</option>
+                  <option value="area">Area</option>
                 </select>
               </div>
             </div>
@@ -527,7 +527,7 @@ const BuyPage = () => {
                 }
                 className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
               >
-                रीसेट करें
+                Reset
               </button>
             </div>
           </div>
@@ -542,10 +542,10 @@ const BuyPage = () => {
             {loading ? (
               <span className="flex items-center gap-2">
                 <Loader2 className="w-6 h-6 animate-spin" />
-                लोड हो रहा है...
+                Loading...
               </span>
             ) : (
-              `${filteredProperties.length} प्रॉपर्टीज उपलब्ध`
+              `${filteredProperties.length} Properties Available`
             )}
           </h2>
         </div>
@@ -632,7 +632,7 @@ const BuyPage = () => {
                         }}
                         className="px-4 py-2 bg-red-600 text-white rounded-lg"
                       >
-                        विवरण देखें
+                        View Details
                       </Link>
                     </div>
                   </div>
@@ -670,10 +670,10 @@ const BuyPage = () => {
               <div className="text-center py-16">
                 <Home className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                  कोई प्रॉपर्टी नहीं मिली
+                  No Properties Found
                 </h3>
                 <p className="text-gray-600">
-                  कृपया अपने फ़िल्टर बदलें या अलग खोज का प्रयास करें
+                  Please change your filters or try a different search
                 </p>
               </div>
             )}
@@ -685,14 +685,13 @@ const BuyPage = () => {
       <div className="bg-gradient-to-r from-red-600 to-red-700 text-white py-12 mt-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-4">
-            अपनी ड्रीम प्रॉपर्टी नहीं मिली?
+            Didn't find your dream property?
           </h2>
           <p className="text-lg mb-6">
-            हमें बताएं कि आप क्या खोज रहे हैं, हम आपके लिए सबसे अच्छे विकल्प
-            ढूंढेंगे
+            Tell us what you're looking for, we'll find the best options for you
           </p>
           <button className="px-8 py-3 bg-white text-red-600 rounded-lg font-semibold hover:bg-gray-100 text-lg">
-            हमसे संपर्क करें
+            Contact Us
           </button>
         </div>
       </div>

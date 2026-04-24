@@ -11,27 +11,27 @@ import "swiper/css/pagination";
 export default function Testimonials() {
     const data = [
   {
-    text: "18Homes की सेवा बिल्कुल व्यक्तिगत लगती है। यह समझती है कि मुझे कब और कैसी प्रॉपर्टी की ज़रूरत है। चाहे मैं परिवार के लिए घर ढूँढ़ रहा हूँ या रेंटल ऑप्शन—18Homes हमेशा सही सुझाव देती है।",
+    text: "18Homes' service feels truly personal. They understand when and what kind of property I need. Whether I'm looking for a family home or a rental option—18Homes always provides the right suggestions.",
     name: "Jane Cooper",
-    role: "किरायेदार",
+    role: "Tenant",
     img: "https://res.cloudinary.com/dal5dlztv/image/upload/v1757578556/Ellipse_8_1_fr81tw.png",
   },
   {
-    text: "मेरे लिए सबसे अच्छा अनुभव यह रहा कि 18Homes बिना किसी ब्रोकरज के सही लोकेशन में घर दिखाती है। उनकी टीम बहुत प्रोफेशनल और मददगार है।",
+    text: "The best experience for me was that 18Homes shows houses in the right locations without any brokerage. Their team is very professional and helpful.",
     name: "Emma Doe",
-    role: "होम बायर",
+    role: "Home Buyer",
     img: "https://res.cloudinary.com/dal5dlztv/image/upload/v1757578561/Ellipse_8_fyouzw.png",
   },
   {
-    text: "मुझे कमर्शियल स्पेस चाहिए था और 18Homes ने मुझे एकदम परफेक्ट ऑप्शन दिलवाया। समय, बजट और लोकेशन—सब सही मिला।",
+    text: "I needed a commercial space and 18Homes got me the perfect option. Time, budget, and location—everything was just right.",
     name: "Alex Carter",
-    role: "बिज़नेस ओनर",
+    role: "Business Owner",
     img: "https://res.cloudinary.com/dal5dlztv/image/upload/v1757578556/Ellipse_8_1_fr81tw.png",
   },
   {
-    text: "18Homes के साथ प्रॉपर्टी ढूँढ़ना बेहद आसान हो गया। वेबसाइट यूज़र–फ्रेंडली है और टीम हर स्टेप पर गाइड करती है। बहुत शानदार अनुभव!",
+    text: "Finding a property has become extremely easy with 18Homes. The website is user-friendly and the team guides you at every step. A wonderful experience!",
     name: "Sofia Lancer",
-    role: "प्रॉपर्टी सीकर",
+    role: "Property Seeker",
     img: "https://res.cloudinary.com/dal5dlztv/image/upload/v1757578561/Ellipse_8_fyouzw.png",
   }
 ];
@@ -44,13 +44,13 @@ export default function Testimonials() {
             {/* Heading */}
             <div className="text-center mb-12 px-4">
                 <h2 className="text-[40px] text-white font-semibold mb-4">
-                  हमारे क्लाइंट क्या कहते हैं
+                  What Our Clients Say
                 </h2>
 
                 <div className="w-[140px] h-[3px] bg-gradient-to-r from-[#bc67ff] to-[#4da6ff] mx-auto mb-6"></div>
 
                 <p className="text-[#8f8f9a] max-w-[500px] mx-auto text-[18px] leading-relaxed">
-                   हमारी सरल और तेज़ प्रक्रिया यह सुनिश्चित करती है कि आपको घर खोजने में कम समय लगे और सही प्रॉपर्टी जल्दी मिले।
+                   Our simple and fast process ensures that you spend less time searching for a home and find the right property quickly.
                 </p>
             </div>
 

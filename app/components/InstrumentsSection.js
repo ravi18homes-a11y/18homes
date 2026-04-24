@@ -14,15 +14,15 @@ export default function InstrumentsSection() {
                 </h3>
 
                 <h2 className="text-[42px] md:text-[44px] font-bold text-black leading-snug mb-6">
-                    18Homes – प्रीमियम प्रॉपर्टी समाधान
+                    18Homes – Premium Property Solutions
                 </h2>
 
                 <p className="text-[18px] md:text-[20px] text-gray-700 ">
-                   हम इंडस्ट्री स्टैंडर्ड और प्रोफेशनल रियल-एस्टेट सेवाएँ प्रदान करते हैं,
+                   We provide industry standard and professional real estate services,
                     <br />
-                    हमारी टीम आपको सही प्रॉपर्टी चुनने में मदद करती है
+                    Our team helps you choose the right property
                     <br />
-                   बजट, लोकेशन और लाइफस्टाइल सभी को ध्यान में रखते हुए।
+                   Keeping budget, location, and lifestyle in mind.
                 </p>
             </div>
 

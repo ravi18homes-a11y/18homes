@@ -83,7 +83,7 @@ export default function ContactSection() {
 
         {/* LEFT SECTION */}
        <div className="bg-[#1D1D1D] text-white px-8 md:px-20 py-8 flex flex-col justify-center">
-          <h2 className="text-[48px] font-light mb-2">कृपया अपनी आवश्यकताएँ भरकर बताएं</h2>
+          <h2 className="text-[48px] font-light mb-2">Please tell us your requirements</h2>
           <div className="w-[120px] h-[4px] bg-[#28E7F7] mb-6"></div>
 
           <form className="space-y-4" onSubmit={handleSubmit}>
@@ -100,7 +100,7 @@ export default function ContactSection() {
                 if (val.length > 0 && val.trim() === "") return;
                 setForm((prev) => ({ ...prev, name: val }));
               }}
-              placeholder="नाम दर्ज करें*"
+              placeholder="Enter Name*"
               required
               autoComplete="off"
               className="w-full border-2 border-white bg-transparent px-5 py-3 rounded-md text-lg outline-none "
@@ -113,7 +113,7 @@ export default function ContactSection() {
               onChange={handleChange}
               required
               autoComplete="off"
-              placeholder="अपना ईमेल दर्ज करें"
+              placeholder="Enter your email"
               className="w-full border-2 border-white bg-transparent px-5 py-3 rounded-md text-lg outline-none "
             />
 
@@ -130,7 +130,7 @@ export default function ContactSection() {
               maxLength={10}
               required
               autoComplete="off"
-              placeholder="मोबाइल नंबर लिखें*"
+              placeholder="Enter mobile number*"
               className="w-full border-2 border-white bg-transparent px-5 py-3 rounded-md text-lg outline-none "
             />
 
@@ -142,7 +142,7 @@ export default function ContactSection() {
                 className="w-full border-2 border-white bg-transparent px-5 py-3 rounded-md text-lg outline-none appearance-none text-[gray]"
               >
                 <option value="" disabled className="text-[gray]">
-                  कमरा या फ्लैट चुनें 1BHK/2BHK/3BHK*
+                  Select Room or Flat 1BHK/2BHK/3BHK*
                 </option>
                 <option value="1RK Flat" className="text-black">
                   1RK Flat
@@ -161,7 +161,7 @@ export default function ContactSection() {
             </div>
 
             <textarea
-              placeholder="अपना संदेश लिखें"
+              placeholder="Write your message"
               id="discussion"
               name="discussion"
               value={form?.discussion}

@@ -109,7 +109,7 @@ const RealEstateApp = () => {
     const currentMediaCount = sellForm.images.length + sellForm.videos.length;
 
     if (currentMediaCount + files.length > 15) {
-      alert("अधिकतम 15 इमेज/वीडियो अपलोड कर सकते हैं");
+      alert("You can upload a maximum of 15 images/videos");
       return;
     }
 
@@ -165,7 +165,7 @@ const RealEstateApp = () => {
       const token = localStorage.getItem("authToken");
 
       if (!token) {
-        alert("कृपया पहले लॉगिन करें");
+        alert("Please login first");
         setIsSubmitting(false);
         return;
       }
@@ -231,11 +231,11 @@ const RealEstateApp = () => {
           setCurrentPage("buy");
         }, 3000);
       } else {
-        alert(data.message || "प्रॉपर्टी सबमिट करने में समस्या आई");
+        alert(data.message || "Error submitting property");
       }
     } catch (error) {
       console.error(error);
-      alert("सर्वर में समस्या है। कृपया बाद में प्रयास करें।");
+      alert("There is a server issue. Please try again later.");
     } finally {
       setIsSubmitting(false);
     }
@@ -265,8 +265,7 @@ const RealEstateApp = () => {
                 />
               </svg>
               <span className="font-semibold">
-                सफलता! आपकी प्रॉपर्टी सफलतापूर्वक सबमिट हो गई है। आपको खरीद पेज
-                पर रीडायरेक्ट किया जा रहा है...
+                Success! Your property has been successfully submitted. Redirecting you to the buy page...
               </span>
             </div>
           )}
@@ -274,10 +273,10 @@ const RealEstateApp = () => {
           <div className="bg-white rounded-lg shadow-md p-6 md:p-8">
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-gray-800 mb-2">
-                अपनी प्रॉपर्टी बेचें
+                Sell Your Property
               </h2>
               <p className="text-gray-600">
-                अपनी प्रॉपर्टी की जानकारी भरें और हजारों खरीदारों तक पहुंचें
+                Fill in your property details and reach thousands of buyers
               </p>
             </div>
 
@@ -288,10 +287,10 @@ const RealEstateApp = () => {
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <label className="block text-sm font-medium text-gray-700">
-                      📸 प्रॉपर्टी की तस्वीरें
+                      📸 Property Images
                     </label>
                     <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-                      {sellForm.images.length} इमेज अपलोड की गई
+                      {sellForm.images.length} images uploaded
                     </span>
                   </div>
 
@@ -323,7 +322,7 @@ const RealEstateApp = () => {
                           <>
                             <Camera className="w-6 h-6 text-blue-500" />
                             <span className="text-xs text-blue-600 mt-1 font-medium">
-                              इमेज अपलोड
+                              Upload Image
                             </span>
                           </>
                         )}
@@ -344,10 +343,10 @@ const RealEstateApp = () => {
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <label className="block text-sm font-medium text-gray-700">
-                      🎥 प्रॉपर्टी के वीडियो
+                      🎥 Property Videos
                     </label>
                     <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-                      {sellForm.videos.length} वीडियो अपलोड किया गया
+                      {sellForm.videos.length} videos uploaded
                     </span>
                   </div>
 
@@ -385,7 +384,7 @@ const RealEstateApp = () => {
                           <>
                             <Upload className="w-6 h-6 text-purple-500" />
                             <span className="text-xs text-purple-600 mt-1 font-medium">
-                              वीडियो अपलोड
+                              Upload Video
                             </span>
                           </>
                         )}
@@ -406,12 +405,12 @@ const RealEstateApp = () => {
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
                   <p className="text-sm text-gray-600 text-center">
                     <span className="font-semibold text-gray-800">
-                      कुल {sellForm.images.length + sellForm.videos.length}/15
-                      मीडिया
+                      Total {sellForm.images.length + sellForm.videos.length}/15
+                      media
                     </span>
                     {" • "}
-                    {sellForm.images.length} इमेज और {sellForm.videos.length}{" "}
-                    वीडियो अपलोड किया गया
+                    {sellForm.images.length} images and {sellForm.videos.length}{" "}
+                    videos uploaded
                   </p>
                 </div>
               </div>
@@ -419,7 +418,7 @@ const RealEstateApp = () => {
               {/* Property Title */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  प्रॉपर्टी का शीर्षक *
+                  Property Title *
                 </label>
                 <input
                   type="text"
@@ -428,7 +427,7 @@ const RealEstateApp = () => {
                   onChange={(e) =>
                     handleSellFormChange("title", e.target.value)
                   }
-                  placeholder="जैसे: आधुनिक 3BHK फ्लैट"
+                  placeholder="e.g. Modern 3BHK Flat"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
@@ -436,7 +435,7 @@ const RealEstateApp = () => {
               {/* Property Description */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  विवरण *
+                  Description *
                 </label>
                 <textarea
                   required
@@ -444,7 +443,7 @@ const RealEstateApp = () => {
                   onChange={(e) =>
                     handleSellFormChange("description", e.target.value)
                   }
-                  placeholder="अपनी प्रॉपर्टी के बारे में विस्तार से बताएं..."
+                  placeholder="Explain your property in detail..."
                   rows="4"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
@@ -454,7 +453,7 @@ const RealEstateApp = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    प्रॉपर्टी टाइप *
+                    Property Type *
                   </label>
                   
                   <select
@@ -465,18 +464,18 @@ const RealEstateApp = () => {
                     }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   >
-                   <option value="flat">फ्लैट</option>
-<option value="house">हाउस</option>
-<option value="plot">प्लॉट</option>
-<option value="shop">दुकान</option>
-<option value="office">ऑफिस</option>
-<option value="apartment">अपार्टमेंट</option>
+<option value="flat">Flat</option>
+<option value="house">House</option>
+<option value="plot">Plot</option>
+<option value="shop">Shop</option>
+<option value="office">Office</option>
+<option value="apartment">Apartment</option>
                   </select>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    उद्देश्य *
+                    Purpose *
                   </label>
                   <select
                     required
@@ -486,8 +485,8 @@ const RealEstateApp = () => {
                     }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   >
-                    <option value="sell">बिक्री</option>
-                    <option value="rent">किराया</option>
+                    <option value="sell">Sell</option>
+                    <option value="rent">Rent</option>
                   </select>
                 </div>
               </div>
@@ -496,7 +495,7 @@ const RealEstateApp = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    स्थान *
+                    Location *
                   </label>
                   <input
                     type="text"
@@ -505,14 +504,14 @@ const RealEstateApp = () => {
                     onChange={(e) =>
                       handleSellFormChange("address", e.target.value)
                     }
-                    placeholder="जैसे: सेक्टर 62, नोएडा"
+                    placeholder="e.g. Sector 62, Noida"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    कीमत (₹) *
+                    Price (₹) *
                   </label>
                   <input
                     type="text"
@@ -521,7 +520,7 @@ const RealEstateApp = () => {
                     onChange={(e) =>
                       handleSellFormChange("price", e.target.value)
                     }
-                    placeholder="जैसे: 8500000"
+                    placeholder="e.g. 8500000"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   />
                 </div>
@@ -531,7 +530,7 @@ const RealEstateApp = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    बेडरूम *
+                    Bedrooms *
                   </label>
                   <select
                     required
@@ -551,7 +550,7 @@ const RealEstateApp = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    बाथरूम *
+                    Bathrooms *
                   </label>
                   <select
                     required
@@ -571,7 +570,7 @@ const RealEstateApp = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    क्षेत्र (sq.ft) *
+                    Area (sq.ft) *
                   </label>
                   <input
                     type="number"
@@ -580,7 +579,7 @@ const RealEstateApp = () => {
                     onChange={(e) =>
                       handleSellFormChange("area", e.target.value)
                     }
-                    placeholder="जैसे: 1450"
+                    placeholder="e.g. 1450"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   />
                 </div>
@@ -589,7 +588,7 @@ const RealEstateApp = () => {
               {/* Furnishing */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  फर्निशिंग *
+                  Furnishing *
                 </label>
                 <select
                   required
@@ -608,12 +607,12 @@ const RealEstateApp = () => {
               {/* Owner Details */}
               <div className="border-t pt-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                  मालिक की जानकारी
+                  Owner Information
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      मालिक का नाम
+                      Owner's Name
                     </label>
                     <input
                       type="text"
@@ -622,13 +621,13 @@ const RealEstateApp = () => {
                         handleSellFormChange("ownerName", e.target.value)
                       }
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                      placeholder="नाम"
+                      placeholder="Name"
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      फोन नंबर
+                      Phone Number
                     </label>
                     <input
                       type="tel"
@@ -637,13 +636,13 @@ const RealEstateApp = () => {
                         handleSellFormChange("ownerPhone", e.target.value)
                       }
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                      placeholder="मोबाइल नंबर"
+                      placeholder="Mobile Number"
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      ईमेल (वैकल्पिक)
+                      Email (Optional)
                     </label>
                     <input
                       type="email"
@@ -652,7 +651,7 @@ const RealEstateApp = () => {
                         handleSellFormChange("ownerEmail", e.target.value)
                       }
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                      placeholder="ईमेल"
+                      placeholder="Email"
                     />
                   </div>
                 </div>
@@ -664,7 +663,7 @@ const RealEstateApp = () => {
                   href={"/"}
                   className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  रद्द करें
+                  Cancel
                 </Link>
 
                 <button
@@ -676,10 +675,10 @@ const RealEstateApp = () => {
                   {isSubmitting ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      सबमिट हो रहा है...
+                      Submitting...
                     </>
                   ) : (
-                    "सबमिट करें"
+                    "Submit"
                   )}
                 </button>
               </div>
