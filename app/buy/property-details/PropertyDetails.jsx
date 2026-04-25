@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
@@ -145,13 +145,43 @@ const PropertyDetailsPage = () => {
           ...fallbackProperty,
           images: [fallbackProperty.image],
           location: formatAddress(fallbackProperty.location),
-          description: fallbackProperty.description || "Description not available.",
+          description:
+            fallbackProperty.description || "Description not available.",
         });
       }
     };
 
     fetchProperty().finally(() => setLoading(false));
   }, [id, databaseUrl]);
+
+  const touchStartX = useRef(null);
+  const touchEndX = useRef(null);
+
+  const handleTouchStart = (event) => {
+    touchStartX.current = event.touches[0]?.clientX ?? null;
+  };
+
+  const handleTouchMove = (event) => {
+    touchEndX.current = event.touches[0]?.clientX ?? null;
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStartX.current === null || touchEndX.current === null) return;
+
+    const distance = touchStartX.current - touchEndX.current;
+    const threshold = 50;
+
+    if (distance > threshold) {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
+    } else if (distance < -threshold) {
+      setCurrentImageIndex(
+        (prevIndex) => (prevIndex - 1 + images.length) % images.length,
+      );
+    }
+
+    touchStartX.current = null;
+    touchEndX.current = null;
+  };
 
   const formatPrice = (price) => {
     if (typeof price === "object" && price !== null && price.unit) {
@@ -202,7 +232,7 @@ const PropertyDetailsPage = () => {
   const images = validImages.length > 0 ? validImages : [DEFAULT_IMAGE];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen pt-[40px] bg-gray-50">
       {/* Back Button */}
       <div className="bg-white shadow-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
@@ -217,7 +247,12 @@ const PropertyDetailsPage = () => {
       </div>
 
       {/* Hero Image Section */}
-      <div className="relative bg-gray-900">
+      <div
+        className="relative bg-gray-900"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         <img
           src={images[currentImageIndex]}
           onError={(e) => (e.target.src = DEFAULT_IMAGE)}
@@ -253,10 +288,11 @@ const PropertyDetailsPage = () => {
               <button
                 key={index}
                 onClick={() => setCurrentImageIndex(index)}
-                className={`h-2 rounded-full transition-all ${currentImageIndex === index
+                className={`h-2 rounded-full transition-all ${
+                  currentImageIndex === index
                     ? "bg-white w-8"
                     : "bg-white/50 w-2"
-                  }`}
+                }`}
               />
             ))}
           </div>
@@ -282,10 +318,11 @@ const PropertyDetailsPage = () => {
                 </div>
                 {property.status && (
                   <span
-                    className={`px-4 py-2 rounded-full text-white font-semibold whitespace-nowrap self-start ${property.status === "Ready to Move"
+                    className={`px-4 py-2 rounded-full text-white font-semibold whitespace-nowrap self-start ${
+                      property.status === "Ready to Move"
                         ? "bg-green-600"
                         : "bg-orange-600"
-                      }`}
+                    }`}
                   >
                     {property.status}
                   </span>
@@ -325,7 +362,9 @@ const PropertyDetailsPage = () => {
 
             {/* Description */}
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">Description</h2>
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                Description
+              </h2>
               <p className="text-gray-700 leading-relaxed">
                 {property.description}
               </p>
@@ -501,7 +540,10 @@ const PropertyDetailsPage = () => {
                 </p>
               )}
 
-              <a href="tel:${property.owner.phone}" className="w-full py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors flex items-center justify-center gap-2">
+              <a
+                href={`tel:${property.owner.phone}`}
+                className="w-full py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+              >
                 <Phone className="w-5 h-5" />
                 Call Now
               </a>
