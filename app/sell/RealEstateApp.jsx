@@ -17,6 +17,7 @@ import {
   Loader2,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const RealEstateApp = () => {
   const [currentPage, setCurrentPage] = useState("sell");
@@ -25,6 +26,7 @@ const RealEstateApp = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [token, setToken] = useState("");
+  const router = useRouter();
 
   // Track auth state from localStorage (login saves 'authToken')
   useEffect(() => {
@@ -67,7 +69,7 @@ const RealEstateApp = () => {
 
   const toggleFavorite = (id) => {
     setFavorites((prev) =>
-      prev.includes(id) ? prev.filter((fav) => fav !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((fav) => fav !== id) : [...prev, id],
     );
   };
 
@@ -92,7 +94,7 @@ const RealEstateApp = () => {
       {
         method: "POST",
         body: formData,
-      }
+      },
     );
 
     if (!res.ok) {
@@ -156,6 +158,20 @@ const RealEstateApp = () => {
     }));
   };
 
+  const showBedrooms =
+    sellForm.propertyType !== "plot" &&
+    sellForm.propertyType !== "shop" &&
+    sellForm.propertyType !== "office";
+  const showBathrooms =
+    sellForm.propertyType !== "plot" && sellForm.propertyType !== "shop";
+  const showFurnishing = sellForm.propertyType !== "plot";
+  const areaColSpan =
+    showBedrooms && showBathrooms
+      ? ""
+      : showBedrooms || showBathrooms
+        ? "md:col-span-2"
+        : "md:col-span-3";
+
   const handleSubmitProperty = async (e) => {
     e.preventDefault();
 
@@ -189,8 +205,8 @@ const RealEstateApp = () => {
           priceValue: Number(sellForm.price),
 
           area: Number(sellForm.area),
-          bedrooms: Number(sellForm.bedrooms),
-          bathrooms: Number(sellForm.bathrooms),
+          bedrooms: showBedrooms ? Number(sellForm.bedrooms) : 0,
+          bathrooms: showBathrooms ? Number(sellForm.bathrooms) : 0,
           furnishing: sellForm.furnishing,
 
           address: {
@@ -226,10 +242,7 @@ const RealEstateApp = () => {
           ownerEmail: "",
         });
 
-        setTimeout(() => {
-          setSubmitSuccess(false);
-          setCurrentPage("buy");
-        }, 3000);
+        router.push("/buy");
       } else {
         alert(data.message || "Error submitting property");
       }
@@ -265,7 +278,8 @@ const RealEstateApp = () => {
                 />
               </svg>
               <span className="font-semibold">
-                Success! Your property has been successfully submitted. Redirecting you to the buy page...
+                Success! Your property has been successfully submitted.
+                Redirecting you to the buy page...
               </span>
             </div>
           )}
@@ -455,7 +469,7 @@ const RealEstateApp = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Property Type *
                   </label>
-                  
+
                   <select
                     required
                     value={sellForm.propertyType}
@@ -464,12 +478,12 @@ const RealEstateApp = () => {
                     }
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   >
-<option value="flat">Flat</option>
-<option value="house">House</option>
-<option value="plot">Plot</option>
-<option value="shop">Shop</option>
-<option value="office">Office</option>
-<option value="apartment">Apartment</option>
+                    <option value="flat">Flat</option>
+                    <option value="house">House</option>
+                    <option value="plot">Plot</option>
+                    <option value="shop">Shop</option>
+                    <option value="office">Office</option>
+                    <option value="apartment">Apartment</option>
                   </select>
                 </div>
 
@@ -528,47 +542,51 @@ const RealEstateApp = () => {
 
               {/* Beds, Baths & Area */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Bedrooms *
-                  </label>
-                  <select
-                    required
-                    value={sellForm.bedrooms}
-                    onChange={(e) =>
-                      handleSellFormChange("bedrooms", e.target.value)
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                  >
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5+</option>
-                  </select>
-                </div>
+                {showBedrooms && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Bedrooms *
+                    </label>
+                    <select
+                      required
+                      value={sellForm.bedrooms}
+                      onChange={(e) =>
+                        handleSellFormChange("bedrooms", e.target.value)
+                      }
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                    >
+                      <option value="1">1</option>
+                      <option value="2">2</option>
+                      <option value="3">3</option>
+                      <option value="4">4</option>
+                      <option value="5">5+</option>
+                    </select>
+                  </div>
+                )}
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Bathrooms *
-                  </label>
-                  <select
-                    required
-                    value={sellForm.bathrooms}
-                    onChange={(e) =>
-                      handleSellFormChange("bathrooms", e.target.value)
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                  >
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5+</option>
-                  </select>
-                </div>
+                {showBathrooms && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Bathrooms *
+                    </label>
+                    <select
+                      required
+                      value={sellForm.bathrooms}
+                      onChange={(e) =>
+                        handleSellFormChange("bathrooms", e.target.value)
+                      }
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                    >
+                      <option value="1">1</option>
+                      <option value="2">2</option>
+                      <option value="3">3</option>
+                      <option value="4">4</option>
+                      <option value="5">5+</option>
+                    </select>
+                  </div>
+                )}
 
-                <div>
+                <div className={areaColSpan}>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Area (sq.ft) *
                   </label>
@@ -586,23 +604,25 @@ const RealEstateApp = () => {
               </div>
 
               {/* Furnishing */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Furnishing *
-                </label>
-                <select
-                  required
-                  value={sellForm.furnishing}
-                  onChange={(e) =>
-                    handleSellFormChange("furnishing", e.target.value)
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                >
-                  <option value="unfurnished">Unfurnished</option>
-                  <option value="semi-furnished">Semi Furnished</option>
-                  <option value="fully-furnished">Fully Furnished</option>
-                </select>
-              </div>
+              {showFurnishing && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Furnishing *
+                  </label>
+                  <select
+                    required
+                    value={sellForm.furnishing}
+                    onChange={(e) =>
+                      handleSellFormChange("furnishing", e.target.value)
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  >
+                    <option value="unfurnished">Unfurnished</option>
+                    <option value="semi-furnished">Semi Furnished</option>
+                    <option value="fully-furnished">Fully Furnished</option>
+                  </select>
+                </div>
+              )}
 
               {/* Owner Details */}
               <div className="border-t pt-6">

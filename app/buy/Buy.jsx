@@ -28,6 +28,7 @@ const INITIAL_FILTERS = {
   furnishing: "all",
   minArea: "",
   maxArea: "",
+  purpose: "sell",
   sortBy: "newest",
 };
 
@@ -64,7 +65,7 @@ const BuyPage = () => {
 
         if (searchQuery) params.append("search", searchQuery);
         if (filters.city) params.append("city", filters.city);
-        params.append("purpose", "sell");
+        if (filters.purpose) params.append("purpose", filters.purpose);
         if (filters.propertyType !== "all")
           params.append("propertyType", filters.propertyType);
         if (filters.minPrice) params.append("minPrice", filters.minPrice);
@@ -421,7 +422,32 @@ const BuyPage = () => {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Results Header */}
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={() => setFilters({ ...filters, purpose: "sell" })}
+              className={`px-4 py-2 rounded-full border transition ${
+                filters.purpose === "sell"
+                  ? "bg-green-600 text-white border-green-600"
+                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              Sell
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilters({ ...filters, purpose: "rent" })}
+              className={`px-4 py-2 rounded-full border transition ${
+                filters.purpose === "rent"
+                  ? "bg-red-600 text-white border-red-600"
+                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              Rent
+            </button>
+          </div>
+
           <h2 className="text-2xl font-bold text-gray-800">
             {loading ? (
               <span className="flex items-center gap-2">
@@ -496,7 +522,7 @@ const BuyPage = () => {
                           Featured
                         </span>
                       )}
-                      <span className="absolute bottom-3 left-3 px-3 py-1 bg-green-600 text-white text-sm rounded-full">
+                      <span className={`absolute bottom-3 left-3 px-3 py-1 ${property.status === "For Sale" ? "bg-green-600" : "bg-red-600"} text-white text-sm rounded-full`}>
                         {property.status}
                       </span>
                     </div>

@@ -72,19 +72,30 @@ export default function AdminPropertyDetailPage() {
       {/* ================= IMAGES ================= */}
       <Section title="Property Images">
         {property.images?.length ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {property.images.map((img, i) => (
-              <img
-                key={i}
-                src={img}
-                alt="property"
-                className="h-40 w-full object-cover rounded-lg border"
-              />
-            ))}
-          </div>
-        ) : (
-          <p className="text-gray-500">No images uploaded</p>
-        )}
+  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    {property.images.map((file, i) => {
+      const isVideo = file?.toLowerCase().includes(".mp4");
+
+      return isVideo ? (
+        <video
+          key={i}
+          src={file}
+          controls
+          className="h-40 w-full object-cover rounded-lg border"
+        />
+      ) : (
+        <img
+          key={i}
+          src={file}
+          alt="property"
+          className="h-40 w-full object-cover rounded-lg border"
+        />
+      );
+    })}
+  </div>
+) : (
+  <p className="text-gray-500">No images uploaded</p>
+)}
       </Section>
 
       {/* ================= DESCRIPTION ================= */}
