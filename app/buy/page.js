@@ -1,6 +1,10 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { BuyComponent } from "./BuyComponent";
 
 export default function Page() {
-  return <BuyComponent />;
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <BuyComponent />
+    </Suspense>
+  );
 }
