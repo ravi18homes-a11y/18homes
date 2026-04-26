@@ -2,6 +2,7 @@ import Footer from "./COMMON/Footer";
 import Navbar from "./COMMON/Navbar";
 import HomeBlogs from "./components/Blogs";
 import ContactSection from "./components/ContactSection";
+import FilterPropertiesComp from "./components/FilterPropertiesComp";
 import HeroSlider from "./components/HeroSection";
 import HomeAbout from "./components/HomeAbout";
 import HomeBuyComp from "./components/HomeBuyComp";
@@ -17,8 +18,9 @@ export default function Home() {
       <Navbar/>
       <HeroSlider/>
       <HomeAbout/>
-      <HomeBuyComp/>
+      <FilterPropertiesComp/>
        <HomeServices/> 
+      <HomeBuyComp/>
       <HomeBlogs/>
       <InstrumentsSection/>
       <Testimonials/>

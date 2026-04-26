@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   Search,
@@ -30,10 +31,16 @@ const INITIAL_FILTERS = {
   maxArea: "",
   purpose: "sell",
   sortBy: "newest",
+  areaUnit: "",
+  custom: "",
+  shopSize: "",
+  officeType: "",
 };
 
 const BuyPage = () => {
   const databaseUrl = process.env.NEXT_PUBLIC_APP_DATABASE_URL;
+  const searchParams = useSearchParams();
+  const searchQueryString = searchParams.toString();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
@@ -48,12 +55,62 @@ const BuyPage = () => {
     totalPages: 1,
     limit: 9,
   });
+  const [filtersInitialized, setFiltersInitialized] = useState(false);
+  const fetchIdRef = useRef(0);
+
+  const normalizeString = (value) =>
+    typeof value === "string" ? value.trim().toLowerCase() : value;
+
+  useEffect(() => {
+    const queryFilters = { ...INITIAL_FILTERS };
+    const params = new URLSearchParams(searchQueryString);
+    const paramKeys = [
+      "propertyType",
+      "city",
+      "minPrice",
+      "maxPrice",
+      "bedrooms",
+      "bathrooms",
+      "furnishing",
+      "purpose",
+      "sortBy",
+      "areaUnit",
+      "custom",
+      "shopSize",
+      "officeType",
+    ];
+
+    paramKeys.forEach((key) => {
+      const value = params.get(key);
+      if (value !== null) {
+        queryFilters[key] = [
+          "propertyType",
+          "furnishing",
+          "purpose",
+          "sortBy",
+          "areaUnit",
+          "custom",
+          "shopSize",
+          "officeType",
+        ].includes(key)
+          ? normalizeString(value)
+          : value;
+      }
+    });
+
+    setFilters((prev) => ({ ...prev, ...queryFilters }));
+    setFiltersInitialized(true);
+  }, [searchQueryString]);
 
   const fetchProperties = useCallback(
     async (page = 1) => {
+      const fetchId = ++fetchIdRef.current;
+
       if (!databaseUrl) {
-        setError("Database URL is not configured.");
-        setLoading(false);
+        if (fetchId === fetchIdRef.current) {
+          setError("Database URL is not configured.");
+          setLoading(false);
+        }
         return;
       }
 
@@ -74,6 +131,10 @@ const BuyPage = () => {
           params.append("bedrooms", filters.bedrooms);
         if (filters.furnishing !== "all")
           params.append("furnishing", filters.furnishing);
+        if (filters.areaUnit) params.append("areaUnit", filters.areaUnit);
+        if (filters.shopSize) params.append("shopSize", filters.shopSize);
+        if (filters.officeType) params.append("officeType", filters.officeType);
+        if (filters.custom) params.append("custom", filters.custom);
 
         let sortParam = "-createdAt";
         if (filters.sortBy === "price-low") sortParam = "price";
@@ -123,27 +184,46 @@ const BuyPage = () => {
               bedrooms: prop.bedrooms || 0,
               bathrooms: prop.bathrooms || 0,
               area: areaValue,
-              type: prop.propertyType || "apartment",
+              areaUnit:
+                typeof prop.area === "object" && prop.area !== null
+                  ? normalizeString(prop.area.unit || "")
+                  : "",
+              shopSize: normalizeString(prop.shopSize || ""),
+              officeType: normalizeString(prop.officeType || ""),
+              custom:
+                typeof prop.custom === "string"
+                  ? normalizeString(prop.custom) === "true"
+                  : Boolean(prop.custom),
+              purpose: normalizeString(prop.purpose || "sell"),
+              type: normalizeString(prop.propertyType || "apartment"),
               image: validImages.length > 0 ? validImages[0] : DEFAULT_IMAGE,
-              status: prop.purpose === "rent" ? "For Rent" : "For Sale",
+              status:
+                normalizeString(prop.purpose || "sell") === "rent"
+                  ? "For Rent"
+                  : "For Sale",
               featured: prop.featured || false,
             };
           });
 
+          if (fetchId !== fetchIdRef.current) return;
           setProperties(transformedProperties);
 
           if (data.data.pagination) {
             setPagination(data.data.pagination);
           }
         } else {
+          if (fetchId !== fetchIdRef.current) return;
           setProperties([]);
         }
       } catch (err) {
+        if (fetchId !== fetchIdRef.current) return;
         console.error("Error fetching properties:", err);
         setError("Failed to load properties. Please try again.");
         setProperties([]);
       } finally {
-        setLoading(false);
+        if (fetchId === fetchIdRef.current) {
+          setLoading(false);
+        }
       }
     },
     [databaseUrl, searchQuery, filters, pagination.limit],
@@ -151,9 +231,10 @@ const BuyPage = () => {
 
   // Reset to page 1 whenever search/filters change, then fetch
   useEffect(() => {
+    if (!filtersInitialized) return;
     setPagination((prev) => ({ ...prev, page: 1 }));
     fetchProperties(1);
-  }, [searchQuery, filters]);
+  }, [searchQuery, filters, filtersInitialized]);
 
   // Fetch when page changes (but not when filters/search trigger a reset)
   const handlePageChange = (newPage) => {
@@ -162,17 +243,72 @@ const BuyPage = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Client-side filter for bathrooms and area (API may not support these)
-  const filteredProperties = properties.filter((property) => {
-    const matchesBath =
-      filters.bathrooms === "any" ||
-      property.bathrooms >= parseInt(filters.bathrooms);
-    const matchesMinArea =
-      !filters.minArea || property.area >= parseInt(filters.minArea);
-    const matchesMaxArea =
-      !filters.maxArea || property.area <= parseInt(filters.maxArea);
-    return matchesBath && matchesMinArea && matchesMaxArea;
-  });
+  const shouldApplyClientFilters =
+    filters.bathrooms !== "any" ||
+    filters.minArea !== "" ||
+    filters.maxArea !== "" ||
+    filters.areaUnit !== "" ||
+    filters.shopSize !== "" ||
+    filters.officeType !== "" ||
+    filters.custom !== "";
+
+  const filteredProperties = shouldApplyClientFilters
+    ? properties.filter((property) => {
+        const matchesBath =
+          filters.bathrooms === "any" ||
+          property.bathrooms >= parseInt(filters.bathrooms);
+        const matchesMinArea =
+          !filters.minArea || property.area >= parseInt(filters.minArea);
+        const matchesMaxArea =
+          !filters.maxArea || property.area <= parseInt(filters.maxArea);
+
+        const normalizedPropertyType = normalizeString(property.type);
+        const normalizedPropertyPurpose = normalizeString(property.purpose);
+        const normalizedAreaUnit = normalizeString(property.areaUnit);
+        const normalizedShopSize = normalizeString(property.shopSize);
+        const normalizedOfficeType = normalizeString(property.officeType);
+        const normalizedCustom = String(property.custom).toLowerCase();
+
+        const normalizedFilterType = normalizeString(filters.propertyType);
+        const normalizedFilterPurpose = normalizeString(filters.purpose);
+        const normalizedFilterAreaUnit = normalizeString(filters.areaUnit);
+        const normalizedFilterShopSize = normalizeString(filters.shopSize);
+        const normalizedFilterOfficeType = normalizeString(filters.officeType);
+        const normalizedFilterCustom = normalizeString(filters.custom);
+
+        const matchesType =
+          normalizedFilterType === "all" ||
+          !normalizedFilterType ||
+          normalizedPropertyType === normalizedFilterType;
+        const matchesPurpose =
+          !normalizedFilterPurpose ||
+          normalizedPropertyPurpose === normalizedFilterPurpose;
+        const matchesAreaUnit =
+          !normalizedFilterAreaUnit ||
+          normalizedAreaUnit === normalizedFilterAreaUnit;
+        const matchesShopSize =
+          !normalizedFilterShopSize ||
+          normalizedShopSize === normalizedFilterShopSize;
+        const matchesOfficeType =
+          !normalizedFilterOfficeType ||
+          normalizedOfficeType === normalizedFilterOfficeType;
+        const matchesCustom =
+          !normalizedFilterCustom ||
+          normalizedCustom === normalizedFilterCustom;
+
+        return (
+          matchesBath &&
+          matchesMinArea &&
+          matchesMaxArea &&
+          matchesType &&
+          matchesPurpose &&
+          matchesAreaUnit &&
+          matchesShopSize &&
+          matchesOfficeType &&
+          matchesCustom
+        );
+      })
+    : properties;
 
   const toggleFavorite = (id) => {
     setFavorites((prev) =>
@@ -456,8 +592,10 @@ const BuyPage = () => {
               </span>
             ) : error ? (
               "Error loading properties"
+            ) : pagination.total > filteredProperties.length ? (
+              `Showing ${filteredProperties.length} of ${pagination.total} Properties Available`
             ) : (
-              `${pagination.total ?? filteredProperties.length} Properties Available`
+              `${filteredProperties.length} Properties Available`
             )}
           </h2>
         </div>
@@ -485,6 +623,7 @@ const BuyPage = () => {
         ) : (
           <>
             {/* Property Grid */}
+            {console.log("Filtered Properties Count:", filteredProperties)}
             {filteredProperties.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredProperties.map((property) => (
@@ -522,7 +661,9 @@ const BuyPage = () => {
                           Featured
                         </span>
                       )}
-                      <span className={`absolute bottom-3 left-3 px-3 py-1 ${property.status === "For Sale" ? "bg-green-600" : "bg-red-600"} text-white text-sm rounded-full`}>
+                      <span
+                        className={`absolute bottom-3 left-3 px-3 py-1 ${property.status === "For Sale" ? "bg-green-600" : "bg-red-600"} text-white text-sm rounded-full`}
+                      >
                         {property.status}
                       </span>
                     </div>
@@ -532,7 +673,7 @@ const BuyPage = () => {
                         {property.title}
                       </h3>
                       <div className="flex items-center text-gray-600 mb-3">
-                        <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
+                        <MapPin className="w-4 h-4 mr-1 shrink-0" />
                         <span className="text-sm truncate">
                           {property.location}
                         </span>
@@ -655,7 +796,7 @@ const BuyPage = () => {
       </div>
 
       {/* Footer CTA */}
-      <div className="bg-gradient-to-r from-red-600 to-red-700 text-white py-12 mt-16">
+      <div className="bg-linear-to-r from-red-600 to-red-700 text-white py-12 mt-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-4">
             Didn't find your dream property?
