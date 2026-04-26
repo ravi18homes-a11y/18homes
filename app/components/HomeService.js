@@ -104,9 +104,9 @@ export default function HomeServices() {
       </div>
 
       <div className="h-[150px]"></div>
-      <a href="/" className="px-7 flex justify-center items-center w-[150px] mx-auto py-3 rounded-full bg-[#28E7F7] text-black text-[16px] font-semibold hover:opacity-90 transition">
+      {/* <a href="/" className="px-7 flex justify-center items-center w-[150px] mx-auto py-3 rounded-full bg-[#28E7F7] text-black text-[16px] font-semibold hover:opacity-90 transition">
                     View More
-                </a>
+                </a> */}
       
     </section>
   );
