@@ -23,7 +23,7 @@ export async function POST(req) {
       secure: true,
       auth: {
         user: "ravi18homes@gmail.com",
-        pass: "eilnwchjkeoctgss",
+        pass: "evcceopqlgqmvosi",
       },
     });
 

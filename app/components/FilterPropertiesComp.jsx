@@ -334,11 +334,11 @@ export default function FilterPropertiesComp() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 mb-10 flex justify-center gap-3">
+      <div className="max-w-7xl mx-auto border-t border-gray-200 pt-[20px]  px-6 mb-10 flex justify-center gap-3">
         <button
           type="button"
           onClick={() => setPurpose("sell")}
-          className={`px-5 py-3 rounded-full font-semibold transition ${
+          className={`px-5 py-3 rounded-full font-semibold text-[32px] transition ${
             purpose === "sell"
               ? "bg-green-600 text-white"
               : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-100"
@@ -349,7 +349,7 @@ export default function FilterPropertiesComp() {
         <button
           type="button"
           onClick={() => setPurpose("rent")}
-          className={`px-5 py-3 rounded-full font-semibold transition ${
+          className={`px-5 py-3 rounded-full font-semibold text-[32px] transition ${
             purpose === "rent"
               ? "bg-red-600 text-white"
               : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-100"

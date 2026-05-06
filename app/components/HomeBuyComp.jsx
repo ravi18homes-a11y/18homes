@@ -113,7 +113,7 @@ export default function HomeBuyComp() {
           <button
             type="button"
             onClick={() => setFilters({ ...filters, purpose: "sell" })}
-            className={`px-4 py-2 rounded-full border transition ${
+            className={`px-4 py-2 rounded-full text-[28px] border transition ${
               filters.purpose === "sell"
                 ? "bg-green-600 text-white border-green-600"
                 : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
@@ -124,7 +124,7 @@ export default function HomeBuyComp() {
           <button
             type="button"
             onClick={() => setFilters({ ...filters, purpose: "rent" })}
-            className={`px-4 py-2 rounded-full border transition ${
+            className={`px-4 py-2 rounded-full text-[28px] border transition ${
               filters.purpose === "rent"
                 ? "bg-red-600 text-white border-red-600"
                 : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
