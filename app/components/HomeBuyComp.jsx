@@ -108,7 +108,9 @@ export default function HomeBuyComp() {
 
   return (
     <section className="max-w-7xl mx-auto px-4 py-12">
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
+
+      <h3 className="text-center sm:text-[30px] mb-[20px]">Top Premium Properties</h3>
+      {/* <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
         <div className="flex items-center gap-2 flex-wrap">
           <button
             type="button"
@@ -145,7 +147,7 @@ export default function HomeBuyComp() {
             `${properties.length} Properties Available`
           )}
         </h2>
-      </div>
+      </div> */}
 
       {loading ? (
         <div className="flex justify-center py-10">

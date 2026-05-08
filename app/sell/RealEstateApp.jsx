@@ -53,7 +53,7 @@ const RealEstateApp = () => {
     purpose: "sell",
     propertyType: "apartment",
     price: "",
-    area: "",
+    area: [{ size: "", unit: "sqft" }],
     bedrooms: "1",
     bathrooms: "1",
     furnishing: "unfurnished",
@@ -204,7 +204,10 @@ const RealEstateApp = () => {
           priceText: sellForm.price,
           priceValue: Number(sellForm.price),
 
-          area: Number(sellForm.area),
+          area: {
+            size: sellForm.area[0]?.size ? Number(sellForm.area[0].size) : 0,
+            unit: sellForm.area[0]?.unit || "sqft",
+          },
           bedrooms: showBedrooms ? Number(sellForm.bedrooms) : 0,
           bathrooms: showBathrooms ? Number(sellForm.bathrooms) : 0,
           furnishing: sellForm.furnishing,
@@ -230,7 +233,7 @@ const RealEstateApp = () => {
           purpose: "sell",
           propertyType: "apartment",
           price: "",
-          area: "",
+          area: [{ size: "", unit: "sqft" }],
           bedrooms: "1",
           bathrooms: "1",
           furnishing: "unfurnished",
@@ -593,9 +596,14 @@ const RealEstateApp = () => {
                   <input
                     type="number"
                     required
-                    value={sellForm.area}
+                    value={sellForm.area[0]?.size}
                     onChange={(e) =>
-                      handleSellFormChange("area", e.target.value)
+                      handleSellFormChange("area", [
+                        {
+                          ...sellForm.area[0],
+                          size: e.target.value,
+                        },
+                      ])
                     }
                     placeholder="e.g. 1450"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"

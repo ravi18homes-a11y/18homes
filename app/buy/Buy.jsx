@@ -161,7 +161,9 @@ const BuyPage = () => {
           const transformedProperties = data.data.properties.map((prop) => {
             let areaValue = 0;
             if (typeof prop.area === "object" && prop.area !== null) {
-              areaValue = prop.area.value || 0;
+              areaValue = prop.area.size && prop.area.unit
+                ? `${prop.area.size} ${prop.area.unit || "sqft"}`
+                : "—"
             } else if (typeof prop.area === "number") {
               areaValue = prop.area;
             }
@@ -179,11 +181,13 @@ const BuyPage = () => {
             return {
               id: prop._id || prop.id,
               title: prop.title || "No Title",
-              location: ownerInfo,
+              location: ` ${prop.address.city ? prop.address.city + ", " : ""} ${ownerInfo}`,
               price: prop.price || 0,
               bedrooms: prop.bedrooms || 0,
               bathrooms: prop.bathrooms || 0,
-              area: areaValue,
+              updatedAt: prop.updatedAt || 0,
+              createdAt: prop.createdAt || 0,
+              area: areaValue, 
               areaUnit:
                 typeof prop.area === "object" && prop.area !== null
                   ? normalizeString(prop.area.unit || "")
@@ -674,8 +678,22 @@ const BuyPage = () => {
                       </h3>
                       <div className="flex items-center text-gray-600 mb-3">
                         <MapPin className="w-4 h-4 mr-1 shrink-0" />
-                        <span className="text-sm truncate">
+                        <span className="text-sm capitalize truncate">
                           {property.location}
+                        </span>
+                      </div>
+                      <div className="flex items-center text-gray-600 mb-3">
+                        
+                        <span className="text-sm truncate">
+                          
+                         Created at : {new Date(property.createdAt).toLocaleDateString("en-IN")}
+                        </span>
+                      </div>
+                      <div className="flex items-center text-gray-600 mb-3">
+                     
+                        <span className="text-sm truncate">
+                        
+                           Updated at : {new Date(property.updatedAt).toLocaleDateString("en-IN")}
                         </span>
                       </div>
 
@@ -804,9 +822,9 @@ const BuyPage = () => {
           <p className="text-lg mb-6">
             Tell us what you're looking for, we'll find the best options for you
           </p>
-          <button className="px-8 py-3 bg-white text-red-600 rounded-lg font-semibold hover:bg-gray-100 text-lg">
+          <Link href={"/contact"} className="px-8 py-3 bg-white text-red-600 rounded-lg font-semibold hover:bg-gray-100 text-lg">
             Contact Us
-          </button>
+          </Link>
         </div>
       </div>
     </div>
