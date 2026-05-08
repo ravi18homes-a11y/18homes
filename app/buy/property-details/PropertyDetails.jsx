@@ -15,6 +15,7 @@ import {
   Play,
 } from "lucide-react";
 import Link from "next/link";
+import { FaWhatsapp } from "react-icons/fa";
 
 // const staticProperties = [
 //   {
@@ -121,7 +122,7 @@ const PropertyDetailsPage = () => {
               ...data.data,
               area:
                 typeof data.data.area === "object"
-                  ? data.data.area.value || "Not specified"
+                  ? data.data.area.size || "Not specified"
                   : data.data.area || "Not specified",
               images: (data.data.images || []).filter(
                 (img) => img && !img.startsWith("blob:") && img.trim() !== "",
@@ -355,7 +356,7 @@ const PropertyDetailsPage = () => {
 
               <div className="mt-4">
                 <span className="text-4xl font-bold text-red-600">
-                  {formatPrice(property.price)}
+                  {formatPrice(property.priceValue || property.price)}
                 </span>
               </div>
             </div>
@@ -509,7 +510,7 @@ const PropertyDetailsPage = () => {
                   </div>
 
                   <div className="space-y-3 mb-6">
-                    {property.owner.phone && (
+                    {property.owner?.phone && (
                       <a
                         href={`tel:${property.owner.phone}`}
                         className="flex items-center gap-3 p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
@@ -520,8 +521,19 @@ const PropertyDetailsPage = () => {
                         </span>
                       </a>
                     )}
+                    {property.owner?.phone && (
+                      <a
+                        href={`https://wa.me/${property.owner.phone}`}
+                        className="flex items-center gap-3 p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                      >
+                        <FaWhatsapp className="w-5 h-5 text-red-600 flex-shrink-0" />
+                        <span className="text-gray-700">
+                          {property.owner.phone}
+                        </span>
+                      </a>
+                    )}
 
-                    {property.owner.email && (
+                    {property.owner?.email && (
                       <a
                         href={`mailto:${property.owner.email}`}
                         className="flex items-center gap-3 p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
@@ -540,13 +552,22 @@ const PropertyDetailsPage = () => {
                 </p>
               )}
 
-              <a
-                href={`tel:${property.owner.phone}`}
-                className="w-full py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
-              >
-                <Phone className="w-5 h-5" />
-                Call Now
-              </a>
+              {property.owner?.phone ? (
+                <a
+                  href={`tel:${property.owner.phone}`}
+                  className="w-full py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+                >
+                  <Phone className="w-5 h-5" />
+                  Call Now
+                </a>
+              ) : (
+                <button
+                  disabled
+                  className="w-full py-3 bg-gray-300 text-gray-600 rounded-lg font-semibold cursor-not-allowed"
+                >
+                  Phone unavailable
+                </button>
+              )}
 
               {/* <button className="w-full mt-3 py-3 border-2 border-red-600 text-red-600 rounded-lg font-semibold hover:bg-red-50 transition-colors">
                 Send Message

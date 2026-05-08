@@ -40,10 +40,7 @@ export default function Footer() {
               <li>
                 <Link href="/about">About Us</Link>
               </li>
-              <li className="relative group cursor-pointer">
-                <Link href="/service">Our Services</Link>
-              </li>
-
+              
               <li>
                 <Link href="/contact">Contact Us</Link>
               </li>
@@ -60,7 +57,7 @@ export default function Footer() {
               <li>2 BHK Flat</li>
               <li>3 BHK Flat</li>
               <li>4+ BHK Flat</li>
-              <li>Budget House / Location Wise Property</li>
+              
             </ul>
           </div>
           <div className="text-black">
@@ -97,21 +94,25 @@ export default function Footer() {
       <div className="max-w-[1350px]  px-6 lg:px-12 mx-auto border-t border-[#9FABC1] mt-14"></div>
 
       {/* COPYRIGHT + SOCIAL */}
-      <div className="max-w-[1450px] mx-auto px-6 lg:px-12 py-8 flex flex-col md:flex-row items-center justify-between gap-6 text-black">
+      <div className="max-w-[1450px] mx-auto px-6 lg:pl-12 pr-[90px] py-8 flex flex-col md:flex-row items-center justify-between gap-6 text-black">
         <p className="text-[15px] font-normal">
           Copyright © 2025 <span className="font-semibold">18Homes </span>
-          All Rights Reserved. Design by RS
+          All Rights Reserved. Design by IK
         </p>
 
         <div className="flex items-center gap-4">
           <span className="text-[15px] font-medium">FOLLOW US :</span>
 
           <div className="flex items-center gap-5 text-[20px]">
-            <FaFacebookF />
-            <FaTwitter />
-            <FaLinkedinIn />
-            <FaYoutube />
-            <FaInstagram />
+            <Link href={"https://www.facebook.com/share/1AqkBeyC4R/"} target="_blank">
+              <FaFacebookF />
+            </Link>
+            <Link href={"https://www.instagram.com/18homes?igsh=amNlcWlvOTljY2E0"} target="_blank">
+              <FaInstagram />
+            </Link>
+            {/* <Link href={"https://www.youtube.com/"} target="_blank">
+              <FaYoutube />
+            </Link> */}
           </div>
         </div>
       </div>

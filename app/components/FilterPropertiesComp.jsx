@@ -337,7 +337,10 @@ export default function FilterPropertiesComp() {
       <div className="max-w-7xl mx-auto border-t border-gray-200 pt-[20px]  px-6 mb-10 flex justify-center gap-3">
         <button
           type="button"
-          onClick={() => setPurpose("sell")}
+          onClick={() => {
+            setLoading(true);
+            setPurpose("sell");
+          }}
           className={`px-5 py-3 rounded-full font-semibold text-[32px] transition ${
             purpose === "sell"
               ? "bg-green-600 text-white"
@@ -348,7 +351,10 @@ export default function FilterPropertiesComp() {
         </button>
         <button
           type="button"
-          onClick={() => setPurpose("rent")}
+          onClick={() => {
+            setLoading(true);
+            setPurpose("rent");
+          }}
           className={`px-5 py-3 rounded-full font-semibold text-[32px] transition ${
             purpose === "rent"
               ? "bg-red-600 text-white"
@@ -379,45 +385,58 @@ export default function FilterPropertiesComp() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {activeCategory.cards.map((card) => {
-              const count = getCountForCard(card);
-              return (
-                <Link
-                  key={card.key}
-                  href={`/buy?purpose=${purpose}&${buildSearchString(card.query)}`}
-                  className="group block rounded-3xl border border-gray-200 bg-gray-50 transition hover:-translate-y-1 hover:shadow-xl"
-                >
+            {loading
+              ? Array.from({ length: 4 }).map((_, index) => (
                   <div
-                    className={`mb-4 h-36 rounded-t-3xl overflow-hidden shadow-md ${
-                      card.image ? "bg-gray-200" : "bg-gray-100"
-                    }`}
-                    style={
-                      card.image
-                        ? {
-                            backgroundImage: `url(${card.image})`,
-                            backgroundPosition: "center",
-                            backgroundSize: "cover",
-                          }
-                        : undefined
-                    }
+                    key={index}
+                    className="rounded-3xl border border-gray-200 bg-white overflow-hidden animate-pulse"
                   >
-                    <div className="h-full w-full bg-black/30 flex items-center justify-center text-xl font-bold text-white">
-                      {card.label}
+                    <div className="h-36 bg-gray-300 rounded-t-3xl" />
+                    <div className="p-6">
+                      <div className="h-5 w-32 bg-gray-300 rounded mb-3" />
+                      <div className="h-4 w-24 bg-gray-200 rounded" />
                     </div>
                   </div>
-                  <div className="p-6">
-                    <p className="text-lg font-semibold text-gray-900">
-                      {card.label}
-                    </p>
-                    <p className="mt-2 text-sm text-gray-600">
-                      {count > 0
-                        ? `${count} properties found`
-                        : "Click to explore properties"}
-                    </p>
-                  </div>
-                </Link>
-              );
-            })}
+                ))
+              : activeCategory.cards.map((card) => {
+                  const count = getCountForCard(card);
+                  return (
+                    <Link
+                      key={card.key}
+                      href={`/buy?purpose=${purpose}&${buildSearchString(card.query)}`}
+                      className="group block rounded-3xl border border-gray-200 bg-gray-50 transition hover:-translate-y-1 hover:shadow-xl"
+                    >
+                      <div
+                        className={`mb-4 h-36 rounded-t-3xl overflow-hidden shadow-md ${
+                          card.image ? "bg-gray-200" : "bg-gray-100"
+                        }`}
+                        style={
+                          card.image
+                            ? {
+                                backgroundImage: `url(${card.image})`,
+                                backgroundPosition: "center",
+                                backgroundSize: "cover",
+                              }
+                            : undefined
+                        }
+                      >
+                        <div className="h-full w-full bg-black/30 flex items-center justify-center text-xl font-bold text-white">
+                          {card.label}
+                        </div>
+                      </div>
+                      <div className="p-6">
+                        <p className="text-lg font-semibold text-gray-900">
+                          {card.label}
+                        </p>
+                        <p className="mt-2 text-sm text-gray-600">
+                          {count > 0
+                            ? `${count} properties found`
+                            : "Click to explore properties"}
+                        </p>
+                      </div>
+                    </Link>
+                  );
+                })}
           </div>
         </div>
       </div>
