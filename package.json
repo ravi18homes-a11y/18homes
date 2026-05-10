@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "lucide-react": "^0.561.0",
+    "mongoose": "^9.6.2",
     "next": "16.0.7",
     "nodemailer": "^7.0.11",
     "react": "19.2.0",

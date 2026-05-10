@@ -8,13 +8,103 @@ import { IoMdClose } from "react-icons/io";
 import { MdLogin, MdPhone } from "react-icons/md";
 import { RiAdminLine } from "react-icons/ri";
 
+function flattenNavTree(nodes, depth = 0, acc = []) {
+  for (const n of nodes || []) {
+    acc.push({ node: n, depth });
+    if (n.children?.length) flattenNavTree(n.children, depth + 1, acc);
+  }
+  return acc;
+}
+
+function DropdownPanel({ nodes }) {
+  if (!nodes?.length) return null;
+  const flat = flattenNavTree(nodes);
+  return (
+    <ul className="absolute left-0 top-full z-[60] mt-1 min-w-[230px] rounded-xl border border-slate-100 bg-white py-2 shadow-xl opacity-0 invisible transition-[opacity,visibility] duration-150 group-hover:visible group-hover:opacity-100">
+      {flat.map(({ node, depth }) => (
+        <li key={node.id}>
+          <Link
+            href={node.href}
+            className="block py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-slate-900"
+            style={{ paddingLeft: 12 + depth * 12, paddingRight: 16 }}
+          >
+            {node.title}
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function NavItem({ href, label, items }) {
+  const hasKids = items?.length > 0;
+  if (!hasKids) {
+    return (
+      <li>
+        <Link
+          href={href}
+          className="hover:text-[#8c4bdc] transition-colors"
+        >
+          {label}
+        </Link>
+      </li>
+    );
+  }
+  return (
+    <li className="group relative">
+      <span className="inline-flex cursor-default items-center gap-1">
+        <Link href={href} className="hover:text-[#8c4bdc] transition-colors">
+          {label}
+        </Link>
+        <span className="text-xs text-slate-500" aria-hidden>
+          ▾
+        </span>
+      </span>
+      <DropdownPanel nodes={items} />
+    </li>
+  );
+}
+
+function MobileNavBranch({ node, onPick }) {
+  return (
+    <div>
+      <Link href={node.href} onClick={onPick} className="block py-0.5">
+        {node.title}
+      </Link>
+      {node.children?.length > 0 && (
+        <div className="ml-3 mt-1 flex flex-col gap-1 border-l border-slate-200 pl-2 text-[16px] text-slate-700">
+          {node.children.map((ch) => (
+            <MobileNavBranch key={ch.id} node={ch} onPick={onPick} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState("");
+  const [navData, setNavData] = useState(null);
   const profileMenuRef = useRef(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/navbar")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!cancelled && data) setNavData(data);
+      })
+      .catch(() => {
+        if (!cancelled) setNavData(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Track auth state from localStorage (login saves 'authToken')
   useEffect(() => {
@@ -97,18 +187,27 @@ export default function Navbar() {
               isScrolled ? "text-black" : "text-black"
             } text-[18px]`}
           >
-            <li>
-              <Link href="/">Home</Link>
-            </li>
-            <li>
-              <Link href="/buy">Buy</Link>
-            </li>
-            <li>
-              <Link href="/sell">Sell</Link>
-            </li>
-            <li>
-              <Link href="/contact">Contact</Link>
-            </li>
+            {(navData?.menus || [
+              { key: "home", label: "Home", href: "/", children: [] },
+              { key: "buy", label: "Buy", href: "/buy", children: [] },
+              { key: "sell", label: "Sell", href: "/sell", children: [] },
+              { key: "contact", label: "Contact", href: "/contact", children: [] },
+            ]).map((m) => (
+              <NavItem
+                key={m.key}
+                href={m.href}
+                label={m.label}
+                items={m.children}
+              />
+            ))}
+            {(navData?.sitePages || []).map((p) => (
+              <NavItem
+                key={p.id}
+                href={p.href}
+                label={p.title}
+                items={p.children}
+              />
+            ))}
           </ul>
         </div>
 
@@ -230,22 +329,40 @@ export default function Navbar() {
     transform transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
     ${open ? "translate-x-0" : "-translate-x-full"}`}
       >
-        <div className="flex flex-col space-y-7 text-black text-[18px]">
-          <Link href="/" onClick={() => setOpen(false)}>
-            Home
-          </Link>
-
-          <Link onClick={() => setOpen(false)} href="/buy">
-            Buy
-          </Link>
-
-          <Link onClick={() => setOpen(false)} href="/sell">
-            Sell
-          </Link>
-
-          <Link href="/contact" onClick={() => setOpen(false)}>
-            Contact
-          </Link>
+        <div className="flex flex-col space-y-5 text-black text-[18px]">
+          {(navData?.menus || [
+            { key: "home", label: "Home", href: "/", children: [] },
+            { key: "buy", label: "Buy", href: "/buy", children: [] },
+            { key: "sell", label: "Sell", href: "/sell", children: [] },
+            { key: "contact", label: "Contact", href: "/contact", children: [] },
+          ]).map((m) => (
+            <div key={m.key} className="space-y-2">
+              <Link href={m.href} onClick={() => setOpen(false)}>
+                {m.label}
+              </Link>
+              {m.children?.length > 0 && (
+                <div className="ml-4 flex flex-col gap-2 border-l border-slate-200 pl-3 text-base text-slate-700">
+                  {m.children.map((c) => (
+                    <MobileNavBranch key={c.id} node={c} onPick={() => setOpen(false)} />
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+          {(navData?.sitePages || []).map((p) => (
+            <div key={p.id} className="space-y-2">
+              <Link href={p.href} onClick={() => setOpen(false)}>
+                {p.title}
+              </Link>
+              {p.children?.length > 0 && (
+                <div className="ml-4 flex flex-col gap-2 border-l border-indigo-100 pl-3 text-base text-slate-700">
+                  {p.children.map((c) => (
+                    <MobileNavBranch key={c.id} node={c} onPick={() => setOpen(false)} />
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
 
           <Link
             href="/contact"
