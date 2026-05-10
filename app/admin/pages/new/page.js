@@ -5,10 +5,9 @@ import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 
-
-export default function NewPage() {
+function NewPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [saving, setSaving] = useState(false);
@@ -70,5 +69,13 @@ export default function NewPage() {
         </div>
       </div>
     </>
+  );
+}
+
+export default function NewPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <NewPageContent />
+    </Suspense>
   );
 }
