@@ -97,7 +97,7 @@ export default function Footer() {
       <div className="max-w-[1450px] mx-auto px-6 lg:pl-12 pr-[90px] py-8 flex flex-col md:flex-row items-center justify-between gap-6 text-black">
         <p className="text-[15px] font-normal">
           Copyright © 2025 <span className="font-semibold">18Homes </span>
-          All Rights Reserved. Design by IK
+          All Rights Reserved. Design by RS & PS
         </p>
 
         <div className="flex items-center gap-4">

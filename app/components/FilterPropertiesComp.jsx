@@ -341,13 +341,13 @@ export default function FilterPropertiesComp() {
             setLoading(true);
             setPurpose("sell");
           }}
-          className={`px-5 py-3 rounded-full font-semibold text-[32px] transition ${
+          className={`px-5 py-3 rounded-full font-semibold text-[28px] transition ${
             purpose === "sell"
               ? "bg-green-600 text-white"
               : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-100"
           }`}
         >
-          Sell
+          Sell / Purchase
         </button>
         <button
           type="button"
@@ -355,7 +355,7 @@ export default function FilterPropertiesComp() {
             setLoading(true);
             setPurpose("rent");
           }}
-          className={`px-5 py-3 rounded-full font-semibold text-[32px] transition ${
+          className={`px-5 py-3 rounded-full font-semibold text-[28px] transition ${
             purpose === "rent"
               ? "bg-red-600 text-white"
               : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-100"
