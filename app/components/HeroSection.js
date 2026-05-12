@@ -72,7 +72,7 @@ function BannerSlide({ image }) {
       />
 
       <div className="relative z-20 max-w-[900px] px-4">
-        <h2 className="text-[black] text-3xl md:text-4xl mb-4 font-medium bg-[white] p-3">Ghaziabad / Noida Special </h2>
+        <h2 className="text-[black] text-3xl md:text-4xl mb-4 font-medium bg-[white] p-3">Delhi NCR Special </h2>
         <h3
           className="text-[black] text-3xl md:text-4xl font-light  mb-3"
           style={{ fontFamily: "'Dancing Script', cursive" }}
