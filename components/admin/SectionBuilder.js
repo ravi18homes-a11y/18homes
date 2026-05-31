@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 const sectionTemplates = {
   hero: {
@@ -55,6 +55,8 @@ function createSection(type, index) {
 
 function SectionConfig({ section, onUpdate }) {
   const { type, data } = section;
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState("");
 
   const handleChange = (field) => (event) => {
     const value =
@@ -62,6 +64,38 @@ function SectionConfig({ section, onUpdate }) {
         ? event.target.checked
         : event.target.value;
     onUpdate({ ...section, data: { ...data, [field]: value } });
+  };
+
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    setUploadMessage("Uploading image...");
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const result = await res.json();
+
+      if (res.ok) {
+        onUpdate({ ...section, data: { ...data, url: result.url } });
+        setUploadMessage("Image uploaded successfully!");
+      } else {
+        setUploadMessage(`Upload failed: ${result.error}`);
+      }
+    } catch (error) {
+      console.error(error);
+      setUploadMessage("An error occurred during upload.");
+    } finally {
+      setIsUploading(false);
+      setTimeout(() => setUploadMessage(""), 3000);
+    }
   };
 
   const handleListUpdate = (field) => (event) => {
@@ -143,13 +177,27 @@ function SectionConfig({ section, onUpdate }) {
       {type === "image" && (
         <>
           <label className="block text-sm font-medium text-slate-700">
-            Image URL
+            Image Upload
           </label>
-          <input
-            value={data.url}
-            onChange={handleChange("url")}
-            className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3"
-          />
+          <div className="flex flex-col gap-3">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileUpload}
+              disabled={isUploading}
+              className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3"
+            />
+            {uploadMessage && (
+              <p className={`text-sm ${uploadMessage.includes('failed') || uploadMessage.includes('error') ? 'text-red-500' : 'text-green-600'}`}>
+                {uploadMessage}
+              </p>
+            )}
+            {data.url && (
+              <div className="mt-2 rounded-xl border border-slate-200 p-2 bg-slate-50 inline-block w-max">
+                <img src={data.url} alt="Preview" className="h-32 w-auto object-cover rounded-lg" />
+              </div>
+            )}
+          </div>
           <label className="block text-sm font-medium text-slate-700">
             Alt text
           </label>
@@ -268,6 +316,8 @@ function SectionConfig({ section, onUpdate }) {
 }
 
 export default function SectionBuilder({ sections = [], onChange }) {
+  const [notification, setNotification] = useState(null);
+
   const preview = useMemo(
     () => sections.map((section) => ({ id: section.id, type: section.type })),
     [sections],
@@ -276,6 +326,11 @@ export default function SectionBuilder({ sections = [], onChange }) {
   const handleAdd = (type) => {
     const next = [...sections, createSection(type, sections.length)];
     onChange(next);
+
+    setNotification(`${type.replace("-", " ")} section added! Scroll down to modify it.`);
+    setTimeout(() => {
+      setNotification(null);
+    }, 3000);
   };
 
   const updateSection = (index, nextSection) => {
@@ -300,14 +355,24 @@ export default function SectionBuilder({ sections = [], onChange }) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      {notification && (
+        <div className="sticky top-4 z-50 mx-auto w-max max-w-md rounded-full bg-green-100 px-6 py-3 text-sm font-semibold text-green-800 shadow-md transition-all duration-300">
+          <span className="flex items-center gap-2">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            <span className="capitalize">{notification}</span>
+          </span>
+        </div>
+      )}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {Object.keys(sectionTemplates).map((type) => (
           <button
             key={type}
             type="button"
             onClick={() => handleAdd(type)}
-            className="rounded-3xl border border-slate-200 bg-white px-4 py-5 text-left shadow-sm transition hover:border-slate-300"
+            className="rounded-3xl border border-slate-200 cursor-pointer bg-white px-4 py-5 text-left shadow-sm transition hover:border-slate-300"
           >
             <h3 className="font-semibold capitalize">
               {type.replace("-", " ")}
@@ -340,21 +405,21 @@ export default function SectionBuilder({ sections = [], onChange }) {
                 <button
                   type="button"
                   onClick={() => reorder(index, "up")}
-                  className="rounded-full border border-slate-200 bg-slate-100 px-3 py-2 text-sm hover:bg-slate-200"
+                  className="rounded-full cursor-pointer border border-slate-200 bg-slate-100 px-3 py-2 text-sm hover:bg-slate-200"
                 >
                   Move up
                 </button>
                 <button
                   type="button"
                   onClick={() => reorder(index, "down")}
-                  className="rounded-full border border-slate-200 bg-slate-100 px-3 py-2 text-sm hover:bg-slate-200"
+                  className="rounded-full border cursor-pointer border-slate-200 bg-slate-100 px-3 py-2 text-sm hover:bg-slate-200"
                 >
                   Move down
                 </button>
                 <button
                   type="button"
                   onClick={() => removeSection(index)}
-                  className="rounded-full border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 hover:bg-rose-100"
+                  className="rounded-full border cursor-pointer border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 hover:bg-rose-100"
                 >
                   Delete
                 </button>

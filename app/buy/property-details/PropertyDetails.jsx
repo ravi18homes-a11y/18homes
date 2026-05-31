@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import {
   ArrowLeft,
   MapPin,
@@ -71,6 +71,7 @@ import { FaWhatsapp } from "react-icons/fa";
 // ];
 
 const PropertyDetailsPage = () => {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const id = searchParams?.get("id");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -79,6 +80,8 @@ const PropertyDetailsPage = () => {
   const [currentVideo, setCurrentVideo] = useState(null);
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showDetails, setShowDetails] = useState(false);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
 
   const databaseUrl = process.env.NEXT_PUBLIC_APP_DATABASE_URL || "";
 
@@ -200,6 +203,41 @@ const PropertyDetailsPage = () => {
     setShowVideoModal(true);
   };
 
+  const handleViewDetails = async () => {
+    const userDataStr = localStorage.getItem("userData");
+    const authToken = localStorage.getItem("authToken");
+    
+    if (!userDataStr || !authToken) {
+      router.push("/login-signup");
+      return;
+    }
+    
+    setIsLoadingDetails(true);
+    
+    try {
+      const parsedUser = JSON.parse(userDataStr);
+      
+      await fetch('/api/send-view-details-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user: parsedUser,
+          property: {
+            ...property,
+            formattedPrice: formatPrice(property.priceValue || property.price)
+          }
+        })
+      });
+      
+      setShowDetails(true);
+    } catch (error) {
+      console.error("Error viewing details", error);
+      setShowDetails(true);
+    } finally {
+      setIsLoadingDetails(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -289,11 +327,10 @@ const PropertyDetailsPage = () => {
               <button
                 key={index}
                 onClick={() => setCurrentImageIndex(index)}
-                className={`h-2 rounded-full transition-all ${
-                  currentImageIndex === index
-                    ? "bg-white w-8"
-                    : "bg-white/50 w-2"
-                }`}
+                className={`h-2 rounded-full transition-all ${currentImageIndex === index
+                  ? "bg-white w-8"
+                  : "bg-white/50 w-2"
+                  }`}
               />
             ))}
           </div>
@@ -319,11 +356,10 @@ const PropertyDetailsPage = () => {
                 </div>
                 {property.status && (
                   <span
-                    className={`px-4 py-2 rounded-full text-white font-semibold whitespace-nowrap self-start ${
-                      property.status === "Ready to Move"
-                        ? "bg-green-600"
-                        : "bg-orange-600"
-                    }`}
+                    className={`px-4 py-2 rounded-full text-white font-semibold whitespace-nowrap self-start ${property.status === "Ready to Move"
+                      ? "bg-green-600"
+                      : "bg-orange-600"
+                      }`}
                   >
                     {property.status}
                   </span>
@@ -493,80 +529,113 @@ const PropertyDetailsPage = () => {
                 Contact Us
               </h3>
 
-              {property.owner ? (
+              {showDetails ? (
                 <>
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center flex-shrink-0">
-                      <span className="text-white text-2xl font-bold">
-                        {property.owner.name?.charAt(0) || "U"}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-gray-800">
-                        {property.owner.name || "Seller"}
-                      </p>
-                      <p className="text-sm text-gray-600">Property Owner</p>
-                    </div>
-                  </div>
+                  {property.owner ? (
+                    <>
+                      <div className="flex items-center gap-4 mb-6">
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center flex-shrink-0">
+                          <span className="text-white text-2xl font-bold">
+                            {property.owner.name?.charAt(0) || "U"}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-800">
+                            {property.owner.name || "Seller"}
+                          </p>
+                          <p className="text-sm text-gray-600">Property Owner</p>
+                        </div>
+                      </div>
 
-                  <div className="space-y-3 mb-6">
-                    {property.owner?.phone && (
-                      <a
-                        href={`tel:${property.owner.phone}`}
-                        className="flex items-center gap-3 p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                      >
-                        <Phone className="w-5 h-5 text-red-600 flex-shrink-0" />
-                        <span className="text-gray-700">
-                          {property.owner.phone}
-                        </span>
-                      </a>
-                    )}
-                    {property.owner?.phone && (
-                      <a
-                        href={`https://wa.me/${property.owner.phone}`}
-                        className="flex items-center gap-3 p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                      >
-                        <FaWhatsapp className="w-5 h-5 text-red-600 flex-shrink-0" />
-                        <span className="text-gray-700">
-                          {property.owner.phone}
-                        </span>
-                      </a>
-                    )}
+                      <div className="space-y-3 mb-6">
+                        {property.owner?.phone && (
+                          <a
+                            href={`tel:${property.owner.phone}`}
+                            className="flex items-center gap-3 p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                          >
+                            <Phone className="w-5 h-5 text-red-600 flex-shrink-0" />
+                            <span className="text-gray-700">
+                              {property.owner.phone}
+                            </span>
+                          </a>
+                        )}
+                        {property.owner?.phone && (
+                          <a
+                            href={`https://wa.me/91${property.owner.phone}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-3 p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                          >
+                            <FaWhatsapp className="w-5 h-5 text-green-600 flex-shrink-0" />
+                            <span className="text-gray-700">
+                              {property.owner.phone}
+                            </span>
+                          </a>
+                        )}
 
-                    {property.owner?.email && (
-                      <a
-                        href={`mailto:${property.owner.email}`}
-                        className="flex items-center gap-3 p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                      >
-                        <Mail className="w-5 h-5 text-red-600 flex-shrink-0" />
-                        <span className="text-gray-700 text-sm break-all">
-                          {property.owner.email}
-                        </span>
-                      </a>
-                    )}
-                  </div>
+                        {property.owner?.email && (
+                          <a
+                            href={`mailto:${property.owner.email}`}
+                            className="flex items-center gap-3 p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                          >
+                            <Mail className="w-5 h-5 text-red-600 flex-shrink-0" />
+                            <span className="text-gray-700 text-sm break-all">
+                              {property.owner.email}
+                            </span>
+                          </a>
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-gray-600 mb-6">
+                      Contact information not available
+                    </p>
+                  )}
+
+                  {property.owner?.phone ? (
+                    <a
+                      href={`tel:${property.owner.phone}`}
+                      className="w-full py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <Phone className="w-5 h-5" />
+                      Call Now
+                    </a>
+                  ) : (
+                    <button
+                      disabled
+                      className="w-full py-3 bg-gray-300 text-gray-600 rounded-lg font-semibold cursor-not-allowed"
+                    >
+                      Phone unavailable
+                    </button>
+                  )}
                 </>
               ) : (
-                <p className="text-gray-600 mb-6">
-                  Contact information not available
-                </p>
-              )}
-
-              {property.owner?.phone ? (
-                <a
-                  href={`tel:${property.owner.phone}`}
-                  className="w-full py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
-                >
-                  <Phone className="w-5 h-5" />
-                  Call Now
-                </a>
-              ) : (
-                <button
-                  disabled
-                  className="w-full py-3 bg-gray-300 text-gray-600 rounded-lg font-semibold cursor-not-allowed"
-                >
-                  Phone unavailable
-                </button>
+                <div className="flex flex-col items-center justify-center py-6 bg-gray-50 rounded-xl border border-gray-200">
+                  <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                    <Phone className="w-8 h-8 text-red-600" />
+                  </div>
+                  <h4 className="text-lg font-semibold text-gray-800 mb-2">Contact the Seller</h4>
+                  <p className="text-gray-600 text-center text-sm mb-6 px-4">
+                    Login to view the seller's phone number and email address directly.
+                  </p>
+                  <button 
+                    onClick={handleViewDetails}
+                    disabled={isLoadingDetails}
+                    className="w-[90%] py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+                  >
+                    {isLoadingDetails ? (
+                      <span className="flex items-center gap-2">
+                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        Loading...
+                      </span>
+                    ) : (
+                      "View Details"
+                    )}
+                  </button>
+                </div>
               )}
 
               {/* <button className="w-full mt-3 py-3 border-2 border-red-600 text-red-600 rounded-lg font-semibold hover:bg-red-50 transition-colors">

@@ -179,7 +179,7 @@ export default function PageEditor({
             key={tab.key}
             type="button"
             onClick={() => setActiveTab(tab.key)}
-            className={`rounded-full px-4 py-2 text-sm font-medium transition ${activeTab === tab.key ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`}
+            className={`rounded-full px-4 cursor-pointer py-2 text-sm font-medium transition ${activeTab === tab.key ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`}
           >
             {tab.label}
           </button>
@@ -299,7 +299,7 @@ export default function PageEditor({
           type="button"
           disabled={saving || hasSaveError}
           onClick={handleSave}
-          className="inline-flex items-center justify-center rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+          className="inline-flex items-center cursor-pointer justify-center rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
         >
           {saving ? "Saving…" : isEdit ? "Save changes" : "Save page"}
         </button>

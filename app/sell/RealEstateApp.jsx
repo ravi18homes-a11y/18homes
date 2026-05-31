@@ -531,7 +531,7 @@ const RealEstateApp = () => {
                     Price (₹) *
                   </label>
                   <input
-                    type="text"
+                    type="number"
                     required
                     value={sellForm.price}
                     onChange={(e) =>

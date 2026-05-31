@@ -183,9 +183,8 @@ export default function Navbar() {
           </Link>
 
           <ul
-            className={`desktop-menu hidden lg:flex items-center gap-8 ${
-              isScrolled ? "text-black" : "text-black"
-            } text-[18px]`}
+            className={`desktop-menu hidden lg:flex items-center gap-8 ${isScrolled ? "text-black" : "text-black"
+              } text-[18px]`}
           >
             {(navData?.menus || [
               { key: "home", label: "Home", href: "/", children: [] },
@@ -216,7 +215,7 @@ export default function Navbar() {
             <div className="relative" ref={profileMenuRef}>
               <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
-                className="w-12 h-12 rounded-full border-2 border-[#8c4bdc] overflow-hidden hover:border-[#c04b7e] transition"
+                className="w-12 h-12 rounded-full cursor-pointer border-2 border-[#8c4bdc] overflow-hidden hover:border-[#c04b7e] transition"
               >
                 <Image
                   src="https://res.cloudinary.com/dxlykgx6w/image/upload/v1766862633/business-man-avatar-profile_1133257-2431_dygzgs.avif"
@@ -256,14 +255,14 @@ export default function Navbar() {
 
                   {isLoggedIn && (
                     <>
-                      <Link
+                      {/* <Link
                         href="/edit-profile"
                         className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
                         onClick={() => setShowProfileMenu(false)}
                       >
                         <FaEdit className="text-[#8c4bdc] text-xl" />
                         <span className="text-black">Edit Profile</span>
-                      </Link>
+                      </Link> */}
 
                       {user?.role === "admin" && (
                         <Link
@@ -283,6 +282,7 @@ export default function Navbar() {
                       className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition w-full text-left"
                       onClick={() => {
                         localStorage.removeItem("authToken");
+                        localStorage.removeItem("userData");
                         setIsLoggedIn(false);
                         setShowProfileMenu(false);
                         window.location.href = "/";
@@ -295,14 +295,14 @@ export default function Navbar() {
 
                   <div className="border-t border-gray-200 my-2"></div>
 
-                  <Link
+                  {/* <Link
                     href="/setting"
                     className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
                     onClick={() => setShowProfileMenu(false)}
                   >
                     <FaCog className="text-[#8c4bdc] text-xl" />
                     <span className="text-black">Setting</span>
-                  </Link>
+                  </Link> */}
                 </div>
               )}
             </div>
