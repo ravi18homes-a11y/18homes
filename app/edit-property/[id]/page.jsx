@@ -1,51 +1,47 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, use } from "react";
 import {
-  Search,
-  MapPin,
-  Home,
-  Bed,
-  Bath,
-  Square,
-  Filter,
-  Heart,
-  ChevronDown,
   X,
   Upload,
-  Plus,
   Camera,
   Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Navbar from "@/app/COMMON/Navbar";
+import Footer from "@/app/COMMON/Footer";
 
-const RealEstateApp = () => {
-  const [currentPage, setCurrentPage] = useState("sell");
-  const [favorites, setFavorites] = useState([]);
+const EditPropertyApp = ({ params }) => {
+  // Extract id from params Promise in Next.js 15+
+  const resolvedParams = use(params);
+  const id = resolvedParams.id;
+
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoadingProperty, setIsLoadingProperty] = useState(true);
 
   const [token, setToken] = useState("");
   const router = useRouter();
 
-  // Track auth state from localStorage (login saves 'authToken')
+  // Track auth state from localStorage
   useEffect(() => {
     const checkAuth = () => {
       try {
-        setToken(localStorage.getItem("authToken"));
+        const storedToken = localStorage.getItem("authToken");
+        setToken(storedToken);
+        if (!storedToken) {
+          router.push("/login-signup");
+        }
       } catch (e) {
         setToken("");
+        router.push("/login-signup");
       }
     };
 
     checkAuth();
-    window.addEventListener("storage", checkAuth);
-    return () => window.removeEventListener("storage", checkAuth);
-  }, []);
+  }, [router]);
 
-  const databaseUrl =
-    process.env.NEXT_PUBLIC_APP_DATABASE_URL || "http://localhost:5000";
-  // const databaseUrl = "http://localhost:5000";
+  const databaseUrl = process.env.NEXT_PUBLIC_APP_DATABASE_URL || "http://localhost:5000";
 
   const [sellForm, setSellForm] = useState({
     title: "",
@@ -67,11 +63,51 @@ const RealEstateApp = () => {
 
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
-  const toggleFavorite = (id) => {
-    setFavorites((prev) =>
-      prev.includes(id) ? prev.filter((fav) => fav !== id) : [...prev, id],
-    );
-  };
+  useEffect(() => {
+    const fetchPropertyDetails = async () => {
+      try {
+        const res = await fetch(`${databaseUrl}/api/properties/${id}`);
+        if (res.ok) {
+          const data = await res.json();
+          const property = data.data || data; // handle different api response structures
+
+          setSellForm({
+            title: property.title || "",
+            description: property.description || "",
+            purpose: property.purpose || "sell",
+            propertyType: property.propertyType || "apartment",
+            price: property.priceValue || property.price?.value || property.price || "",
+            area: [{
+              size: property.area?.size || (typeof property.area === 'number' ? property.area : ""),
+              unit: property.area?.unit || "sqft"
+            }],
+            bedrooms: (property.bedrooms || "1").toString(),
+            bathrooms: (property.bathrooms || "1").toString(),
+            furnishing: property.furnishing || "unfurnished",
+            address: property.address?.city || property.address?.locality || (typeof property.address === 'string' ? property.address : ""),
+            images: property.images?.filter(media => !media.endsWith('.mp4')) || [],
+            videos: property.images?.filter(media => media.endsWith('.mp4')) || [], // assuming videos were mixed in images array or separate
+            ownerName: property.owner?.name || property.ownerName || "",
+            ownerPhone: property.owner?.phone || property.ownerPhone || "",
+            ownerEmail: property.owner?.email || property.ownerEmail || "",
+          });
+        } else {
+          alert("Could not fetch property details.");
+          router.push("/my-properties");
+        }
+      } catch (error) {
+        console.error("Error fetching property:", error);
+        alert("An error occurred while fetching the property.");
+        router.push("/my-properties");
+      } finally {
+        setIsLoadingProperty(false);
+      }
+    };
+
+    if (id) {
+      fetchPropertyDetails();
+    }
+  }, [id, databaseUrl, router]);
 
   const handleSellFormChange = (field, value) => {
     setSellForm((prev) => ({ ...prev, [field]: value }));
@@ -174,26 +210,22 @@ const RealEstateApp = () => {
 
   const handleSubmitProperty = async (e) => {
     e.preventDefault();
-
     setIsSubmitting(true);
 
     try {
-      const token = localStorage.getItem("authToken");
+      const currentToken = localStorage.getItem("authToken");
 
-      if (!token) {
+      if (!currentToken) {
         alert("Please login first");
         setIsSubmitting(false);
         return;
       }
 
-      // Combine images and videos for backend
-      const allMedia = [...sellForm.images, ...sellForm.videos];
-
-      const response = await fetch(`${databaseUrl}/api/properties`, {
-        method: "POST",
+      const response = await fetch(`${databaseUrl}/api/properties/${id}`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${currentToken}`,
         },
         body: JSON.stringify({
           title: sellForm.title,
@@ -218,36 +250,25 @@ const RealEstateApp = () => {
           },
 
           images: [...sellForm.images, ...sellForm.videos],
+
+          // Allow passing owner info if supported by the put endpoint
+          owner: {
+            name: sellForm.ownerName,
+            phone: sellForm.ownerPhone,
+            email: sellForm.ownerEmail,
+          }
         }),
       });
 
       const data = await response.json();
 
-      if (data.success) {
+      if (response.ok) {
         setSubmitSuccess(true);
-
-        // Reset form
-        setSellForm({
-          title: "",
-          description: "",
-          purpose: "sell",
-          propertyType: "apartment",
-          price: "",
-          area: [{ size: "", unit: "sqft" }],
-          bedrooms: "1",
-          bathrooms: "1",
-          furnishing: "unfurnished",
-          address: "",
-          images: [],
-          videos: [],
-          ownerName: "",
-          ownerPhone: "",
-          ownerEmail: "",
-        });
-
-        router.push("/buy");
+        setTimeout(() => {
+          router.push("/my-properties");
+        }, 1500);
       } else {
-        alert(data.message || "Error submitting property");
+        alert(data.message || "Error updating property");
       }
     } catch (error) {
       console.error(error);
@@ -257,12 +278,21 @@ const RealEstateApp = () => {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm mt-20"></header>
+  if (isLoadingProperty) {
+    return (
+      <div className="min-h-screen pt-24 pb-12 flex items-center justify-center bg-gray-50">
+        <Loader2 className="w-8 h-8 animate-spin text-red-600" />
+      </div>
+    );
+  }
 
-      {currentPage === "sell" && (
+  return (
+    <>
+      <Navbar />
+      <div className="min-h-screen mt-12 bg-gray-50">
+        {/* Header padding space equivalent */}
+        <header className="bg-transparent mt-20"></header>
+
         <div className="max-w-4xl mx-auto px-4 py-8">
           {/* Success Message */}
           {submitSuccess && (
@@ -281,23 +311,22 @@ const RealEstateApp = () => {
                 />
               </svg>
               <span className="font-semibold">
-                Success! Your property has been successfully submitted.
-                Redirecting you to the buy page...
+                Success! Your property has been successfully updated. Redirecting...
               </span>
             </div>
           )}
 
-          <div className="bg-white rounded-lg shadow-md p-6 md:p-8">
+          <div className="bg-white rounded-lg shadow-md p-6 md:p-8 border border-gray-100">
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-gray-800 mb-2">
-                Sell Your Property
+                Edit Property
               </h2>
               <p className="text-gray-600">
-                Fill in your property details and reach thousands of buyers
+                Update the details of your property listing
               </p>
             </div>
 
-            <div className="space-y-6">
+            <form onSubmit={handleSubmitProperty} className="space-y-6">
               {/* Property Images & Videos - Separate Sections */}
               <div className="space-y-6">
                 {/* Images Section */}
@@ -307,7 +336,7 @@ const RealEstateApp = () => {
                       📸 Property Images
                     </label>
                     <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-                      {sellForm.images.length} images uploaded
+                      {sellForm.images.length} images
                     </span>
                   </div>
 
@@ -363,7 +392,7 @@ const RealEstateApp = () => {
                       🎥 Property Videos
                     </label>
                     <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
-                      {sellForm.videos.length} videos uploaded
+                      {sellForm.videos.length} videos
                     </span>
                   </div>
 
@@ -422,12 +451,10 @@ const RealEstateApp = () => {
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
                   <p className="text-sm text-gray-600 text-center">
                     <span className="font-semibold text-gray-800">
-                      Total {sellForm.images.length + sellForm.videos.length}/15
-                      media
+                      Total {sellForm.images.length + sellForm.videos.length}/15 media
                     </span>
                     {" • "}
-                    {sellForm.images.length} images and {sellForm.videos.length}{" "}
-                    videos uploaded
+                    {sellForm.images.length} images and {sellForm.videos.length} videos
                   </p>
                 </div>
               </div>
@@ -441,9 +468,7 @@ const RealEstateApp = () => {
                   type="text"
                   required
                   value={sellForm.title}
-                  onChange={(e) =>
-                    handleSellFormChange("title", e.target.value)
-                  }
+                  onChange={(e) => handleSellFormChange("title", e.target.value)}
                   placeholder="e.g. Modern 3BHK Flat"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
@@ -457,9 +482,7 @@ const RealEstateApp = () => {
                 <textarea
                   required
                   value={sellForm.description}
-                  onChange={(e) =>
-                    handleSellFormChange("description", e.target.value)
-                  }
+                  onChange={(e) => handleSellFormChange("description", e.target.value)}
                   placeholder="Explain your property in detail..."
                   rows="4"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
@@ -472,13 +495,10 @@ const RealEstateApp = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Property Type *
                   </label>
-
                   <select
                     required
                     value={sellForm.propertyType}
-                    onChange={(e) =>
-                      handleSellFormChange("propertyType", e.target.value)
-                    }
+                    onChange={(e) => handleSellFormChange("propertyType", e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   >
                     <option value="flat">Flat</option>
@@ -497,9 +517,7 @@ const RealEstateApp = () => {
                   <select
                     required
                     value={sellForm.purpose}
-                    onChange={(e) =>
-                      handleSellFormChange("purpose", e.target.value)
-                    }
+                    onChange={(e) => handleSellFormChange("purpose", e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   >
                     <option value="sell">Sell</option>
@@ -518,9 +536,7 @@ const RealEstateApp = () => {
                     type="text"
                     required
                     value={sellForm.address}
-                    onChange={(e) =>
-                      handleSellFormChange("address", e.target.value)
-                    }
+                    onChange={(e) => handleSellFormChange("address", e.target.value)}
                     placeholder="e.g. Sector 62, Noida"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   />
@@ -534,9 +550,7 @@ const RealEstateApp = () => {
                     type="number"
                     required
                     value={sellForm.price}
-                    onChange={(e) =>
-                      handleSellFormChange("price", e.target.value)
-                    }
+                    onChange={(e) => handleSellFormChange("price", e.target.value)}
                     placeholder="e.g. 8500000"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   />
@@ -553,9 +567,7 @@ const RealEstateApp = () => {
                     <select
                       required
                       value={sellForm.bedrooms}
-                      onChange={(e) =>
-                        handleSellFormChange("bedrooms", e.target.value)
-                      }
+                      onChange={(e) => handleSellFormChange("bedrooms", e.target.value)}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                     >
                       <option value="1">1</option>
@@ -575,9 +587,7 @@ const RealEstateApp = () => {
                     <select
                       required
                       value={sellForm.bathrooms}
-                      onChange={(e) =>
-                        handleSellFormChange("bathrooms", e.target.value)
-                      }
+                      onChange={(e) => handleSellFormChange("bathrooms", e.target.value)}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                     >
                       <option value="1">1</option>
@@ -620,9 +630,7 @@ const RealEstateApp = () => {
                   <select
                     required
                     value={sellForm.furnishing}
-                    onChange={(e) =>
-                      handleSellFormChange("furnishing", e.target.value)
-                    }
+                    onChange={(e) => handleSellFormChange("furnishing", e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   >
                     <option value="unfurnished">Unfurnished</option>
@@ -645,9 +653,7 @@ const RealEstateApp = () => {
                     <input
                       type="text"
                       value={sellForm.ownerName}
-                      onChange={(e) =>
-                        handleSellFormChange("ownerName", e.target.value)
-                      }
+                      onChange={(e) => handleSellFormChange("ownerName", e.target.value)}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                       placeholder="Name"
                     />
@@ -660,9 +666,7 @@ const RealEstateApp = () => {
                     <input
                       type="tel"
                       value={sellForm.ownerPhone}
-                      onChange={(e) =>
-                        handleSellFormChange("ownerPhone", e.target.value)
-                      }
+                      onChange={(e) => handleSellFormChange("ownerPhone", e.target.value)}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                       placeholder="Mobile Number"
                     />
@@ -675,9 +679,7 @@ const RealEstateApp = () => {
                     <input
                       type="email"
                       value={sellForm.ownerEmail}
-                      onChange={(e) =>
-                        handleSellFormChange("ownerEmail", e.target.value)
-                      }
+                      onChange={(e) => handleSellFormChange("ownerEmail", e.target.value)}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                       placeholder="Email"
                     />
@@ -688,34 +690,34 @@ const RealEstateApp = () => {
               {/* Submit Buttons */}
               <div className="flex justify-end gap-3 pt-6">
                 <Link
-                  href={"/"}
-                  className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  href="/my-properties"
+                  className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                 >
                   Cancel
                 </Link>
 
                 <button
-                  type="button"
-                  onClick={handleSubmitProperty}
+                  type="submit"
                   disabled={isSubmitting || isUploading}
-                  className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-medium"
                 >
                   {isSubmitting ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      Submitting...
+                      Saving Changes...
                     </>
                   ) : (
-                    "Submit"
+                    "Save Changes"
                   )}
                 </button>
               </div>
-            </div>
+            </form>
           </div>
         </div>
-      )}
-    </div>
+      </div>
+      <Footer />
+    </>
   );
 };
 
-export default RealEstateApp;
+export default EditPropertyApp;
