@@ -61,7 +61,7 @@ export default function HomeBuyComp() {
             id: prop._id || prop.id,
             title: prop.title || "No Title",
             location: ownerInfo,
-            price: prop.price || 0,
+            price: prop.priceValue || prop.price || 0,
             bedrooms: prop.bedrooms || 0,
             bathrooms: prop.bathrooms || 0,
             area: areaValue,
