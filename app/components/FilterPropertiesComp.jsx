@@ -14,28 +14,28 @@ const CATEGORY_CONFIG = [
         label: "1 BHK",
         image:
           "https://res.cloudinary.com/dxlykgx6w/image/upload/v1764928068/3d-rendering-luxury-modern-bedroom-suite-hotel-with-tv-cabinet_105762-2280_ozfq80.avif",
-        query: { propertyType: "apartment", bedrooms: "1" },
+        query: { propertyType: "flat", bedrooms: "1" },
       },
       {
         key: "2bhk",
         label: "2 BHK",
         image:
           "https://res.cloudinary.com/dxlykgx6w/image/upload/v1764928067/cozy-living-room-with-coral-sofa_23-2152001401_mtbfyd.avif",
-        query: { propertyType: "apartment", bedrooms: "2" },
+        query: { propertyType: "flat", bedrooms: "2" },
       },
       {
         key: "3bhk",
         label: "3 BHK",
         image:
           "https://res.cloudinary.com/dxlykgx6w/image/upload/v1764928067/3d-rendering-modern-dining-room-living-room-with-luxury-decor-green-sofa_105762-2140_eu0udp.avif",
-        query: { propertyType: "apartment", bedrooms: "3" },
+        query: { propertyType: "flat", bedrooms: "3" },
       },
       {
         key: "4bhk",
         label: "4+ BHK",
         image:
           "https://res.cloudinary.com/dxlykgx6w/image/upload/v1764928068/3d-rendering-modern-dining-room-living-room-with-luxury-decor-yellow-lamp_105762-2232_iu2qqe.avif",
-        query: { propertyType: "apartment", bedrooms: "4" },
+        query: { propertyType: "flat", bedrooms: "4" },
       },
     ],
   },
@@ -181,7 +181,7 @@ const CATEGORY_CONFIG = [
   },
   {
     key: "agriculture",
-    title: "Agriculture Land",
+    title: "Land",
     description: "Search agriculture land by unit.",
     cards: [
       {
@@ -289,8 +289,18 @@ export default function FilterPropertiesComp() {
   }, [purpose]);
 
   const getCountForCard = (card) => {
-    const type = card.query.propertyType;
-    const typeCounts = counts[type] || {};
+    let type = card.query.propertyType;
+    let typeCounts = counts[type] || {};
+
+    if (type === "flat" || type === "apartment") {
+      const flatCounts = counts["flat"] || {};
+      const aptCounts = counts["apartment"] || {};
+      if (card.query.bedrooms) {
+        return (flatCounts[card.query.bedrooms] || 0) + (aptCounts[card.query.bedrooms] || 0);
+      }
+      return (flatCounts.total || 0) + (aptCounts.total || 0);
+    }
+
     if (card.query.bedrooms) {
       return typeCounts[card.query.bedrooms] || 0;
     }
@@ -322,11 +332,10 @@ export default function FilterPropertiesComp() {
               key={category.key}
               type="button"
               onClick={() => setSelectedCategory(category.key)}
-              className={`px-5 py-3 rounded-full text-sm font-semibold transition ${
-                selectedCategory === category.key
+              className={`px-5 py-3 rounded-full text-sm font-semibold transition ${selectedCategory === category.key
                   ? "bg-red-600 text-white"
                   : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-100"
-              }`}
+                }`}
             >
               {category.title}
             </button>
@@ -341,11 +350,10 @@ export default function FilterPropertiesComp() {
             setLoading(true);
             setPurpose("sell");
           }}
-          className={`px-5 py-3 rounded-full font-semibold text-[28px] transition ${
-            purpose === "sell"
+          className={`px-5 py-3 rounded-full font-semibold text-[28px] transition ${purpose === "sell"
               ? "bg-green-600 text-white"
               : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-100"
-          }`}
+            }`}
         >
           Sell / Purchase
         </button>
@@ -355,11 +363,10 @@ export default function FilterPropertiesComp() {
             setLoading(true);
             setPurpose("rent");
           }}
-          className={`px-5 py-3 rounded-full font-semibold text-[28px] transition ${
-            purpose === "rent"
+          className={`px-5 py-3 rounded-full font-semibold text-[28px] transition ${purpose === "rent"
               ? "bg-red-600 text-white"
               : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-100"
-          }`}
+            }`}
         >
           Rent
         </button>
@@ -378,7 +385,7 @@ export default function FilterPropertiesComp() {
               <div className="text-gray-500">Loading cards...</div>
             ) : (
               <div className="text-sm text-gray-500">
-                {getCountForCard(activeCategory.cards[0])} available {purpose}{" "}
+                {getCountForCard({ query: { propertyType: activeCategory.cards[0].query.propertyType } })} available {purpose}{" "}
                 listings
               </div>
             )}
@@ -387,56 +394,55 @@ export default function FilterPropertiesComp() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {loading
               ? Array.from({ length: 4 }).map((_, index) => (
-                  <div
-                    key={index}
-                    className="rounded-3xl border border-gray-200 bg-white overflow-hidden animate-pulse"
-                  >
-                    <div className="h-36 bg-gray-300 rounded-t-3xl" />
-                    <div className="p-6">
-                      <div className="h-5 w-32 bg-gray-300 rounded mb-3" />
-                      <div className="h-4 w-24 bg-gray-200 rounded" />
-                    </div>
+                <div
+                  key={index}
+                  className="rounded-3xl border border-gray-200 bg-white overflow-hidden animate-pulse"
+                >
+                  <div className="h-36 bg-gray-300 rounded-t-3xl" />
+                  <div className="p-6">
+                    <div className="h-5 w-32 bg-gray-300 rounded mb-3" />
+                    <div className="h-4 w-24 bg-gray-200 rounded" />
                   </div>
-                ))
+                </div>
+              ))
               : activeCategory.cards.map((card) => {
-                  const count = getCountForCard(card);
-                  return (
-                    <Link
-                      key={card.key}
-                      href={`/buy?purpose=${purpose}&${buildSearchString(card.query)}`}
-                      className="group block rounded-3xl border border-gray-200 bg-gray-50 transition hover:-translate-y-1 hover:shadow-xl"
-                    >
-                      <div
-                        className={`mb-4 h-36 rounded-t-3xl overflow-hidden shadow-md ${
-                          card.image ? "bg-gray-200" : "bg-gray-100"
+                const count = getCountForCard(card);
+                return (
+                  <Link
+                    key={card.key}
+                    href={`/buy?purpose=${purpose}&${buildSearchString(card.query)}`}
+                    className="group block rounded-3xl border border-gray-200 bg-gray-50 transition hover:-translate-y-1 hover:shadow-xl"
+                  >
+                    <div
+                      className={`mb-4 h-36 rounded-t-3xl overflow-hidden shadow-md ${card.image ? "bg-gray-200" : "bg-gray-100"
                         }`}
-                        style={
-                          card.image
-                            ? {
-                                backgroundImage: `url(${card.image})`,
-                                backgroundPosition: "center",
-                                backgroundSize: "cover",
-                              }
-                            : undefined
-                        }
-                      >
-                        <div className="h-full w-full bg-black/30 flex items-center justify-center text-xl font-bold text-white">
-                          {card.label}
-                        </div>
+                      style={
+                        card.image
+                          ? {
+                            backgroundImage: `url(${card.image})`,
+                            backgroundPosition: "center",
+                            backgroundSize: "cover",
+                          }
+                          : undefined
+                      }
+                    >
+                      <div className="h-full w-full bg-black/30 flex items-center justify-center text-xl font-bold text-white">
+                        {card.label}
                       </div>
-                      <div className="p-6">
-                        <p className="text-lg font-semibold text-gray-900">
-                          {card.label}
-                        </p>
-                        <p className="mt-2 text-sm text-gray-600">
-                          {count > 0
-                            ? `${count} properties found`
-                            : "Click to explore properties"}
-                        </p>
-                      </div>
-                    </Link>
-                  );
-                })}
+                    </div>
+                    <div className="p-6">
+                      <p className="text-lg font-semibold text-gray-900">
+                        {card.label}
+                      </p>
+                      <p className="mt-2 text-sm text-gray-600">
+                        {count > 0
+                          ? `${count} properties found`
+                          : "Click to explore properties"}
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })}
           </div>
         </div>
       </div>

@@ -182,7 +182,7 @@ const BuyPage = () => {
               id: prop._id || prop.id,
               title: prop.title || "No Title",
               location: ` ${prop.address.city ? prop.address.city + ", " : ""} ${ownerInfo}`,
-              price: prop.price || 0,
+              price: prop.priceValue || prop.price || 0,
               bedrooms: prop.bedrooms || 0,
               bathrooms: prop.bathrooms || 0,
               updatedAt: prop.updatedAt || 0,
@@ -390,6 +390,7 @@ const BuyPage = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                 >
                   <option value="all">All</option>
+                  <option value="flat">Flat</option>
                   <option value="apartment">Apartment</option>
                   <option value="villa">Villa</option>
                   <option value="house">House</option>
