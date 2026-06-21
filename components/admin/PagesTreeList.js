@@ -161,6 +161,9 @@ export default function PagesTreeList() {
               <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Status
               </th>
+              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Navbar
+              </th>
               <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Actions
               </th>
@@ -192,6 +195,17 @@ export default function PagesTreeList() {
                   >
                     {item.status || "draft"}
                   </span>
+                </td>
+                <td className="px-6 py-4 text-sm">
+                  {item.showInNavbar !== false ? (
+                    <span className="rounded-full bg-indigo-50 text-indigo-700 px-3 py-1 text-xs font-semibold">
+                      Visible
+                    </span>
+                  ) : (
+                    <span className="rounded-full bg-slate-100 text-slate-500 px-3 py-1 text-xs font-semibold">
+                      Hidden
+                    </span>
+                  )}
                 </td>
                 <td className="px-6 py-4 text-right text-sm font-medium">
                   <Link
@@ -232,12 +246,20 @@ export default function PagesTreeList() {
             pages with <strong>Add child</strong> on any row.
           </p>
         </div>
-        <Link
-          href="/admin/pages/new"
-          className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-700"
-        >
-          Create page
-        </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href="/admin/pages/homepage"
+            className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+          >
+            Edit Homepage
+          </Link>
+          <Link
+            href="/admin/pages/new"
+            className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-700"
+          >
+            Create page
+          </Link>
+        </div>
       </div>
 
       {loading ? (
@@ -256,8 +278,7 @@ export default function PagesTreeList() {
               <div>
                 <h2 className="text-lg font-semibold">Navbar — after Contact</h2>
                 <p className="text-sm text-slate-300">
-                  Published pages here show in the header after Contact, with
-                  hover menus for children.
+                  Published pages here show in the header after Contact (max 7 active root pages shown, newest first).
                 </p>
               </div>
               <span className="text-sm text-slate-300">

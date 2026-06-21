@@ -6,7 +6,10 @@ import { useState } from "react";
 import { FiCheckCircle } from "react-icons/fi";
 import { IoIosArrowDown } from "react-icons/io";
 
-export default function ContactSection() {
+export default function ContactSection({ data }) {
+  const title = data?.title || "Please tell us your requirements";
+  const image = data?.image || "https://res.cloudinary.com/dxlykgx6w/image/upload/v1765125152/WhatsApp_Image_2025-12-07_at_9.01.16_PM_fuflru.jpg";
+
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -83,7 +86,7 @@ export default function ContactSection() {
 
         {/* LEFT SECTION */}
        <div className="bg-[#1D1D1D] text-white px-8 md:px-20 py-8 flex flex-col justify-center">
-          <h2 className="text-[48px] font-light mb-2">Please tell us your requirements</h2>
+          <h2 className="text-[48px] font-light mb-2">{title}</h2>
           <div className="w-[120px] h-[4px] bg-[#28E7F7] mb-6"></div>
 
           <form className="space-y-4" onSubmit={handleSubmit}>
@@ -211,7 +214,7 @@ export default function ContactSection() {
 
           <div className="absolute inset-0 origin-top-left ">
             <Image
-              src="https://res.cloudinary.com/dxlykgx6w/image/upload/v1765125152/WhatsApp_Image_2025-12-07_at_9.01.16_PM_fuflru.jpg"
+              src={image}
               alt="Contact Image"
               fill
               className="object-contain"
