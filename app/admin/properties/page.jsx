@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Pagination from "../../components/admin/Pagination";
+import { toast } from "react-hot-toast";
 
 const BASE =
   (process.env.NEXT_PUBLIC_APP_DATABASE_URL || "http://localhost:5000") +
@@ -64,10 +65,10 @@ export default function AdminPropertiesPage() {
 
   /* ================= FLAG / UNFLAG ================= */
   const toggleFlag = async (id, isFlagged) => {
-    if (!id) return alert("Invalid property id");
+    if (!id) return toast.error("Invalid property id");
 
     setLoading(true);
-    await fetch(`${BASE}/admin/${id}/flag`, {
+    const res = await fetch(`${BASE}/admin/${id}/flag`, {
       method: "PATCH",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -78,12 +79,18 @@ export default function AdminPropertiesPage() {
       }),
     });
 
-    setFetchTrigger((prev) => prev + 1);
+    if (res.ok) {
+      toast.success(isFlagged ? "Property is now visible" : "Property is now hidden");
+      setFetchTrigger((prev) => prev + 1);
+    } else {
+      toast.error("Failed to update property status");
+      setLoading(false);
+    }
   };
 
   /* ================= TOGGLE SOLD ================= */
   const toggleSold = async (id, currentIsSold) => {
-    if (!id) return alert("Invalid property id");
+    if (!id) return toast.error("Invalid property id");
 
     setLoading(true);
     const res = await fetch(`${BASE}/${id}`, {
@@ -98,27 +105,34 @@ export default function AdminPropertiesPage() {
     });
 
     if (res.ok) {
+      toast.success(currentIsSold ? "Property marked as available" : "Property marked as sold");
       setFetchTrigger((prev) => prev + 1);
     } else {
       const data = await res.json();
-      alert(data.message || "Failed to update property status");
+      toast.error(data.message || "Failed to update property status");
       setLoading(false);
     }
   };
 
   /* ================= DELETE ================= */
   const deleteProperty = async (id) => {
-    if (!id) return alert("Invalid property id");
+    if (!id) return toast.error("Invalid property id");
 
     if (!confirm("Are you sure you want to delete this property?")) return;
 
     setLoading(true);
-    await fetch(`${BASE}/admin/${id}`, {
+    const res = await fetch(`${BASE}/admin/${id}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    setFetchTrigger((prev) => prev + 1);
+    if (res.ok) {
+      toast.success("Property deleted successfully");
+      setFetchTrigger((prev) => prev + 1);
+    } else {
+      toast.error("Failed to delete property");
+      setLoading(false);
+    }
   };
 
   return (

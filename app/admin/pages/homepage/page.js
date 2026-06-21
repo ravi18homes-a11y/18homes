@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { toast } from "react-hot-toast";
 
 export default function HomepageEditor() {
   const [data, setData] = useState(null);
@@ -109,6 +110,7 @@ export default function HomepageEditor() {
       })
       .catch((err) => {
         console.error(err);
+        toast.error("Failed to load homepage data.");
         setMessage({ type: "error", text: "Failed to load homepage data." });
         setLoading(false);
       });
@@ -130,12 +132,13 @@ export default function HomepageEditor() {
 
       if (res.ok && result.url) {
         updateField(pathArray, result.url);
+        toast.success("Image uploaded successfully!");
       } else {
-        alert(result.error || "Upload failed");
+        toast.error(result.error || "Upload failed");
       }
     } catch (err) {
       console.error(err);
-      alert("Error uploading image");
+      toast.error("Error uploading image");
     } finally {
       setUploadingImage((prev) => ({ ...prev, [key]: false }));
     }
@@ -167,13 +170,16 @@ export default function HomepageEditor() {
         body: JSON.stringify(data),
       });
       if (res.ok) {
+        toast.success("Homepage updated successfully!");
         setMessage({ type: "success", text: "Homepage updated successfully!" });
       } else {
         const errJson = await res.json();
+        toast.error(errJson.error || "Failed to save.");
         setMessage({ type: "error", text: errJson.error || "Failed to save." });
       }
     } catch (err) {
       console.error(err);
+      toast.error("Network error. Please try again.");
       setMessage({ type: "error", text: "Network error. Please try again." });
     } finally {
       setSaving(false);

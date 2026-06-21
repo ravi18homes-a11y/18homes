@@ -5,6 +5,7 @@ import { Edit, Trash2, Home, MapPin, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Navbar from "../COMMON/Navbar";
 import Footer from "../COMMON/Footer";
+import { toast } from "react-hot-toast";
 
 const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800";
 
@@ -81,13 +82,14 @@ export default function MyPropertiesPage() {
 
       if (res.ok) {
         setProperties((prev) => prev.filter((p) => p._id !== id && p.id !== id));
+        toast.success("Property deleted successfully");
       } else {
         const errorData = await res.json();
-        alert(`Failed to delete property: ${errorData.message || 'Unknown error'}`);
+        toast.error(`Failed to delete property: ${errorData.message || 'Unknown error'}`);
       }
     } catch (error) {
       console.error("Error deleting property:", error);
-      alert("An error occurred while deleting the property.");
+      toast.error("An error occurred while deleting the property.");
     } finally {
       setDeletingId(null);
     }

@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import UserTable from "../../components/admin/UserTable";
 import Pagination from "../../components/admin/Pagination";
+import { toast } from "react-hot-toast";
 
 const API =
   (process.env.NEXT_PUBLIC_APP_DATABASE_URL || "http://localhost:5000") +
@@ -62,18 +63,23 @@ export default function UsersPage() {
     if (!userId) return;
 
     try {
-      await fetch(`${API}/${userId}`, {
+      const res = await fetch(`${API}/${userId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      // 🔁 Refresh list after delete
-      fetchUsers();
+      const json = await res.json();
+      if (json?.success) {
+        toast.success(json?.message || "User deleted successfully");
+        fetchUsers();
+      } else {
+        toast.error(json?.message || "Failed to delete user");
+      }
     } catch (error) {
       console.error("Failed to delete user:", error);
-      alert("Failed to delete user");
+      toast.error("Failed to delete user");
     }
   };
 

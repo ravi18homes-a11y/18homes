@@ -1,10 +1,11 @@
 
-  "use client";
+"use client";
 import Image from "next/image";
 import "./contactpop.css"
 import { useState } from "react";
 import { FiCheckCircle } from "react-icons/fi";
 import { IoIosArrowDown } from "react-icons/io";
+import { toast } from "react-hot-toast";
 
 export default function ContactSection({ data }) {
   const title = data?.title || "Please tell us your requirements";
@@ -34,10 +35,12 @@ export default function ContactSection({ data }) {
     e.preventDefault();
     setMessage("");
     if (!checked) {
+      toast.error("Please accept the privacy policy to submit the form.");
       setMessage("Please accept the privacy policy to submit the form.");
       return;
     }
     if (!form?.name || !form?.email || !form?.phone) {
+      toast.error("Please fill all required fields.");
       setMessage("Please fill all required fields.");
       return;
     }
@@ -45,12 +48,14 @@ export default function ContactSection({ data }) {
     const emailRegex =
       /^(?!.*\.\.)(?!.*[_.-]{2})[a-zA-Z0-9]+([._-]?[a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-]?[a-zA-Z0-9]+)*\.[A-Za-z]{2,}$/;
     if (!emailRegex.test(form?.email)) {
+      toast.error("Please enter a valid email address.");
       setMessage("Please enter a valid email address.");
       return;
     }
     // Phone validation: only digits, exactly 10 digits
     const phoneRegex = /^\d{10}$/;
     if (!phoneRegex.test(form?.phone)) {
+      toast.error("Please enter a valid 10-digit phone number.");
       setMessage("Please enter a valid 10-digit phone number.");
       return;
     }
@@ -63,6 +68,7 @@ export default function ContactSection({ data }) {
       });
       const data = await res.json();
       if (data.success) {
+        toast.success("Thank you! Message sent successfully.");
         setForm({
           name: "",
           email: "",
@@ -75,6 +81,7 @@ export default function ContactSection({ data }) {
       }
     } catch (err) {
       console.error("Form submission error:", err);
+      toast.error("Something went wrong. Please try again.");
       setMessage("Something went wrong. Please try again.");
     }
     setLoading(false);

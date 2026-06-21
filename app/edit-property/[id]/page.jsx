@@ -10,6 +10,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Navbar from "@/app/COMMON/Navbar";
 import Footer from "@/app/COMMON/Footer";
+import { toast } from "react-hot-toast";
 
 const parsePrice = (priceStr) => {
   if (!priceStr) return 0;
@@ -130,12 +131,12 @@ const EditPropertyApp = ({ params }) => {
             isSold: property.isSold || false,
           });
         } else {
-          alert("Could not fetch property details.");
+          toast.error("Could not fetch property details.");
           router.push("/my-properties");
         }
       } catch (error) {
         console.error("Error fetching property:", error);
-        alert("An error occurred while fetching the property.");
+        toast.error("An error occurred while fetching the property.");
         router.push("/my-properties");
       } finally {
         setIsLoadingProperty(false);
@@ -185,7 +186,7 @@ const EditPropertyApp = ({ params }) => {
     const currentMediaCount = sellForm.images.length + sellForm.videos.length;
 
     if (currentMediaCount + files.length > 15) {
-      alert("You can upload a maximum of 15 images/videos");
+      toast.error("You can upload a maximum of 15 images/videos");
       return;
     }
 
@@ -210,9 +211,10 @@ const EditPropertyApp = ({ params }) => {
         images: [...prev.images, ...uploadedImages],
         videos: [...prev.videos, ...uploadedVideos],
       }));
+      toast.success("Media uploaded successfully!");
     } catch (err) {
       console.error(err);
-      alert("Cloudinary upload failed");
+      toast.error("Cloudinary upload failed");
     } finally {
       setIsUploading(false);
     }
@@ -259,7 +261,7 @@ const EditPropertyApp = ({ params }) => {
       const currentToken = localStorage.getItem("authToken");
 
       if (!currentToken) {
-        alert("Please login first");
+        toast.error("Please login first");
         setIsSubmitting(false);
         return;
       }
@@ -314,15 +316,16 @@ const EditPropertyApp = ({ params }) => {
 
       if (response.ok) {
         setSubmitSuccess(true);
+        toast.success("Property updated successfully!");
         setTimeout(() => {
           router.push("/my-properties");
         }, 1500);
       } else {
-        alert(data.message || "Error updating property");
+        toast.error(data.message || "Error updating property");
       }
     } catch (error) {
       console.error(error);
-      alert("There is a server issue. Please try again later.");
+      toast.error("There is a server issue. Please try again later.");
     } finally {
       setIsSubmitting(false);
     }

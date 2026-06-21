@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
 
 export default function AdminPropertyDetailPage() {
   const { id } = useParams();
@@ -52,8 +53,9 @@ export default function AdminPropertyDetailPage() {
     const json = await res.json();
     if (json?.success) {
       setProperty(json?.data);
+      toast.success(json?.data?.isSold ? "Property marked as sold" : "Property marked as available");
     } else {
-      alert(json?.message || "Failed to update property status");
+      toast.error(json?.message || "Failed to update property status");
     }
   };
 

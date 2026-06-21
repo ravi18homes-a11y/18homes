@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
 
 const parsePrice = (priceStr) => {
   if (!priceStr) return 0;
@@ -141,7 +142,7 @@ const RealEstateApp = () => {
     const currentMediaCount = sellForm.images.length + sellForm.videos.length;
 
     if (currentMediaCount + files.length > 15) {
-      alert("You can upload a maximum of 15 images/videos");
+      toast.error("You can upload a maximum of 15 images/videos");
       return;
     }
 
@@ -166,9 +167,10 @@ const RealEstateApp = () => {
         images: [...prev.images, ...uploadedImages],
         videos: [...prev.videos, ...uploadedVideos],
       }));
+      toast.success("Media uploaded successfully!");
     } catch (err) {
       console.error(err);
-      alert("Cloudinary upload failed");
+      toast.error("Cloudinary upload failed");
     } finally {
       setIsUploading(false);
     }
@@ -216,7 +218,7 @@ const RealEstateApp = () => {
       const token = localStorage.getItem("authToken");
 
       if (!token) {
-        alert("Please login first");
+        toast.error("Please login first");
         setIsSubmitting(false);
         return;
       }
@@ -266,6 +268,7 @@ const RealEstateApp = () => {
 
       if (data.success) {
         setSubmitSuccess(true);
+        toast.success("Property submitted successfully!");
 
         // Reset form
         setSellForm({
@@ -294,11 +297,11 @@ const RealEstateApp = () => {
 
         router.push("/buy");
       } else {
-        alert(data.message || "Error submitting property");
+        toast.error(data.message || "Error submitting property");
       }
     } catch (error) {
       console.error(error);
-      alert("There is a server issue. Please try again later.");
+      toast.error("There is a server issue. Please try again later.");
     } finally {
       setIsSubmitting(false);
     }
