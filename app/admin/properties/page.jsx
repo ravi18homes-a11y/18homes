@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Pagination from "../../components/admin/Pagination";
 
 const BASE =
@@ -15,7 +16,8 @@ export default function AdminPropertiesPage() {
   const [pagination, setPagination] = useState(null);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [fetchTrigger, setFetchTrigger] = useState(0);
 
   const token =
     typeof window !== "undefined"
@@ -23,40 +25,48 @@ export default function AdminPropertiesPage() {
       : null;
 
   /* ================= FETCH ================= */
-  const fetchProperties = async () => {
-    setLoading(true);
-
-    const res = await fetch(
-      `${BASE}/admin/all?page=${page}&limit=10&search=${encodeURIComponent(
-        search
-      )}`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-        cache: "no-store",
-      }
-    );
-
-    const json = await res.json();
-
-    if (json?.success) {
-      setProperties(json?.data?.properties || []);
-      setPagination(json?.data?.pagination);
-    } else {
-      setProperties([]);
-      setPagination(null);
-    }
-
-    setLoading(false);
-  };
-
   useEffect(() => {
-    fetchProperties();
-  }, [page, search]);
+    let active = true;
+    const fetchProps = async () => {
+      try {
+        const res = await fetch(
+          `${BASE}/admin/all?page=${page}&limit=10&search=${encodeURIComponent(
+            search
+          )}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            cache: "no-store",
+          }
+        );
+        const json = await res.json();
+        if (active) {
+          if (json?.success) {
+            setProperties(json?.data?.properties || []);
+            setPagination(json?.data?.pagination);
+          } else {
+            setProperties([]);
+            setPagination(null);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching properties:", err);
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    };
+    fetchProps();
+    return () => {
+      active = false;
+    };
+  }, [page, search, token, fetchTrigger]);
 
   /* ================= FLAG / UNFLAG ================= */
   const toggleFlag = async (id, isFlagged) => {
     if (!id) return alert("Invalid property id");
 
+    setLoading(true);
     await fetch(`${BASE}/admin/${id}/flag`, {
       method: "PATCH",
       headers: {
@@ -68,7 +78,32 @@ export default function AdminPropertiesPage() {
       }),
     });
 
-    fetchProperties();
+    setFetchTrigger((prev) => prev + 1);
+  };
+
+  /* ================= TOGGLE SOLD ================= */
+  const toggleSold = async (id, currentIsSold) => {
+    if (!id) return alert("Invalid property id");
+
+    setLoading(true);
+    const res = await fetch(`${BASE}/${id}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        isSold: !currentIsSold,
+      }),
+    });
+
+    if (res.ok) {
+      setFetchTrigger((prev) => prev + 1);
+    } else {
+      const data = await res.json();
+      alert(data.message || "Failed to update property status");
+      setLoading(false);
+    }
   };
 
   /* ================= DELETE ================= */
@@ -77,24 +112,26 @@ export default function AdminPropertiesPage() {
 
     if (!confirm("Are you sure you want to delete this property?")) return;
 
+    setLoading(true);
     await fetch(`${BASE}/admin/${id}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    fetchProperties();
+    setFetchTrigger((prev) => prev + 1);
   };
 
   return (
     <div className="space-y-6">
       <div className="flex gap-6 items-center"><h1 className="text-2xl font-bold">Property Management</h1>
-      <a className=" bg-[green] text-white px-6 py-1" href="/sell">Sell</a></div>
+      <Link className=" bg-[green] text-white px-6 py-1" href="/sell">Sell</Link></div>
 
       <input
         placeholder="Search title / city / locality"
         className="border px-4 py-2 rounded w-full md:w-1/3"
         value={search}
         onChange={(e) => {
+          setLoading(true);
           setPage(1);
           setSearch(e.target.value);
         }}
@@ -107,9 +144,17 @@ export default function AdminPropertiesPage() {
           properties={properties}
           page={page}
           limit={10}
-          onView={(id) => router.push(`/admin/properties/${id}`)}
+          onView={async (id) => {
+            try {
+              await fetch(`${BASE}/${id}/admin-click`, { method: "POST" });
+            } catch (err) {
+              console.error("Failed to increment admin views:", err);
+            }
+            router.push(`/admin/properties/${id}`);
+          }}
           onDelete={deleteProperty}
           onFlag={toggleFlag}
+          onToggleSold={toggleSold}
         />
       )}
 
@@ -117,7 +162,10 @@ export default function AdminPropertiesPage() {
         <Pagination
           page={pagination.page}
           totalPages={pagination.totalPages}
-          onPageChange={setPage}
+          onPageChange={(p) => {
+            setLoading(true);
+            setPage(p);
+          }}
         />
       )}
 
@@ -135,6 +183,7 @@ function PropertyTable({
   onView,
   onDelete,
   onFlag,
+  onToggleSold,
 }) {
   return (
     <div className="bg-white rounded-xl shadow overflow-x-auto">
@@ -145,6 +194,8 @@ function PropertyTable({
             <th className="p-3 text-left">Title</th>
             <th className="p-3 text-left">City</th>
             <th className="p-3 text-left">Owner</th>
+            <th className="p-3 text-left">Views</th>
+            <th className="p-3 text-left">Admin Views</th>
             <th className="p-3 text-left">Status</th>
             <th className="p-3 text-left">Actions</th>
           </tr>
@@ -175,26 +226,54 @@ function PropertyTable({
                 {/* OWNER */}
                 <td className="p-3">{p?.owner?.name || "—"}</td>
 
+                {/* VIEWS */}
+                <td className="p-3 font-semibold text-gray-700">{p?.views ?? 0}</td>
+
+                {/* ADMIN VIEWS */}
+                <td className="p-3 font-semibold text-gray-700">{p?.adminViews ?? 0}</td>
+
                 {/* STATUS */}
                 <td className="p-3">
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      isFlagged
-                        ? "bg-red-100 text-red-700"
-                        : "bg-green-100 text-green-700"
-                    }`}
-                  >
-                    {isFlagged ? "Hide" : "ACTIVE"}
-                  </span>
+                  <div className="flex flex-col gap-1 items-start">
+                    <span
+                      className={`px-3 py-0.5 rounded-full text-[11px] font-semibold ${
+                        isFlagged
+                          ? "bg-red-100 text-red-700"
+                          : "bg-green-100 text-green-700"
+                      }`}
+                    >
+                      {isFlagged ? "Hidden" : "ACTIVE"}
+                    </span>
+                    <span
+                      className={`px-3 py-0.5 rounded-full text-[11px] font-semibold ${
+                        p?.isSold
+                          ? "bg-amber-100 text-amber-800 border border-amber-200"
+                          : "bg-blue-100 text-blue-700 border border-blue-200"
+                      }`}
+                    >
+                      {p?.isSold ? "Sold Out" : "Available"}
+                    </span>
+                  </div>
                 </td>
 
                 {/* ACTIONS */}
-                <td className="p-3 flex gap-2">
+                <td className="p-3 flex gap-2 flex-wrap">
                   <button
                     onClick={() => onView(p._id)}
                     className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded"
                   >
                     View
+                  </button>
+
+                  <button
+                    onClick={() => onToggleSold(p._id, p?.isSold)}
+                    className={`px-3 py-1 rounded text-white ${
+                      p?.isSold
+                        ? "bg-emerald-600 hover:bg-emerald-700"
+                        : "bg-orange-500 hover:bg-orange-600"
+                    }`}
+                  >
+                    {p?.isSold ? "Make Available" : "Mark Sold"}
                   </button>
 
                   <button
@@ -222,7 +301,7 @@ function PropertyTable({
           {!properties.length && (
             <tr>
               <td
-                colSpan="6"
+                colSpan="8"
                 className="p-6 text-center text-gray-500"
               >
                 No properties found

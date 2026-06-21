@@ -391,7 +391,7 @@ export default function Navbar() {
             </Link>
           )}
 
-          {isLoggedIn && (
+          {/* {isLoggedIn && (
             <Link
               href="/edit-profile"
               className="w-[153px] px-7 mt-4 py-2 border border-[black] text-[black] rounded-full"
@@ -399,7 +399,7 @@ export default function Navbar() {
             >
               Edit Profile
             </Link>
-          )}
+          )} */}
         </div>
       </div>
     </nav>

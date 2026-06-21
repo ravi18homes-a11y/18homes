@@ -118,8 +118,8 @@ export default function ContactFirst() {
                   <p className="info-title">Send us a message</p>
 
                   <p class="info-value">
-  <a href="mailto:18homes@gmail.com" class="call-to-action">
-     18homes@gmail.com
+  <a href="mailto:18homes.website@gmail.com" class="call-to-action">
+     18homes.website@gmail.com
   </a>
 </p>
 

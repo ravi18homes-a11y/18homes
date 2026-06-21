@@ -74,7 +74,7 @@ export default function Footer() {
             <div className="flex items-center gap-3 mb-4">
               <IoMdMail size={22} />
               <p className="text-[16px] font-normal">
-                18homes@gmail.com
+                18homes.website@gmail.com
               </p>
             </div>
 
