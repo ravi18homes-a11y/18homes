@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 export default function ResetPasswordPage() {
   const { token } = useParams();
@@ -32,12 +33,15 @@ export default function ResetPasswordPage() {
       const data = await res.json();
 
       if (data.success) {
+        toast.success("Password reset successful!");
         setMessage("Password reset successful");
         setTimeout(() => router.push("/login-signup"), 2000);
       } else {
+        toast.error(data.message || "Invalid or expired link");
         setMessage(data.message || "Invalid or expired link");
       }
     } catch {
+      toast.error("Something went wrong");
       setMessage("Something went wrong");
     } finally {
       setLoading(false);

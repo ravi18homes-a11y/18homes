@@ -44,7 +44,15 @@ export default function AdminContactViewPage() {
         <div className="grid grid-cols-2 gap-4 mt-4 text-sm">
           <Field label="Purpose" value={contact.property?.purpose} />
           <Field label="Type" value={contact.property?.propertyType} />
-          <Field label="Price" value={`₹${contact.property?.price}`} />
+          <Field 
+            label="Price" 
+            value={contact.property?.priceText 
+              ? (contact.property.priceText.includes("₹") ? contact.property.priceText : `₹ ${contact.property.priceText}`) 
+              : (contact.property?.priceValue 
+                ? `₹ ${contact.property.priceValue.toLocaleString()}` 
+                : (contact.property?.price ? `₹ ${contact.property.price}` : "—"))
+            } 
+          />
           <Field label="Pincode" value={contact.property?.address?.pincode} />
         </div>
 

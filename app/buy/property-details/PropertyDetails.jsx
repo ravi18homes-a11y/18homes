@@ -13,6 +13,8 @@ import {
   Share2,
   CheckCircle,
   Play,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import Link from "next/link";
 import { FaWhatsapp } from "react-icons/fa";
@@ -87,6 +89,18 @@ const PropertyDetailsPage = () => {
 
   const DEFAULT_IMAGE =
     "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200";
+
+  const getMediaThumbnail = (url) => {
+    if (!url) return DEFAULT_IMAGE;
+    const lowerUrl = url.toLowerCase();
+    const videoExtensions = [".mp4", ".mov", ".avi", ".webm", ".mkv", ".3gp", ".ogg", ".ogv", ".wmv"];
+    const isVideo = videoExtensions.some(ext => lowerUrl.endsWith(ext) || lowerUrl.includes(ext + "?"));
+    
+    if (isVideo) {
+      return url.replace(/\.(mp4|mov|avi|webm|mkv|3gp|ogg|ogv|wmv)(?=\?|$)/i, ".jpg");
+    }
+    return url;
+  };
 
   const formatAddress = (address) => {
     if (!address) return "Location not available";
@@ -187,13 +201,30 @@ const PropertyDetailsPage = () => {
     touchEndX.current = null;
   };
 
+  const handlePrevSlide = () => {
+    setCurrentImageIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length);
+  };
+
+  const handleNextSlide = () => {
+    setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
+  };
+
   const formatPrice = (price) => {
     if (typeof price === "object" && price !== null && price.unit) {
       return `${price.value} ${price.unit}`;
     }
     if (!price || price === 0) return "Min Price";
+
+    // If price is a string and contains alphabetic characters
+    if (typeof price === "string" && /[a-zA-Z]/.test(price)) {
+      if (!price.includes("₹")) {
+        return `₹ ${price}`;
+      }
+      return price;
+    }
+
     const numPrice = Number(price);
-    if (isNaN(numPrice)) return "Price Unavailable";
+    if (isNaN(numPrice)) return price;
     if (numPrice >= 10000000) return `₹${(numPrice / 10000000).toFixed(2)} Cr`;
     return `₹${(numPrice / 100000).toFixed(2)} Lac`;
   };
@@ -224,7 +255,7 @@ const PropertyDetailsPage = () => {
           user: parsedUser,
           property: {
             ...property,
-            formattedPrice: formatPrice(property.priceValue || property.price)
+            formattedPrice: formatPrice(property.priceText || property.priceValue || property.price),
           }
         })
       });
@@ -292,15 +323,28 @@ const PropertyDetailsPage = () => {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        <img
-          src={images[currentImageIndex]}
-          onError={(e) => (e.target.src = DEFAULT_IMAGE)}
-          alt={property.title}
-          className="w-full h-[500px] object-cover"
-        />
+        {(() => {
+          const currentMedia = images[currentImageIndex];
+          const isVideo = currentMedia && [".mp4", ".mov", ".avi", ".webm", ".mkv", ".3gp", ".ogg", ".ogv", ".wmv"].some(ext => currentMedia.toLowerCase().endsWith(ext) || currentMedia.toLowerCase().includes(ext + "?"));
+          return isVideo ? (
+            <video
+              src={currentMedia}
+              controls
+              poster={getMediaThumbnail(currentMedia)}
+              className="w-full h-[500px] object-contain bg-black"
+            />
+          ) : (
+            <img
+              src={currentMedia}
+              onError={(e) => (e.target.src = DEFAULT_IMAGE)}
+              alt={property.title}
+              className="w-full h-[500px] object-cover"
+            />
+          );
+        })()}
 
         {/* Action Buttons */}
-        <div className="absolute top-4 right-4 flex gap-2">
+        {/* <div className="absolute top-4 right-4 flex gap-2">
           <button
             onClick={() => setIsFavorite(!isFavorite)}
             className="p-3 bg-white rounded-full shadow-lg hover:bg-gray-100 transition-colors"
@@ -312,12 +356,32 @@ const PropertyDetailsPage = () => {
           <button className="p-3 bg-white rounded-full shadow-lg hover:bg-gray-100 transition-colors">
             <Share2 className="w-6 h-6 text-gray-600" />
           </button>
-        </div>
+        </div> */}
 
         {property.featured && (
           <span className="absolute top-4 left-4 px-4 py-2 bg-red-600 text-white font-semibold rounded-full">
             Featured
           </span>
+        )}
+
+        {/* Slide Navigation Arrows */}
+        {images.length > 1 && (
+          <>
+            <button
+              onClick={handlePrevSlide}
+              className="absolute left-4 cursor-pointer top-1/2 transform -translate-y-1/2 p-2 bg-white/70 hover:bg-white text-gray-800 rounded-full shadow-lg transition-all z-10"
+              aria-label="Previous slide"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+            <button
+              onClick={handleNextSlide}
+              className="absolute right-4 cursor-pointer top-1/2 transform -translate-y-1/2 p-2 bg-white/70 hover:bg-white text-gray-800 rounded-full shadow-lg transition-all z-10"
+              aria-label="Next slide"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
+          </>
         )}
 
         {/* Image Navigation Dots */}
@@ -354,31 +418,60 @@ const PropertyDetailsPage = () => {
                     <span className="text-lg">{property.location}</span>
                   </div>
                 </div>
-                {property.status && (
-                  <span
-                    className={`px-4 py-2 rounded-full text-white font-semibold whitespace-nowrap self-start ${property.status === "Ready to Move"
-                      ? "bg-green-600"
-                      : "bg-orange-600"
-                      }`}
-                  >
-                    {property.status}
+                <div className="flex items-center gap-2 flex-wrap">
+                  {property.isSold && (
+                    <span className="px-4 py-2 rounded-full bg-red-600 text-white font-extrabold whitespace-nowrap self-start border border-white animate-pulse">
+                      SOLD OUT
+                    </span>
+                  )}
+                  {property.status && (
+                    <span
+                      className={`px-4 py-2 rounded-full text-white font-semibold whitespace-nowrap self-start ${property.status === "Ready to Move"
+                        ? "bg-green-600"
+                        : "bg-orange-600"
+                        }`}
+                    >
+                      {property.status}
+                    </span>
+                  )}
+                  <span className="px-4 py-2 rounded-full bg-blue-600 text-white font-semibold whitespace-nowrap self-start capitalize">
+                    {property.propertyType === "commercial"
+                      ? (property.commercialType === "other" && property.commercialTypeCustom
+                        ? `Commercial - ${property.commercialTypeCustom}`
+                        : (property.commercialType ? `Commercial - ${property.commercialType === "pg" ? "P.G" : property.commercialType}` : "Commercial"))
+                      : property.propertyType || "Apartment"}
                   </span>
-                )}
+                  {property.isHighRise && (
+                    <span className="px-4 py-2 rounded-full bg-indigo-600 text-white font-semibold whitespace-nowrap self-start">
+                      High-Rise Building
+                    </span>
+                  )}
+                </div>
               </div>
 
               <div className="flex flex-wrap items-center gap-6 py-4 border-t border-b">
-                <div className="flex items-center gap-2">
-                  <Bed className="w-5 h-5 text-gray-600" />
-                  <span className="font-semibold">
-                    {property.bedrooms || 0} BHK
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Bath className="w-5 h-5 text-gray-600" />
-                  <span className="font-semibold">
-                    {property.bathrooms || 0} Bathrooms
-                  </span>
-                </div>
+                {property.propertyType !== "plot" &&
+                  property.propertyType !== "shop" &&
+                  property.propertyType !== "office" &&
+                  property.propertyType !== "commercial" && (
+                    <div className="flex items-center gap-2">
+                      <Bed className="w-5 h-5 text-gray-600" />
+                      <span className="font-semibold">
+                        {property.bedrooms || 0} BHK
+                      </span>
+                    </div>
+                  )}
+                {property.propertyType !== "plot" &&
+                  property.propertyType !== "shop" &&
+                  property.commercialType !== "commercial land" &&
+                  property.commercialType !== "lease land" && (
+                    <div className="flex items-center gap-2">
+                      <Bath className="w-5 h-5 text-gray-600" />
+                      <span className="font-semibold">
+                        {property.bathrooms || 0} Bathrooms
+                      </span>
+                    </div>
+                  )}
                 <div className="flex items-center gap-2">
                   <Square className="w-5 h-5 text-gray-600" />
                   <span className="font-semibold">
@@ -388,11 +481,19 @@ const PropertyDetailsPage = () => {
                     sqft
                   </span>
                 </div>
+                {property.floorNo && (
+                  <div className="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-full text-sm font-semibold text-gray-700">
+                    <span>Floor: {property.floorNo}{property.totalFloors ? ` of ${property.totalFloors}` : ""}</span>
+                  </div>
+                )}
               </div>
 
-              <div className="mt-4">
+              <div className="mt-4 flex justify-between items-center flex-wrap gap-4">
                 <span className="text-4xl font-bold text-red-600">
-                  {formatPrice(property.priceValue || property.price)}
+                  {formatPrice(property.priceText || property.priceValue || property.price)}
+                </span>
+                <span className="px-4 py-1.5 bg-gray-100 border border-gray-200 text-gray-700 text-sm font-semibold rounded-full">
+                  Listed by: <span className="text-red-600 capitalize font-bold">{property.listedBy === "dealer" ? "Dealer / Broker" : "Owner"}</span>
                 </span>
               </div>
             </div>
@@ -415,14 +516,16 @@ const PropertyDetailsPage = () => {
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {images && images.length > 0 && images[0] !== DEFAULT_IMAGE ? (
                   images.map((media, index) => {
-                    const isVideo = media?.toLowerCase().endsWith(".mp4");
+                    const videoExtensions = [".mp4", ".mov", ".avi", ".webm", ".mkv", ".3gp", ".ogg", ".ogv", ".wmv"];
+                    const isVideo = media && videoExtensions.some(ext => media.toLowerCase().endsWith(ext) || media.toLowerCase().includes(ext + "?"));
 
                     return isVideo ? (
                       <video
                         key={index}
                         src={media}
                         controls
-                        className="w-full h-48 object-contain rounded-lg cursor-pointer"
+                        poster={getMediaThumbnail(media)}
+                        className="w-full h-48 object-contain rounded-lg cursor-pointer bg-black"
                         onClick={() => setCurrentImageIndex(index)}
                       />
                     ) : (

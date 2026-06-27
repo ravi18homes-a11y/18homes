@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FaFacebook, FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { IoCall } from "react-icons/io5";
 import { Poppins } from "next/font/google";
+import { Toaster } from "react-hot-toast";
 export const metadata = {
   title: "18 Homes - Elegant Interior Design Solutions",
   description: "Transforming Spaces with Style and Comfort",
@@ -21,6 +22,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
     <body className={poppins.className}>
+        <Toaster position="top-right" reverseOrder={false} />
         {children}
         <div className="fixed bottom-4 right-4 flex flex-col gap-4 z-50">
           <Link

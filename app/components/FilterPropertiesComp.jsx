@@ -2,6 +2,16 @@
 
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
+import { Building, Home, Map, Store, Briefcase, Trees } from "lucide-react";
+
+const categoryIcons = {
+  flat: Building,
+  house: Home,
+  plot: Map,
+  shop: Store,
+  office: Briefcase,
+  agriculture: Trees,
+};
 
 const CATEGORY_CONFIG = [
   {
@@ -325,21 +335,35 @@ export default function FilterPropertiesComp() {
         </p>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 mb-8">
-        <div className="flex flex-wrap justify-center gap-3">
-          {CATEGORY_CONFIG.map((category) => (
-            <button
-              key={category.key}
-              type="button"
-              onClick={() => setSelectedCategory(category.key)}
-              className={`px-5 py-3 rounded-full text-sm font-semibold transition ${selectedCategory === category.key
-                  ? "bg-red-600 text-white"
-                  : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-100"
+      <div className="max-w-7xl mx-auto px-6 mb-10">
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-4 max-w-4xl mx-auto justify-center">
+          {CATEGORY_CONFIG.map((category) => {
+            const IconComponent = categoryIcons[category.key];
+            const isActive = selectedCategory === category.key;
+            return (
+              <button
+                key={category.key}
+                type="button"
+                onClick={() => setSelectedCategory(category.key)}
+                className={`flex flex-col items-center justify-center p-4 rounded-2xl border text-center transition-all duration-300 cursor-pointer group ${
+                  isActive
+                    ? "bg-red-600 text-white border-transparent shadow-lg shadow-red-600/20 -translate-y-1 scale-105"
+                    : "bg-white text-gray-700 border-gray-200 hover:border-red-400 hover:text-red-600 hover:shadow-md hover:-translate-y-0.5"
                 }`}
-            >
-              {category.title}
-            </button>
-          ))}
+              >
+                <div
+                  className={`w-14 h-14 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${
+                    isActive ? "bg-white/20 text-white" : "bg-red-50 text-red-600 group-hover:bg-red-100"
+                  }`}
+                >
+                  {IconComponent && (
+                    <IconComponent className="w-7 h-7 transition-transform duration-300 group-hover:scale-110" />
+                  )}
+                </div>
+                <span className="text-sm font-bold tracking-wide">{category.title}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -376,7 +400,11 @@ export default function FilterPropertiesComp() {
         <div className="rounded-3xl bg-white shadow-sm p-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
             <div>
-              <h3 className="text-2xl font-bold text-gray-900">
+              <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                {(() => {
+                  const CategoryIcon = categoryIcons[activeCategory.key];
+                  return CategoryIcon && <CategoryIcon className="w-6 h-6 text-red-600" />;
+                })()}
                 {activeCategory.title}
               </h3>
               <p className="text-gray-600 mt-2">{activeCategory.description}</p>

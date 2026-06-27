@@ -41,6 +41,7 @@ const PageSchema = new mongoose.Schema(
     status: { type: String, enum: ["draft", "published"], default: "draft" },
     sections: { type: [SectionSchema], default: [] },
     seo: { type: SeoSchema, default: () => ({}) },
+    showInNavbar: { type: Boolean, default: true },
   },
   { timestamps: true },
 );

@@ -6,6 +6,18 @@ import { MapPin, Bed, Bath, Square, Heart, Home, Loader2 } from "lucide-react";
 const DEFAULT_IMAGE =
   "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800";
 
+const getMediaThumbnail = (url) => {
+  if (!url) return DEFAULT_IMAGE;
+  const lowerUrl = url.toLowerCase();
+  const videoExtensions = [".mp4", ".mov", ".avi", ".webm", ".mkv", ".3gp", ".ogg", ".ogv", ".wmv"];
+  const isVideo = videoExtensions.some(ext => lowerUrl.endsWith(ext) || lowerUrl.includes(ext + "?"));
+  
+  if (isVideo) {
+    return url.replace(/\.(mp4|mov|avi|webm|mkv|3gp|ogg|ogv|wmv)(?=\?|$)/i, ".jpg");
+  }
+  return url;
+};
+
 export default function HomeBuyComp() {
   const databaseUrl = process.env.NEXT_PUBLIC_APP_DATABASE_URL || "";
   const [filters, setFilters] = useState({ purpose: "sell" });
@@ -13,6 +25,13 @@ export default function HomeBuyComp() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [favorites, setFavorites] = useState([]);
+
+  const handlePropertyClick = (propertyId) => {
+    if (!databaseUrl || !propertyId) return;
+    fetch(`${databaseUrl}/api/properties/${propertyId}/click`, {
+      method: "POST",
+    }).catch((err) => console.error("Error calling click API:", err));
+  };
 
   const fetchProperties = useCallback(async () => {
     if (!databaseUrl) {
@@ -61,14 +80,20 @@ export default function HomeBuyComp() {
             id: prop._id || prop.id,
             title: prop.title || "No Title",
             location: ownerInfo,
-            price: prop.priceValue || prop.price || 0,
+            price: prop.priceText || prop.priceValue || prop.price || "",
             bedrooms: prop.bedrooms || 0,
             bathrooms: prop.bathrooms || 0,
             area: areaValue,
-            type: prop.propertyType || "apartment",
-            image: validImages.length > 0 ? validImages[0] : DEFAULT_IMAGE,
+            type: prop.propertyType === "commercial"
+              ? (prop.commercialType === "other" && prop.commercialTypeCustom
+                ? `Commercial (${prop.commercialTypeCustom})`
+                : (prop.commercialType ? `Commercial (${prop.commercialType === "pg" ? "P.G" : prop.commercialType.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')})` : "Commercial"))
+              : prop.propertyType || "apartment",
+            image: validImages.length > 0 ? getMediaThumbnail(validImages[0]) : DEFAULT_IMAGE,
             status: prop.purpose === "rent" ? "For Rent" : "For Sale",
             featured: prop.featured || false,
+            listedBy: prop.listedBy || "owner",
+            isSold: prop.isSold || false,
           };
         });
 
@@ -100,8 +125,17 @@ export default function HomeBuyComp() {
       return `${price.value} ${price.unit}`;
     }
     if (!price || price === 0) return "Price on Request";
+    
+    // If price is a string and contains alphabetic characters
+    if (typeof price === "string" && /[a-zA-Z]/.test(price)) {
+      if (!price.includes("₹")) {
+        return `₹ ${price}`;
+      }
+      return price;
+    }
+
     const numPrice = Number(price);
-    if (isNaN(numPrice)) return "Price Unavailable";
+    if (isNaN(numPrice)) return price;
     if (numPrice >= 10000000) return `₹${(numPrice / 10000000).toFixed(2)} Cr`;
     return `₹${(numPrice / 100000).toFixed(2)} Lac`;
   };
@@ -167,9 +201,17 @@ export default function HomeBuyComp() {
                 query: { id: property.id },
               }}
               key={property.id}
+              onClick={() => handlePropertyClick(property.id)}
               className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow"
             >
               <div className="relative">
+                {property.isSold && (
+                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-10">
+                    <span className="bg-red-600 text-white font-extrabold text-lg px-4 py-2 rounded-lg shadow-lg tracking-wider uppercase border-2 border-white">
+                      Sold Out
+                    </span>
+                  </div>
+                )}
                 <img
                   src={property.image}
                   alt={property.title}
@@ -185,7 +227,7 @@ export default function HomeBuyComp() {
                     e.stopPropagation();
                     toggleFavorite(property.id);
                   }}
-                  className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-md hover:bg-gray-100"
+                  className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 z-20"
                 >
                   <Heart
                     className={`w-5 h-5 ${
@@ -200,8 +242,11 @@ export default function HomeBuyComp() {
                     Featured
                   </span>
                 )}
-                <span className="absolute bottom-3 left-3 px-3 py-1 bg-green-600 text-white text-sm rounded-full">
+                <span className={`absolute bottom-3 left-3 px-3 py-1 ${property.status === "For Rent" ? "bg-red-600" : "bg-green-600"} text-white text-sm rounded-full`}>
                   {property.status}
+                </span>
+                <span className="absolute bottom-3 right-3 px-2 py-1 bg-black/60 text-white text-xs rounded-md">
+                  {property.listedBy === "dealer" ? "Dealer" : "Owner"}
                 </span>
               </div>
 

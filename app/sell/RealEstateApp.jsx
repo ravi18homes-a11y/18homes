@@ -18,6 +18,31 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
+
+const parsePrice = (priceStr) => {
+  if (!priceStr) return 0;
+  let cleaned = String(priceStr).replace(/[₹,\s]/g, "").toLowerCase();
+  
+  const match = cleaned.match(/^([\d.]+)([a-z]*)$/);
+  if (!match) {
+    let num = parseFloat(cleaned);
+    if (isNaN(num)) return 0;
+    if (cleaned.includes("cr") || cleaned.includes("crore")) return num * 10000000;
+    if (cleaned.includes("lakh") || cleaned.includes("lac") || cleaned.includes("l")) return num * 100000;
+    if (cleaned.includes("k") || cleaned.includes("thousand")) return num * 1000;
+    return num;
+  }
+  
+  const numVal = parseFloat(match[1]);
+  const suffix = match[2];
+  if (isNaN(numVal)) return 0;
+  
+  if (suffix.includes("cr") || suffix.includes("crore")) return numVal * 10000000;
+  if (suffix.includes("lakh") || suffix.includes("lac") || suffix.includes("l")) return numVal * 100000;
+  if (suffix.includes("k") || suffix.includes("thousand")) return numVal * 1000;
+  return numVal;
+};
 
 const RealEstateApp = () => {
   const [currentPage, setCurrentPage] = useState("sell");
@@ -52,6 +77,11 @@ const RealEstateApp = () => {
     description: "",
     purpose: "sell",
     propertyType: "apartment",
+    commercialType: "",
+    commercialTypeCustom: "",
+    isHighRise: false,
+    floorNo: "",
+    totalFloors: "",
     price: "",
     area: [{ size: "", unit: "sqft" }],
     bedrooms: "1",
@@ -63,6 +93,7 @@ const RealEstateApp = () => {
     ownerName: "",
     ownerPhone: "",
     ownerEmail: "",
+    listedBy: "owner",
   });
 
   const [submitSuccess, setSubmitSuccess] = useState(false);
@@ -111,7 +142,7 @@ const RealEstateApp = () => {
     const currentMediaCount = sellForm.images.length + sellForm.videos.length;
 
     if (currentMediaCount + files.length > 15) {
-      alert("You can upload a maximum of 15 images/videos");
+      toast.error("You can upload a maximum of 15 images/videos");
       return;
     }
 
@@ -136,9 +167,10 @@ const RealEstateApp = () => {
         images: [...prev.images, ...uploadedImages],
         videos: [...prev.videos, ...uploadedVideos],
       }));
+      toast.success("Media uploaded successfully!");
     } catch (err) {
       console.error(err);
-      alert("Cloudinary upload failed");
+      toast.error("Cloudinary upload failed");
     } finally {
       setIsUploading(false);
     }
@@ -161,10 +193,15 @@ const RealEstateApp = () => {
   const showBedrooms =
     sellForm.propertyType !== "plot" &&
     sellForm.propertyType !== "shop" &&
-    sellForm.propertyType !== "office";
+    sellForm.propertyType !== "office" &&
+    sellForm.propertyType !== "commercial";
   const showBathrooms =
-    sellForm.propertyType !== "plot" && sellForm.propertyType !== "shop";
-  const showFurnishing = sellForm.propertyType !== "plot";
+    sellForm.propertyType !== "plot" &&
+    sellForm.propertyType !== "shop" &&
+    sellForm.commercialType !== "commercial land";
+  const showFurnishing =
+    sellForm.propertyType !== "plot" &&
+    sellForm.commercialType !== "commercial land";
   const areaColSpan =
     showBedrooms && showBathrooms
       ? ""
@@ -181,7 +218,7 @@ const RealEstateApp = () => {
       const token = localStorage.getItem("authToken");
 
       if (!token) {
-        alert("Please login first");
+        toast.error("Please login first");
         setIsSubmitting(false);
         return;
       }
@@ -200,9 +237,14 @@ const RealEstateApp = () => {
           description: sellForm.description,
           purpose: sellForm.purpose,
           propertyType: sellForm.propertyType,
+          commercialType: sellForm.propertyType === "commercial" ? sellForm.commercialType : undefined,
+          commercialTypeCustom: (sellForm.propertyType === "commercial" && sellForm.commercialType === "other") ? sellForm.commercialTypeCustom : undefined,
+          isHighRise: (sellForm.propertyType === "flat" || sellForm.propertyType === "apartment") ? sellForm.isHighRise : false,
+          floorNo: (sellForm.propertyType === "flat" || sellForm.propertyType === "apartment" || sellForm.propertyType === "office" || sellForm.propertyType === "shop" || sellForm.propertyType === "commercial") ? sellForm.floorNo : undefined,
+          totalFloors: (sellForm.propertyType === "flat" || sellForm.propertyType === "apartment" || sellForm.propertyType === "office" || sellForm.propertyType === "shop" || sellForm.propertyType === "commercial") ? sellForm.totalFloors : undefined,
 
           priceText: sellForm.price,
-          priceValue: Number(sellForm.price),
+          priceValue: parsePrice(sellForm.price),
 
           area: {
             size: sellForm.area[0]?.size ? Number(sellForm.area[0].size) : 0,
@@ -218,6 +260,7 @@ const RealEstateApp = () => {
           },
 
           images: [...sellForm.images, ...sellForm.videos],
+          listedBy: sellForm.listedBy || "owner",
         }),
       });
 
@@ -225,6 +268,7 @@ const RealEstateApp = () => {
 
       if (data.success) {
         setSubmitSuccess(true);
+        toast.success("Property submitted successfully!");
 
         // Reset form
         setSellForm({
@@ -232,6 +276,11 @@ const RealEstateApp = () => {
           description: "",
           purpose: "sell",
           propertyType: "apartment",
+          commercialType: "",
+          commercialTypeCustom: "",
+          isHighRise: false,
+          floorNo: "",
+          totalFloors: "",
           price: "",
           area: [{ size: "", unit: "sqft" }],
           bedrooms: "1",
@@ -243,15 +292,16 @@ const RealEstateApp = () => {
           ownerName: "",
           ownerPhone: "",
           ownerEmail: "",
+          listedBy: "owner",
         });
 
         router.push("/buy");
       } else {
-        alert(data.message || "Error submitting property");
+        toast.error(data.message || "Error submitting property");
       }
     } catch (error) {
       console.error(error);
-      alert("There is a server issue. Please try again later.");
+      toast.error("There is a server issue. Please try again later.");
     } finally {
       setIsSubmitting(false);
     }
@@ -487,8 +537,106 @@ const RealEstateApp = () => {
                     <option value="shop">Shop</option>
                     <option value="office">Office</option>
                     <option value="apartment">Apartment</option>
+                    <option value="commercial">Commercial</option>
                   </select>
                 </div>
+
+              {sellForm.propertyType === "commercial" && (
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Commercial Type *
+                  </label>
+                  <select
+                    required
+                    value={sellForm.commercialType}
+                    onChange={(e) =>
+                      handleSellFormChange("commercialType", e.target.value)
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  >
+                    <option value="" disabled hidden>Select Commercial Type</option>
+                    <option value="hotel">Hotel</option>
+                    <option value="hospital">Hospital</option>
+                    <option value="school">School</option>
+                    <option value="pg">P.G</option>
+                    <option value="lease land">Lease Land</option>
+                    <option value="commercial land">Commercial Land</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              )}
+
+              {sellForm.propertyType === "commercial" && sellForm.commercialType === "other" && (
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Specify Commercial Type *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={sellForm.commercialTypeCustom || ""}
+                    onChange={(e) =>
+                      handleSellFormChange("commercialTypeCustom", e.target.value)
+                    }
+                    placeholder="e.g. Warehouse, Showroom"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  />
+                </div>
+              )}
+
+              {(sellForm.propertyType === "flat" || sellForm.propertyType === "apartment") && (
+                <div className="flex items-center gap-2 pt-2 md:col-span-2">
+                  <input
+                    type="checkbox"
+                    id="isHighRise"
+                    checked={sellForm.isHighRise}
+                    onChange={(e) =>
+                      handleSellFormChange("isHighRise", e.target.checked)
+                    }
+                    className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                  />
+                  <label htmlFor="isHighRise" className="text-sm font-medium text-gray-700 select-none cursor-pointer">
+                    Flat in High-Rise Building
+                  </label>
+                </div>
+              )}
+
+              {(sellForm.propertyType === "flat" ||
+                sellForm.propertyType === "apartment" ||
+                sellForm.propertyType === "office" ||
+                sellForm.propertyType === "shop" ||
+                sellForm.propertyType === "commercial") && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-2">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Floor Number
+                    </label>
+                    <input
+                      type="text"
+                      value={sellForm.floorNo || ""}
+                      onChange={(e) =>
+                        handleSellFormChange("floorNo", e.target.value)
+                      }
+                      placeholder="e.g. 5 (or Ground, Basement)"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Total Floors in Building
+                    </label>
+                    <input
+                      type="text"
+                      value={sellForm.totalFloors || ""}
+                      onChange={(e) =>
+                        handleSellFormChange("totalFloors", e.target.value)
+                      }
+                      placeholder="e.g. 12"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                    />
+                  </div>
+                </div>
+              )}
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -531,13 +679,13 @@ const RealEstateApp = () => {
                     Price (₹) *
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     required
                     value={sellForm.price}
                     onChange={(e) =>
                       handleSellFormChange("price", e.target.value)
                     }
-                    placeholder="e.g. 8500000"
+                    placeholder="e.g. 25 Lakh or 2.5 Cr"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   />
                 </div>
@@ -631,6 +779,24 @@ const RealEstateApp = () => {
                   </select>
                 </div>
               )}
+
+              {/* Listed By */}
+              <div className="border-t pt-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Listed By *
+                </label>
+                <select
+                  required
+                  value={sellForm.listedBy}
+                  onChange={(e) =>
+                    handleSellFormChange("listedBy", e.target.value)
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                >
+                  <option value="owner">Owner</option>
+                  <option value="dealer">Dealer / Broker</option>
+                </select>
+              </div>
 
               {/* Owner Details */}
               <div className="border-t pt-6">

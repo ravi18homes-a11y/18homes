@@ -6,16 +6,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { useState, Suspense } from "react";
+import { toast } from "react-hot-toast";
 
 function NewPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState("");
 
   const handleSave = async (pageData) => {
     setSaving(true);
-    setMessage("");
 
     const response = await fetch("/api/pages", {
       method: "POST",
@@ -25,9 +24,10 @@ function NewPageContent() {
 
     const result = await response.json();
     if (response.ok) {
+      toast.success("Page created successfully!");
       router.push("/admin/pages");
     } else {
-      setMessage(result.error || "Unable to create page.");
+      toast.error(result.error || "Unable to create page.");
     }
     setSaving(false);
   };
@@ -61,11 +61,6 @@ function NewPageContent() {
               parentId: searchParams.get("parentId") || undefined,
             }}
           />
-          {message && (
-            <div className="mt-4 rounded-3xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-              {message}
-            </div>
-          )}
         </div>
       </div>
     </>

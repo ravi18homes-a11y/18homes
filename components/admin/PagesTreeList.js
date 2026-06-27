@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "react-hot-toast";
 
 const FIXED_MENUS = [
   { key: "home", label: "Home", href: "/" },
@@ -45,6 +46,7 @@ export default function PagesTreeList() {
   const [pages, setPages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   useEffect(() => {
     let ignore = false;
@@ -120,22 +122,27 @@ export default function PagesTreeList() {
   }, []);
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this page? Children will move to root.")) {
-      return;
-    }
-    const res = await fetch(`/api/pages/${id}`, { method: "DELETE" });
-    if (!res.ok && res.status !== 204) {
-      let msg = "Delete failed.";
-      try {
-        const body = await res.json();
-        msg = body.error || msg;
-      } catch {
-        /* ignore */
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/pages/${id}`, { method: "DELETE" });
+      if (!res.ok && res.status !== 204) {
+        let msg = "Delete failed.";
+        try {
+          const body = await res.json();
+          msg = body.error || msg;
+        } catch {
+          /* ignore */
+        }
+        toast.error(msg);
+      } else {
+        toast.success("Page deleted successfully!");
+        await refresh();
       }
-      window.alert(msg);
-      return;
+    } catch (err) {
+      toast.error("Failed to delete page. Connection error.");
+    } finally {
+      setLoading(false);
     }
-    await refresh();
   };
 
   const renderTable = (tree, menuKey) => {
@@ -160,6 +167,9 @@ export default function PagesTreeList() {
               </th>
               <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Status
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Navbar
               </th>
               <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Actions
@@ -193,6 +203,17 @@ export default function PagesTreeList() {
                     {item.status || "draft"}
                   </span>
                 </td>
+                <td className="px-6 py-4 text-sm">
+                  {item.showInNavbar !== false ? (
+                    <span className="rounded-full bg-indigo-50 text-indigo-700 px-3 py-1 text-xs font-semibold">
+                      Visible
+                    </span>
+                  ) : (
+                    <span className="rounded-full bg-slate-100 text-slate-500 px-3 py-1 text-xs font-semibold">
+                      Hidden
+                    </span>
+                  )}
+                </td>
                 <td className="px-6 py-4 text-right text-sm font-medium">
                   <Link
                     href={`/admin/pages/edit/${item.id}`}
@@ -208,8 +229,8 @@ export default function PagesTreeList() {
                   </Link>
                   <button
                     type="button"
-                    onClick={() => handleDelete(item.id)}
-                    className="text-rose-600 hover:text-rose-800"
+                    onClick={() => setDeleteTarget({ id: item.id, title: item.title })}
+                    className="text-rose-600 hover:text-rose-800 cursor-pointer"
                   >
                     Delete
                   </button>
@@ -232,12 +253,20 @@ export default function PagesTreeList() {
             pages with <strong>Add child</strong> on any row.
           </p>
         </div>
-        <Link
-          href="/admin/pages/new"
-          className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-700"
-        >
-          Create page
-        </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href="/admin/pages/homepage"
+            className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+          >
+            Edit Homepage
+          </Link>
+          <Link
+            href="/admin/pages/new"
+            className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-700"
+          >
+            Create page
+          </Link>
+        </div>
       </div>
 
       {loading ? (
@@ -256,8 +285,7 @@ export default function PagesTreeList() {
               <div>
                 <h2 className="text-lg font-semibold">Navbar — after Contact</h2>
                 <p className="text-sm text-slate-300">
-                  Published pages here show in the header after Contact, with
-                  hover menus for children.
+                  Published pages here show in the header after Contact (max 7 active root pages shown, newest first).
                 </p>
               </div>
               <span className="text-sm text-slate-300">
@@ -314,6 +342,37 @@ export default function PagesTreeList() {
               );
             })}
         </>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full mx-4 shadow-xl border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
+            <h3 className="text-lg font-semibold text-slate-900">Delete Page</h3>
+            <p className="mt-2 text-sm text-slate-600">
+              Are you sure you want to delete <strong>{deleteTarget.title}</strong>? Any child pages will be moved to the root level.
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                className="rounded-full bg-slate-100 hover:bg-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  handleDelete(deleteTarget.id);
+                  setDeleteTarget(null);
+                }}
+                className="rounded-full bg-rose-600 hover:bg-rose-700 px-4 py-2 text-sm font-medium text-white transition cursor-pointer"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

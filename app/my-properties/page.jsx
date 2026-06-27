@@ -5,6 +5,21 @@ import { Edit, Trash2, Home, MapPin, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Navbar from "../COMMON/Navbar";
 import Footer from "../COMMON/Footer";
+import { toast } from "react-hot-toast";
+
+const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800";
+
+const getMediaThumbnail = (url) => {
+  if (!url) return DEFAULT_IMAGE;
+  const lowerUrl = url.toLowerCase();
+  const videoExtensions = [".mp4", ".mov", ".avi", ".webm", ".mkv", ".3gp", ".ogg", ".ogv", ".wmv"];
+  const isVideo = videoExtensions.some(ext => lowerUrl.endsWith(ext) || lowerUrl.includes(ext + "?"));
+  
+  if (isVideo) {
+    return url.replace(/\.(mp4|mov|avi|webm|mkv|3gp|ogg|ogv|wmv)(?=\?|$)/i, ".jpg");
+  }
+  return url;
+};
 
 export default function MyPropertiesPage() {
   const [properties, setProperties] = useState([]);
@@ -67,13 +82,14 @@ export default function MyPropertiesPage() {
 
       if (res.ok) {
         setProperties((prev) => prev.filter((p) => p._id !== id && p.id !== id));
+        toast.success("Property deleted successfully");
       } else {
         const errorData = await res.json();
-        alert(`Failed to delete property: ${errorData.message || 'Unknown error'}`);
+        toast.error(`Failed to delete property: ${errorData.message || 'Unknown error'}`);
       }
     } catch (error) {
       console.error("Error deleting property:", error);
-      alert("An error occurred while deleting the property.");
+      toast.error("An error occurred while deleting the property.");
     } finally {
       setDeletingId(null);
     }
@@ -84,6 +100,15 @@ export default function MyPropertiesPage() {
       return `${price.value} ${price.unit}`;
     }
     if (!price || price === 0) return "N/A";
+
+    // If price is a string and contains alphabetic characters
+    if (typeof price === "string" && /[a-zA-Z]/.test(price)) {
+      if (!price.includes("₹")) {
+        return `₹ ${price}`;
+      }
+      return price;
+    }
+
     const numPrice = Number(price);
     if (isNaN(numPrice)) return price;
     if (numPrice >= 10000000) return `₹${(numPrice / 10000000).toFixed(2)} Cr`;
@@ -135,12 +160,19 @@ export default function MyPropertiesPage() {
               {properties.map((property) => (
                 <div key={property._id || property.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow flex flex-col">
                   <div className="relative h-48 bg-gray-200">
+                    {property.isSold && (
+                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-10">
+                        <span className="bg-red-600 text-white font-extrabold text-xs px-3 py-1.5 rounded-lg shadow-lg uppercase border border-white">
+                          Sold Out
+                        </span>
+                      </div>
+                    )}
                     <img
-                      src={property.images?.[0] || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800"}
+                      src={getMediaThumbnail(property.images?.[0])}
                       alt={property.title}
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        e.target.src = "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800";
+                        e.target.src = DEFAULT_IMAGE;
                       }}
                     />
                     {property.status && (
@@ -148,6 +180,9 @@ export default function MyPropertiesPage() {
                         {property.status}
                       </div>
                     )}
+                    <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-sm px-2.5 py-0.5 rounded text-[10px] font-semibold text-white">
+                      By {property.listedBy === "dealer" ? "Dealer" : "Owner"}
+                    </div>
                   </div>
 
                   <div className="p-5 flex-grow flex flex-col">
@@ -156,7 +191,7 @@ export default function MyPropertiesPage() {
                         {property.title}
                       </h3>
                       <span className="text-red-600 font-bold whitespace-nowrap">
-                        {formatPrice(property.priceValue || property.price)}
+                        {formatPrice(property.priceText || property.priceValue || property.price)}
                       </span>
                     </div>
 

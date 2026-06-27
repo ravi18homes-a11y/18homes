@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Home, Mail, Lock, User, Phone, AlertCircle, CheckCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'react-hot-toast';
 
 
 export default function AuthPage() {
@@ -36,20 +37,24 @@ export default function AuthPage() {
 
   const validateForm = () => {
     if (!formData.email || !formData.password) {
+      toast.error("Email and Password are required");
       setMessage({ type: "error", text: "Email and Password are required" });
       return false;
     }
 
     if (!isLogin) {
       if (!formData.name || !formData.phone) {
+        toast.error("All fields are required");
         setMessage({ type: "error", text: "All fields are required" });
         return false;
       }
       if (formData.password !== formData.confirmPassword) {
+        toast.error("Passwords do not match");
         setMessage({ type: "error", text: "Passwords do not match" });
         return false;
       }
       if (formData.password.length < 6) {
+        toast.error("Password must be at least 6 characters long");
         setMessage({
           type: "error",
           text: "Password must be at least 6 characters long",
@@ -89,6 +94,7 @@ export default function AuthPage() {
 
       if (!response.ok) {
         console.error("Registration failed:", response.status, data);
+        toast.error(data.message || `Request failed: ${response.status}`);
         setMessage({
           type: "error",
           text: data.message || `Request failed: ${response.status}`,
@@ -97,6 +103,7 @@ export default function AuthPage() {
       }
 
       if (data.success) {
+        toast.success("Registration successful! Please login.");
         setMessage({
           type: "success",
           text: data.message || "Registration successful! Please login.",
@@ -114,6 +121,7 @@ export default function AuthPage() {
           setMessage({ type: "", text: "" });
         }, 2000);
       } else {
+        toast.error(data.message || "Registration failed");
         setMessage({
           type: "error",
           text: data.message || "Registration failed",
@@ -121,6 +129,7 @@ export default function AuthPage() {
       }
     } catch (error) {
       console.error("Registration/network error:", error);
+      toast.error("Network error. Please try again.");
       setMessage({
         type: "error",
         text: "Network error. " + (error.message || "Please try again."),
@@ -158,6 +167,7 @@ export default function AuthPage() {
       if (!response.ok) {
         // Response HTTP error (4xx/5xx) — show server message if available
         console.error("Login failed:", response.status, data);
+        toast.error(data.message || `Request failed: ${response.status}`);
         setMessage({
           type: "error",
           text: data.message || `Request failed: ${response.status}`,
@@ -166,6 +176,7 @@ export default function AuthPage() {
       }
 
       if (data.success && data.data?.token) {
+        toast.success("Login successful!");
         setMessage({
           type: "success",
           text: data.message || "Login successful!",
@@ -178,11 +189,13 @@ export default function AuthPage() {
           window.location.href = "/"; // Change this to your dashboard route
         }, 1500);
       } else {
+        toast.error(data.message || "Login failed");
         setMessage({ type: "error", text: data.message || "Login failed" });
       }
     } catch (error) {
       // Network or parsing error
       console.error("Network/login error:", error);
+      toast.error("Network error. Please try again.");
       setMessage({
         type: "error",
         text: "Network error. " + (error.message || "Please try again."),

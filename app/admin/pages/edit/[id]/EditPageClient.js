@@ -3,13 +3,13 @@
 import PageEditor from "@/components/admin/PageEditor";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import { toast } from "react-hot-toast";
 
 export default function EditPageClient({ id }) {
   const router = useRouter();
   const [page, setPage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState(null);
 
   useEffect(() => {
     fetch(`/api/pages/${id}`)
@@ -22,14 +22,13 @@ export default function EditPageClient({ id }) {
         setLoading(false);
       })
       .catch((err) => {
-        setMessage({ type: "err", text: err.message });
+        toast.error(err.message || "Failed to load page");
         setLoading(false);
       });
   }, [id]);
 
   const handleSave = async (payload) => {
     setSaving(true);
-    setMessage(null);
     try {
       const res = await fetch(`/api/pages/${id}`, {
         method: "PUT",
@@ -38,17 +37,14 @@ export default function EditPageClient({ id }) {
       });
       const data = await res.json();
       if (res.ok) {
-        setMessage({ type: "ok", text: "Changes saved. Redirecting..." });
+        toast.success("Page updated successfully!");
         router.push("/admin/pages");
         router.refresh();
       } else {
-        setMessage({
-          type: "err",
-          text: data.error || "Unable to save. Check the form and try again.",
-        });
+        toast.error(data.error || "Unable to save. Check the form and try again.");
       }
     } catch (e) {
-      setMessage({ type: "err", text: e.message || "Save failed." });
+      toast.error(e.message || "Save failed.");
     } finally {
       setSaving(false);
     }
@@ -61,7 +57,7 @@ export default function EditPageClient({ id }) {
   if (!page) {
     return (
       <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-rose-800">
-        {message?.text || "Page not found."}
+        Page not found.
       </div>
     );
   }
@@ -74,17 +70,6 @@ export default function EditPageClient({ id }) {
         saving={saving}
         mode="edit"
       />
-      {message && message.type !== "ok" && (
-        <div
-          className={`mt-4 rounded-2xl border px-4 py-3 text-sm ${
-            message.type === "ok"
-              ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-              : "border-rose-200 bg-rose-50 text-rose-800"
-          }`}
-        >
-          {message.text}
-        </div>
-      )}
     </div>
   );
 }

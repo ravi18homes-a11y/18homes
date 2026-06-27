@@ -45,6 +45,7 @@ export default function PageEditor({
   const [seo, setSeo] = useState(initialData?.seo || defaultSeo);
   const [activeTab, setActiveTab] = useState("general");
   const [status, setStatus] = useState(initialData?.status || "draft");
+  const [showInNavbar, setShowInNavbar] = useState(initialData?.showInNavbar ?? true);
   const [isSlugManual, setIsSlugManual] = useState(
     Boolean(initialData?.slugSegment || initialData?.slug),
   );
@@ -68,6 +69,7 @@ export default function PageEditor({
     setSections(initialData?.sections || []);
     setSeo(initialData?.seo || defaultSeo);
     setStatus(initialData?.status || "draft");
+    setShowInNavbar(initialData?.showInNavbar ?? true);
     setParentId(initialData?.parentId || "");
     setMainMenu(initialData?.mainMenu || "pages");
   }, [
@@ -78,6 +80,7 @@ export default function PageEditor({
     initialData?.parentId,
     initialData?.mainMenu,
     initialData?.status,
+    initialData?.showInNavbar,
     initialData?.updatedAt,
   ]);
 
@@ -149,6 +152,7 @@ export default function PageEditor({
       status,
       sections,
       seo,
+      showInNavbar,
     };
     await onSave(payload);
   };
@@ -217,6 +221,23 @@ export default function PageEditor({
                 Only published pages appear on the public site and in the
                 navbar.
               </p>
+            </label>
+          </div>
+
+          <div className="rounded-3xl border border-slate-100 bg-slate-50/50 p-5">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showInNavbar}
+                onChange={(event) => setShowInNavbar(event.target.checked)}
+                className="mt-1 h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-500 cursor-pointer"
+              />
+              <div className="space-y-1">
+                <span className="text-sm font-semibold text-slate-900">Show in navigation bar</span>
+                <p className="text-xs text-slate-600">
+                  Enable this to show this page in the main website header. When disabled, the page will not appear in the navbar, but visitors can still access it directly if they know its URL.
+                </p>
+              </div>
             </label>
           </div>
 

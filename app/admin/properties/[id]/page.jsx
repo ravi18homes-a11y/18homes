@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
 
 export default function AdminPropertyDetailPage() {
   const { id } = useParams();
@@ -31,6 +32,33 @@ export default function AdminPropertyDetailPage() {
       });
   }, [id]);
 
+  const toggleSoldStatus = async () => {
+    if (!property) return;
+    
+    const res = await fetch(
+      (process.env.NEXT_PUBLIC_APP_DATABASE_URL || "http://localhost:5000") +
+      `/api/properties/${id}`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          isSold: !property.isSold,
+        }),
+      }
+    );
+    
+    const json = await res.json();
+    if (json?.success) {
+      setProperty(json?.data);
+      toast.success(json?.data?.isSold ? "Property marked as sold" : "Property marked as available");
+    } else {
+      toast.error(json?.message || "Failed to update property status");
+    }
+  };
+
   if (loading) return <div className="p-10">Loading property…</div>;
   if (!property) return <div className="p-10">Property not found</div>;
 
@@ -52,21 +80,39 @@ export default function AdminPropertyDetailPage() {
         </p>
 
         <div className="flex flex-wrap gap-3 text-sm mt-2">
-          <Badge label={property.purpose} />
-          <Badge label={property.propertyType} />
-          <Badge label={property.furnishing} />
+          <Badge label={`Purpose: ${property.purpose}`} />
+          <Badge label={`Type: ${property.propertyType}`} />
+          <Badge label={`Furnishing: ${property.furnishing}`} />
+          <Badge label={`Listed by: ${property.listedBy || "owner"}`} />
+          <Badge
+            label={property.isSold ? "Sold Out" : "Available"}
+            danger={property.isSold}
+          />
           <Badge
             label={property.isFlagged ? "Flagged" : "Active"}
             danger={property.isFlagged}
           />
         </div>
 
-        <button
-          onClick={() => router.back()}
-          className="mt-4 px-4 py-2 bg-gray-600 text-white rounded"
-        >
-          ← Back
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => router.back()}
+            className="mt-4 px-4 py-2 bg-gray-600 text-white rounded"
+          >
+            ← Back
+          </button>
+          
+          <button
+            onClick={toggleSoldStatus}
+            className={`mt-4 px-4 py-2 text-white rounded font-semibold ${
+              property.isSold
+                ? "bg-emerald-600 hover:bg-emerald-700"
+                : "bg-orange-500 hover:bg-orange-600"
+            }`}
+          >
+            {property.isSold ? "Make Available" : "Mark Sold"}
+          </button>
+        </div>
       </div>
 
       {/* ================= IMAGES ================= */}
@@ -127,7 +173,8 @@ export default function AdminPropertyDetailPage() {
                 : "—"
             }
           />
-          <Field label="Views" value={property.views} />
+          <Field label="User Views" value={property.views} />
+          <Field label="Admin Views" value={property.adminViews} />
           <Field
             label="Created At"
             value={formatDate(property.createdAt)}

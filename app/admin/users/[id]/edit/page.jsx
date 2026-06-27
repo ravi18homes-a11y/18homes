@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
 
 export default function EditUserPage() {
   const { id } = useParams();
@@ -11,7 +12,6 @@ export default function EditUserPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [success, setSuccess] = useState("");
 
   const token =
     typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
@@ -66,9 +66,12 @@ export default function EditUserPage() {
           ...prev,
           avatar: data.data.media[0].url,
         }));
+        toast.success("Avatar uploaded successfully!");
+      } else {
+        toast.error(data.message || "Avatar upload failed");
       }
     } catch (err) {
-      alert("Avatar upload failed");
+      toast.error("Avatar upload failed");
     } finally {
       setUploading(false);
     }
@@ -77,35 +80,52 @@ export default function EditUserPage() {
   /* ================= SAVE USER ================= */
   const saveChanges = async () => {
     setSaving(true);
-    setSuccess("");
 
-    await fetch(`${API}/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(user),
-    });
+    try {
+      const res = await fetch(`${API}/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(user),
+      });
 
-    setSaving(false);
-    setSuccess("User updated successfully");
-
-    setTimeout(() => {
-      router.push(`/admin/users/${id}`);
-    }, 1200);
+      const data = await res.json();
+      if (res.ok || data.success) {
+        toast.success("User updated successfully");
+        setTimeout(() => {
+          router.push(`/admin/users/${id}`);
+        }, 1200);
+      } else {
+        toast.error(data.message || "Failed to update user");
+      }
+    } catch (error) {
+      toast.error("Failed to update user");
+    } finally {
+      setSaving(false);
+    }
   };
 
   /* ================= DELETE USER ================= */
   const deleteUser = async () => {
     if (!confirm("Delete this user?")) return;
 
-    await fetch(`${API}/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    router.push("/admin/users");
+    try {
+      const res = await fetch(`${API}/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok || data.success) {
+        toast.success("User deleted successfully");
+        router.push("/admin/users");
+      } else {
+        toast.error(data.message || "Failed to delete user");
+      }
+    } catch (error) {
+      toast.error("Failed to delete user");
+    }
   };
 
   if (loading) return <div className="p-10">Loading...</div>;
@@ -248,12 +268,6 @@ export default function EditUserPage() {
         >
           Delete User
         </button>
-
-        {success && (
-          <span className="text-green-600 font-semibold">
-            ✔ {success}
-          </span>
-        )}
       </div>
     </div>
   );

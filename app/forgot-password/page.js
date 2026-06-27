@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -26,8 +27,15 @@ export default function ForgotPasswordPage() {
       });
 
       const data = await res.json();
-      setMessage(data.message || "Check your email");
+      if (res.ok) {
+        toast.success(data.message || "Reset link sent to your email!");
+        setMessage(data.message || "Check your email");
+      } else {
+        toast.error(data.message || "Failed to send reset link");
+        setMessage(data.message || "Failed to send reset link");
+      }
     } catch (err) {
+      toast.error("Something went wrong");
       setMessage("Something went wrong");
     } finally {
       setLoading(false);

@@ -137,7 +137,14 @@ export default function AdminUserDetailPage() {
                     <td className="p-3">{i + 1}</td>
                     <td className="p-3 font-semibold">{p?.title || "—"}</td>
                     <td className="p-3">{p?.address?.city || "—"}</td>
-                    <td className="p-3">₹ {p?.price || "—"}</td>
+                    <td className="p-3">
+                      {p?.priceText 
+                        ? (p.priceText.includes("₹") ? p.priceText : `₹ ${p.priceText}`) 
+                        : (p?.priceValue 
+                          ? `₹ ${p.priceValue.toLocaleString()}` 
+                          : (p?.price ? `₹ ${p.price}` : "—"))
+                      }
+                    </td>
                     <td className="p-3">
                       <button
                         onClick={() =>

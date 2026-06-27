@@ -19,8 +19,21 @@ import {
 const DEFAULT_IMAGE =
   "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800";
 
+const getMediaThumbnail = (url) => {
+  if (!url) return DEFAULT_IMAGE;
+  const lowerUrl = url.toLowerCase();
+  const videoExtensions = [".mp4", ".mov", ".avi", ".webm", ".mkv", ".3gp", ".ogg", ".ogv", ".wmv"];
+  const isVideo = videoExtensions.some(ext => lowerUrl.endsWith(ext) || lowerUrl.includes(ext + "?"));
+  
+  if (isVideo) {
+    return url.replace(/\.(mp4|mov|avi|webm|mkv|3gp|ogg|ogv|wmv)(?=\?|$)/i, ".jpg");
+  }
+  return url;
+};
+
 const INITIAL_FILTERS = {
   propertyType: "all",
+  commercialType: "all",
   city: "",
   minPrice: "",
   maxPrice: "",
@@ -46,6 +59,13 @@ const BuyPage = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState(INITIAL_FILTERS);
   const [favorites, setFavorites] = useState([]);
+
+  const handlePropertyClick = (propertyId) => {
+    if (!databaseUrl || !propertyId) return;
+    fetch(`${databaseUrl}/api/properties/${propertyId}/click`, {
+      method: "POST",
+    }).catch((err) => console.error("Error calling click API:", err));
+  };
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -125,6 +145,8 @@ const BuyPage = () => {
         if (filters.purpose) params.append("purpose", filters.purpose);
         if (filters.propertyType !== "all")
           params.append("propertyType", filters.propertyType);
+        if (filters.propertyType === "commercial" && filters.commercialType && filters.commercialType !== "all")
+          params.append("commercialType", filters.commercialType);
         if (filters.minPrice) params.append("minPrice", filters.minPrice);
         if (filters.maxPrice) params.append("maxPrice", filters.maxPrice);
         if (filters.bedrooms !== "any")
@@ -182,9 +204,12 @@ const BuyPage = () => {
               id: prop._id || prop.id,
               title: prop.title || "No Title",
               location: ` ${prop.address.city ? prop.address.city + ", " : ""} ${ownerInfo}`,
-              price: prop.priceValue || prop.price || 0,
+              price: prop.priceText || prop.priceValue || prop.price || "",
               bedrooms: prop.bedrooms || 0,
               bathrooms: prop.bathrooms || 0,
+              floorNo: prop.floorNo || "",
+              totalFloors: prop.totalFloors || "",
+              isHighRise: prop.isHighRise || false,
               updatedAt: prop.updatedAt || 0,
               createdAt: prop.createdAt || 0,
               area: areaValue, 
@@ -199,13 +224,19 @@ const BuyPage = () => {
                   ? normalizeString(prop.custom) === "true"
                   : Boolean(prop.custom),
               purpose: normalizeString(prop.purpose || "sell"),
-              type: normalizeString(prop.propertyType || "apartment"),
-              image: validImages.length > 0 ? validImages[0] : DEFAULT_IMAGE,
+              type: prop.propertyType === "commercial"
+                ? (prop.commercialType === "other" && prop.commercialTypeCustom
+                  ? `Commercial (${prop.commercialTypeCustom})`
+                  : (prop.commercialType ? `Commercial (${prop.commercialType === "pg" ? "P.G" : prop.commercialType.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')})` : "Commercial"))
+                : normalizeString(prop.propertyType || "apartment"),
+              image: validImages.length > 0 ? getMediaThumbnail(validImages[0]) : DEFAULT_IMAGE,
               status:
                 normalizeString(prop.purpose || "sell") === "rent"
                   ? "For Rent"
                   : "For Sale",
               featured: prop.featured || false,
+              listedBy: prop.listedBy || "owner",
+              isSold: prop.isSold || false,
             };
           });
 
@@ -238,7 +269,7 @@ const BuyPage = () => {
     if (!filtersInitialized) return;
     setPagination((prev) => ({ ...prev, page: 1 }));
     fetchProperties(1);
-  }, [searchQuery, filters, filtersInitialized]);
+  }, [searchQuery, filters, filtersInitialized, fetchProperties]);
 
   // Fetch when page changes (but not when filters/search trigger a reset)
   const handlePageChange = (newPage) => {
@@ -325,8 +356,17 @@ const BuyPage = () => {
       return `${price.value} ${price.unit}`;
     }
     if (!price || price === 0) return "Price on Request";
+    
+    // If price is a string and contains alphabetic characters
+    if (typeof price === "string" && /[a-zA-Z]/.test(price)) {
+      if (!price.includes("₹")) {
+        return `₹ ${price}`;
+      }
+      return price;
+    }
+
     const numPrice = Number(price);
-    if (isNaN(numPrice)) return "Price Unavailable";
+    if (isNaN(numPrice)) return price;
     if (numPrice >= 10000000) return `₹${(numPrice / 10000000).toFixed(2)} Cr`;
     return `₹${(numPrice / 100000).toFixed(2)} Lac`;
   };
@@ -385,7 +425,7 @@ const BuyPage = () => {
                 <select
                   value={filters.propertyType}
                   onChange={(e) =>
-                    setFilters({ ...filters, propertyType: e.target.value })
+                    setFilters({ ...filters, propertyType: e.target.value, commercialType: "all" })
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                 >
@@ -395,8 +435,36 @@ const BuyPage = () => {
                   <option value="villa">Villa</option>
                   <option value="house">House</option>
                   <option value="penthouse">Penthouse</option>
+                  <option value="plot">Plot</option>
+                  <option value="shop">Shop</option>
+                  <option value="office">Office</option>
+                  <option value="commercial">Commercial</option>
                 </select>
               </div>
+
+              {filters.propertyType === "commercial" && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Commercial Type
+                  </label>
+                  <select
+                    value={filters.commercialType}
+                    onChange={(e) =>
+                      setFilters({ ...filters, commercialType: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  >
+                    <option value="all">All Commercial Types</option>
+                    <option value="hotel">Hotel</option>
+                    <option value="hospital">Hospital</option>
+                    <option value="school">School</option>
+                    <option value="pg">P.G</option>
+                    <option value="lease land">Lease Land</option>
+                    <option value="commercial land">Commercial Land</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -638,9 +706,17 @@ const BuyPage = () => {
                       query: { id: property.id },
                     }}
                     key={property.id}
+                    onClick={() => handlePropertyClick(property.id)}
                     className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow"
                   >
                     <div className="relative">
+                      {property.isSold && (
+                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-10">
+                          <span className="bg-red-600 text-white font-extrabold text-lg px-4 py-2 rounded-lg shadow-lg tracking-wider uppercase border-2 border-white">
+                            Sold Out
+                          </span>
+                        </div>
+                      )}
                       <img
                         src={property.image}
                         alt={property.title}
@@ -650,8 +726,12 @@ const BuyPage = () => {
                         className="w-full h-48 object-cover"
                       />
                       <button
-                        onClick={() => toggleFavorite(property.id)}
-                        className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-md hover:bg-gray-100"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          toggleFavorite(property.id);
+                        }}
+                        className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 z-20"
                       >
                         <Heart
                           className={`w-5 h-5 ${
@@ -670,6 +750,9 @@ const BuyPage = () => {
                         className={`absolute bottom-3 left-3 px-3 py-1 ${property.status === "For Sale" ? "bg-green-600" : "bg-red-600"} text-white text-sm rounded-full`}
                       >
                         {property.status}
+                      </span>
+                      <span className="absolute bottom-3 right-3 px-2 py-1 bg-black/60 text-white text-xs rounded-md">
+                        {property.listedBy === "dealer" ? "Dealer" : "Owner"}
                       </span>
                     </div>
 
@@ -699,19 +782,38 @@ const BuyPage = () => {
                       </div>
 
                       <div className="flex items-center justify-between mb-3 pb-3 border-b">
-                        <div className="flex items-center gap-4 text-sm text-gray-600">
-                          <div className="flex items-center gap-1">
-                            <Bed className="w-4 h-4" />
-                            <span>{property.bedrooms} BHK</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Bath className="w-4 h-4" />
-                            <span>{property.bathrooms}</span>
-                          </div>
+                        <div className="flex items-center gap-4 text-sm text-gray-600 flex-wrap">
+                          {property.type && !property.type.toLowerCase().includes("commercial") &&
+                            !property.type.toLowerCase().includes("plot") &&
+                            !property.type.toLowerCase().includes("shop") &&
+                            !property.type.toLowerCase().includes("office") && (
+                              <div className="flex items-center gap-1">
+                                <Bed className="w-4 h-4" />
+                                <span>{property.bedrooms} BHK</span>
+                              </div>
+                            )}
+                          {property.type && !property.type.toLowerCase().includes("plot") &&
+                            !property.type.toLowerCase().includes("shop") &&
+                            !property.type.toLowerCase().includes("commercial land") && (
+                              <div className="flex items-center gap-1">
+                                <Bath className="w-4 h-4" />
+                                <span>{property.bathrooms} Baths</span>
+                              </div>
+                            )}
                           <div className="flex items-center gap-1">
                             <Square className="w-4 h-4" />
                             <span>{property.area} sqft</span>
                           </div>
+                          {property.floorNo && (
+                            <div className="flex items-center gap-1 bg-gray-100 px-2 py-0.5 rounded text-[11px] font-semibold text-gray-700">
+                              <span>Floor: {property.floorNo}{property.totalFloors ? `/${property.totalFloors}` : ""}</span>
+                            </div>
+                          )}
+                          {property.isHighRise && (
+                            <div className="flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-[11px] font-bold">
+                              <span>High-Rise</span>
+                            </div>
+                          )}
                         </div>
                       </div>
 
@@ -818,10 +920,10 @@ const BuyPage = () => {
       <div className="bg-linear-to-r from-red-600 to-red-700 text-white py-12 mt-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-4">
-            Didn't find your dream property?
+            Didn&apos;t find your dream property?
           </h2>
           <p className="text-lg mb-6">
-            Tell us what you're looking for, we'll find the best options for you
+            Tell us what you&apos;re looking for, we&apos;ll find the best options for you
           </p>
           <Link href={"/contact"} className="px-8 py-3 bg-white text-red-600 rounded-lg font-semibold hover:bg-gray-100 text-lg">
             Contact Us

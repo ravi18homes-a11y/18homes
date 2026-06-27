@@ -1,12 +1,16 @@
 
-  "use client";
+"use client";
 import Image from "next/image";
 import "./contactpop.css"
 import { useState } from "react";
 import { FiCheckCircle } from "react-icons/fi";
 import { IoIosArrowDown } from "react-icons/io";
+import { toast } from "react-hot-toast";
 
-export default function ContactSection() {
+export default function ContactSection({ data }) {
+  const title = data?.title || "Please tell us your requirements";
+  const image = data?.image || "https://res.cloudinary.com/dxlykgx6w/image/upload/v1765125152/WhatsApp_Image_2025-12-07_at_9.01.16_PM_fuflru.jpg";
+
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -31,10 +35,12 @@ export default function ContactSection() {
     e.preventDefault();
     setMessage("");
     if (!checked) {
+      toast.error("Please accept the privacy policy to submit the form.");
       setMessage("Please accept the privacy policy to submit the form.");
       return;
     }
     if (!form?.name || !form?.email || !form?.phone) {
+      toast.error("Please fill all required fields.");
       setMessage("Please fill all required fields.");
       return;
     }
@@ -42,12 +48,14 @@ export default function ContactSection() {
     const emailRegex =
       /^(?!.*\.\.)(?!.*[_.-]{2})[a-zA-Z0-9]+([._-]?[a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-]?[a-zA-Z0-9]+)*\.[A-Za-z]{2,}$/;
     if (!emailRegex.test(form?.email)) {
+      toast.error("Please enter a valid email address.");
       setMessage("Please enter a valid email address.");
       return;
     }
     // Phone validation: only digits, exactly 10 digits
     const phoneRegex = /^\d{10}$/;
     if (!phoneRegex.test(form?.phone)) {
+      toast.error("Please enter a valid 10-digit phone number.");
       setMessage("Please enter a valid 10-digit phone number.");
       return;
     }
@@ -60,6 +68,7 @@ export default function ContactSection() {
       });
       const data = await res.json();
       if (data.success) {
+        toast.success("Thank you! Message sent successfully.");
         setForm({
           name: "",
           email: "",
@@ -72,6 +81,7 @@ export default function ContactSection() {
       }
     } catch (err) {
       console.error("Form submission error:", err);
+      toast.error("Something went wrong. Please try again.");
       setMessage("Something went wrong. Please try again.");
     }
     setLoading(false);
@@ -83,7 +93,7 @@ export default function ContactSection() {
 
         {/* LEFT SECTION */}
        <div className="bg-[#1D1D1D] text-white px-8 md:px-20 py-8 flex flex-col justify-center">
-          <h2 className="text-[48px] font-light mb-2">Please tell us your requirements</h2>
+          <h2 className="text-[48px] font-light mb-2">{title}</h2>
           <div className="w-[120px] h-[4px] bg-[#28E7F7] mb-6"></div>
 
           <form className="space-y-4" onSubmit={handleSubmit}>
@@ -211,7 +221,7 @@ export default function ContactSection() {
 
           <div className="absolute inset-0 origin-top-left ">
             <Image
-              src="https://res.cloudinary.com/dxlykgx6w/image/upload/v1765125152/WhatsApp_Image_2025-12-07_at_9.01.16_PM_fuflru.jpg"
+              src={image}
               alt="Contact Image"
               fill
               className="object-contain"
