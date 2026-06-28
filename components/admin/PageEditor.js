@@ -13,6 +13,7 @@ const defaultSeo = {
   openGraphTitle: "",
   openGraphDescription: "",
   openGraphImage: "",
+  schemaMarkup: "",
 };
 
 function createSlug(value) {

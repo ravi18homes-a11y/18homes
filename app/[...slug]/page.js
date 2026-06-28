@@ -41,7 +41,12 @@ export default async function CmsSlugPage({ params }) {
 
   return (
    <>
-
+    {page.seo?.schemaMarkup && (
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: page.seo.schemaMarkup }}
+      />
+    )}
    <Navbar/>
    <main className="min-h-screen bg-slate-50 text-slate-900 pt-24">
       <div className="mx-auto max-w-6xl px-4 py-10">
