@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { MapPin, Bed, Bath, Square, Heart, Home, Loader2 } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 const DEFAULT_IMAGE =
   "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800";
@@ -25,6 +26,28 @@ export default function HomeBuyComp() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [favorites, setFavorites] = useState([]);
+
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      const token = localStorage.getItem("authToken");
+      if (!token || !databaseUrl) return;
+      try {
+        const res = await fetch(`${databaseUrl}/api/properties/my/saved`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const json = await res.json();
+          const savedList = json.data || json;
+          if (Array.isArray(savedList)) {
+            setFavorites(savedList.map((p) => p._id || p.id));
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching favorites:", err);
+      }
+    };
+    fetchFavorites();
+  }, [databaseUrl]);
 
   const handlePropertyClick = (propertyId) => {
     if (!databaseUrl || !propertyId) return;
@@ -119,10 +142,45 @@ export default function HomeBuyComp() {
     fetchProperties();
   }, [fetchProperties]);
 
-  const toggleFavorite = (id) => {
+  const toggleFavorite = async (id) => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      toast.error("Please login to add to wishlist");
+      return;
+    }
+
+    const isSaved = favorites.includes(id);
+    // Optimistic UI update
     setFavorites((prev) =>
-      prev.includes(id) ? prev.filter((fav) => fav !== id) : [...prev, id],
+      isSaved ? prev.filter((fav) => fav !== id) : [...prev, id]
     );
+
+    try {
+      const res = await fetch(`${databaseUrl}/api/properties/${id}/save`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        // Rollback
+        setFavorites((prev) =>
+          isSaved ? [...prev, id] : prev.filter((fav) => fav !== id)
+        );
+        const data = await res.json();
+        toast.error(data.message || "Failed to update wishlist");
+      } else {
+        const data = await res.json();
+        toast.success(data.message || (isSaved ? "Removed from wishlist" : "Added to wishlist"));
+      }
+    } catch (err) {
+      // Rollback
+      setFavorites((prev) =>
+        isSaved ? [...prev, id] : prev.filter((fav) => fav !== id)
+      );
+      toast.error("Error updating wishlist");
+    }
   };
 
   const formatPrice = (price) => {

@@ -9,7 +9,7 @@ const categoryIcons = {
   house: Home,
   plot: Map,
   shop: Store,
-  office: Briefcase,
+  commercial: Briefcase,
   agriculture: Trees,
 };
 
@@ -155,37 +155,51 @@ const CATEGORY_CONFIG = [
     ],
   },
   {
-    key: "office",
-    title: "Office",
-    description: "Pick the best office type.",
+    key: "commercial",
+    title: "Commercial",
+    description: "Pick the best commercial type.",
     cards: [
       {
-        key: "coworking",
-        label: "Co-working",
+        key: "hotel",
+        label: "Hotel",
         image:
-          "https://images.unsplash.com/photo-1522199710521-72d69614c702?q=80&w=800",
-        query: { propertyType: "office", officeType: "co-working" },
+          "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=800",
+        query: { propertyType: "commercial", commercialType: "hotel" },
       },
       {
-        key: "private-office",
-        label: "Private Office",
+        key: "hospital",
+        label: "Hospital",
         image:
-          "https://images.unsplash.com/photo-1531297484001-80022131f5a1?q=80&w=800",
-        query: { propertyType: "office", officeType: "private" },
+          "https://res.cloudinary.com/dxlykgx6w/image/upload/v1782639265/1633674492707_udf8no.jpg",
+        query: { propertyType: "commercial", commercialType: "hospital" },
       },
       {
-        key: "it-office",
-        label: "IT Office",
+        key: "school",
+        label: "School",
         image:
-          "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=800",
-        query: { propertyType: "office", officeType: "it" },
+          "https://res.cloudinary.com/dxlykgx6w/image/upload/v1782639222/360_F_1512041110_c0NFJDcHLmUJiwfDowzcKUgsPALmbjdD_vsudnf.jpg",
+        query: { propertyType: "commercial", commercialType: "school" },
       },
       {
-        key: "corporate-office",
-        label: "Corporate Office",
+        key: "pg",
+        label: "P.G",
         image:
-          "https://images.unsplash.com/photo-1522199710521-72d69614c702?q=80&w=800",
-        query: { propertyType: "office", officeType: "corporate" },
+          "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?q=80&w=800",
+        query: { propertyType: "commercial", commercialType: "pg" },
+      },
+      {
+        key: "lease-land",
+        label: "Lease Land",
+        image:
+          "https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=800",
+        query: { propertyType: "commercial", commercialType: "lease land" },
+      },
+      {
+        key: "commercial-land",
+        label: "Commercial Land",
+        image:
+          "https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=800",
+        query: { propertyType: "commercial", commercialType: "commercial land" },
       },
     ],
   },
@@ -243,13 +257,36 @@ export default function FilterPropertiesComp() {
   const [selectedCategory, setSelectedCategory] = useState("flat");
   const [counts, setCounts] = useState({});
   const [loading, setLoading] = useState(true);
+  const [customCommercialTypes, setCustomCommercialTypes] = useState([]);
 
-  const activeCategory = useMemo(
-    () =>
+  const activeCategory = useMemo(() => {
+    const baseCategory =
       CATEGORY_CONFIG.find((item) => item.key === selectedCategory) ||
-      CATEGORY_CONFIG[0],
-    [selectedCategory],
-  );
+      CATEGORY_CONFIG[0];
+
+    if (selectedCategory === "commercial") {
+      const cards = [...baseCategory.cards];
+
+      customCommercialTypes.forEach((typeVal) => {
+        const key = `custom-${typeVal.toLowerCase().replace(/\s+/g, "-")}`;
+        if (!cards.some((c) => c.key === key)) {
+          cards.push({
+            key: key,
+            label: typeVal,
+            image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800",
+            query: { propertyType: "commercial", commercialType: "other", commercialTypeCustom: typeVal },
+          });
+        }
+      });
+
+      return {
+        ...baseCategory,
+        cards: cards,
+      };
+    }
+
+    return baseCategory;
+  }, [selectedCategory, customCommercialTypes]);
 
   useEffect(() => {
     async function fetchCounts() {
@@ -277,16 +314,33 @@ export default function FilterPropertiesComp() {
         }
 
         const grouped = {};
+        const customTypesSet = new Set();
+
         json.data.properties.forEach((property) => {
           const type = property.propertyType || "unknown";
-          const bedrooms = String(property.bedrooms || 0);
-
           grouped[type] = grouped[type] || {};
-          grouped[type][bedrooms] = (grouped[type][bedrooms] || 0) + 1;
           grouped[type].total = (grouped[type].total || 0) + 1;
+
+          if (type === "commercial") {
+            const commType = property.commercialType || "unknown";
+            grouped[type][commType] = (grouped[type][commType] || 0) + 1;
+
+            if (commType === "other" && property.commercialTypeCustom) {
+              const customVal = property.commercialTypeCustom.trim();
+              if (customVal) {
+                customTypesSet.add(customVal);
+                const customKey = customVal.toLowerCase();
+                grouped[type][`custom_${customKey}`] = (grouped[type][`custom_${customKey}`] || 0) + 1;
+              }
+            }
+          } else {
+            const bedrooms = String(property.bedrooms || 0);
+            grouped[type][bedrooms] = (grouped[type][bedrooms] || 0) + 1;
+          }
         });
 
         setCounts(grouped);
+        setCustomCommercialTypes(Array.from(customTypesSet));
       } catch (error) {
         console.error("Failed to fetch filter counts", error);
         setCounts({});
@@ -309,6 +363,17 @@ export default function FilterPropertiesComp() {
         return (flatCounts[card.query.bedrooms] || 0) + (aptCounts[card.query.bedrooms] || 0);
       }
       return (flatCounts.total || 0) + (aptCounts.total || 0);
+    }
+
+    if (type === "commercial") {
+      if (card.query.commercialType === "other" && card.query.commercialTypeCustom) {
+        const customKey = card.query.commercialTypeCustom.toLowerCase().trim();
+        return typeCounts[`custom_${customKey}`] || 0;
+      }
+      if (card.query.commercialType) {
+        return typeCounts[card.query.commercialType] || 0;
+      }
+      return typeCounts.total || 0;
     }
 
     if (card.query.bedrooms) {

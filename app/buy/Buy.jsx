@@ -15,6 +15,7 @@ import {
   X,
   Loader2,
 } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 const DEFAULT_IMAGE =
   "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800";
@@ -34,6 +35,7 @@ const getMediaThumbnail = (url) => {
 const INITIAL_FILTERS = {
   propertyType: "all",
   commercialType: "all",
+  commercialTypeCustom: "",
   city: "",
   minPrice: "",
   maxPrice: "",
@@ -59,6 +61,28 @@ const BuyPage = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState(INITIAL_FILTERS);
   const [favorites, setFavorites] = useState([]);
+
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      const token = localStorage.getItem("authToken");
+      if (!token || !databaseUrl) return;
+      try {
+        const res = await fetch(`${databaseUrl}/api/properties/my/saved`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const json = await res.json();
+          const savedList = json.data || json;
+          if (Array.isArray(savedList)) {
+            setFavorites(savedList.map((p) => p._id || p.id));
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching favorites:", err);
+      }
+    };
+    fetchFavorites();
+  }, [databaseUrl]);
 
   const handlePropertyClick = (propertyId) => {
     if (!databaseUrl || !propertyId) return;
@@ -86,6 +110,8 @@ const BuyPage = () => {
     const params = new URLSearchParams(searchQueryString);
     const paramKeys = [
       "propertyType",
+      "commercialType",
+      "commercialTypeCustom",
       "city",
       "minPrice",
       "maxPrice",
@@ -105,6 +131,8 @@ const BuyPage = () => {
       if (value !== null) {
         queryFilters[key] = [
           "propertyType",
+          "commercialType",
+          "commercialTypeCustom",
           "furnishing",
           "purpose",
           "sortBy",
@@ -145,8 +173,12 @@ const BuyPage = () => {
         if (filters.purpose) params.append("purpose", filters.purpose);
         if (filters.propertyType !== "all")
           params.append("propertyType", filters.propertyType);
-        if (filters.propertyType === "commercial" && filters.commercialType && filters.commercialType !== "all")
+        if (filters.propertyType === "commercial" && filters.commercialType && filters.commercialType !== "all") {
           params.append("commercialType", filters.commercialType);
+          if (filters.commercialType === "other" && filters.commercialTypeCustom) {
+            params.append("commercialTypeCustom", filters.commercialTypeCustom);
+          }
+        }
         if (filters.minPrice) params.append("minPrice", filters.minPrice);
         if (filters.maxPrice) params.append("maxPrice", filters.maxPrice);
         if (filters.bedrooms !== "any")
@@ -222,6 +254,8 @@ const BuyPage = () => {
                   : "",
               shopSize: normalizeString(prop.shopSize || ""),
               officeType: normalizeString(prop.officeType || ""),
+              commercialType: normalizeString(prop.commercialType || ""),
+              commercialTypeCustom: normalizeString(prop.commercialTypeCustom || ""),
               custom:
                 typeof prop.custom === "string"
                   ? normalizeString(prop.custom) === "true"
@@ -288,7 +322,8 @@ const BuyPage = () => {
     filters.areaUnit !== "" ||
     filters.shopSize !== "" ||
     filters.officeType !== "" ||
-    filters.custom !== "";
+    filters.custom !== "" ||
+    (filters.propertyType === "commercial" && (filters.commercialType !== "all" || filters.commercialTypeCustom));
 
   const filteredProperties = shouldApplyClientFilters
     ? properties.filter((property) => {
@@ -317,7 +352,21 @@ const BuyPage = () => {
         const matchesType =
           normalizedFilterType === "all" ||
           !normalizedFilterType ||
-          normalizedPropertyType === normalizedFilterType;
+          normalizedPropertyType === normalizedFilterType ||
+          (normalizedFilterType === "commercial" && normalizedPropertyType.startsWith("commercial"));
+
+        const matchesCommercialType =
+          normalizedFilterType !== "commercial" ||
+          filters.commercialType === "all" ||
+          !filters.commercialType ||
+          normalizeString(property.commercialType) === normalizeString(filters.commercialType);
+
+        const matchesCommercialTypeCustom =
+          normalizedFilterType !== "commercial" ||
+          filters.commercialType !== "other" ||
+          !filters.commercialTypeCustom ||
+          normalizeString(property.commercialTypeCustom).includes(normalizeString(filters.commercialTypeCustom));
+
         const matchesPurpose =
           !normalizedFilterPurpose ||
           normalizedPropertyPurpose === normalizedFilterPurpose;
@@ -339,6 +388,8 @@ const BuyPage = () => {
           matchesMinArea &&
           matchesMaxArea &&
           matchesType &&
+          matchesCommercialType &&
+          matchesCommercialTypeCustom &&
           matchesPurpose &&
           matchesAreaUnit &&
           matchesShopSize &&
@@ -348,10 +399,45 @@ const BuyPage = () => {
       })
     : properties;
 
-  const toggleFavorite = (id) => {
+  const toggleFavorite = async (id) => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      toast.error("Please login to add to wishlist");
+      return;
+    }
+
+    const isSaved = favorites.includes(id);
+    // Optimistic UI update
     setFavorites((prev) =>
-      prev.includes(id) ? prev.filter((fav) => fav !== id) : [...prev, id],
+      isSaved ? prev.filter((fav) => fav !== id) : [...prev, id]
     );
+
+    try {
+      const res = await fetch(`${databaseUrl}/api/properties/${id}/save`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        // Rollback
+        setFavorites((prev) =>
+          isSaved ? [...prev, id] : prev.filter((fav) => fav !== id)
+        );
+        const data = await res.json();
+        toast.error(data.message || "Failed to update wishlist");
+      } else {
+        const data = await res.json();
+        toast.success(data.message || (isSaved ? "Removed from wishlist" : "Added to wishlist"));
+      }
+    } catch (err) {
+      // Rollback
+      setFavorites((prev) =>
+        isSaved ? [...prev, id] : prev.filter((fav) => fav !== id)
+      );
+      toast.error("Error updating wishlist");
+    }
   };
 
   const formatPrice = (price) => {
@@ -440,7 +526,6 @@ const BuyPage = () => {
                   <option value="penthouse">Penthouse</option>
                   <option value="plot">Plot</option>
                   <option value="shop">Shop</option>
-                  <option value="office">Office</option>
                   <option value="commercial">Commercial</option>
                 </select>
               </div>
@@ -453,7 +538,7 @@ const BuyPage = () => {
                   <select
                     value={filters.commercialType}
                     onChange={(e) =>
-                      setFilters({ ...filters, commercialType: e.target.value })
+                      setFilters({ ...filters, commercialType: e.target.value, commercialTypeCustom: "" })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   >
@@ -466,6 +551,23 @@ const BuyPage = () => {
                     <option value="commercial land">Commercial Land</option>
                     <option value="other">Other</option>
                   </select>
+                </div>
+              )}
+
+              {filters.propertyType === "commercial" && filters.commercialType === "other" && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Specify Custom Type
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Warehouse"
+                    value={filters.commercialTypeCustom || ""}
+                    onChange={(e) =>
+                      setFilters({ ...filters, commercialTypeCustom: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  />
                 </div>
               )}
 
@@ -812,7 +914,7 @@ const BuyPage = () => {
                              </span>
                            </div>
                           {property.floorNo && (
-                            <div className="flex items-center gap-1 bg-gray-100 px-2 py-0.5 rounded text-[11px] font-semibold text-gray-700">
+                            <div className="flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-[11px] font-semibold ">
                               <span>Floor no: {property.floorNo}{property.totalFloors ? ` Total floors: ${property.totalFloors}` : ""}</span>
                             </div>
                           )}

@@ -16,9 +16,11 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  Copy,
 } from "lucide-react";
 import Link from "next/link";
-import { FaWhatsapp } from "react-icons/fa";
+import { FaWhatsapp, FaFacebook, FaTwitter } from "react-icons/fa";
+import { toast } from "react-hot-toast";
 
 // const staticProperties = [
 //   {
@@ -87,8 +89,71 @@ const PropertyDetailsPage = () => {
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [modalImageIndex, setModalImageIndex] = useState(0);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const databaseUrl = process.env.NEXT_PUBLIC_APP_DATABASE_URL || "";
+
+  useEffect(() => {
+    const checkFavoriteStatus = async () => {
+      const token = localStorage.getItem("authToken");
+      if (!token || !id || !databaseUrl) return;
+      try {
+        const res = await fetch(`${databaseUrl}/api/properties/my/saved`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const json = await res.json();
+          const savedList = json.data || json;
+          if (Array.isArray(savedList)) {
+            const isSaved = savedList.some((p) => (p._id || p.id) === id);
+            setIsFavorite(isSaved);
+          }
+        }
+      } catch (err) {
+        console.error("Error checking favorite status:", err);
+      }
+    };
+    checkFavoriteStatus();
+  }, [id, databaseUrl]);
+
+  const toggleFavorite = async () => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      toast.error("Please login to add to wishlist");
+      return;
+    }
+
+    const nextState = !isFavorite;
+    // Optimistic UI update
+    setIsFavorite(nextState);
+
+    try {
+      const res = await fetch(`${databaseUrl}/api/properties/${id}/save`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        // Rollback
+        setIsFavorite(!nextState);
+        const data = await res.json();
+        toast.error(data.message || "Failed to update wishlist");
+      } else {
+        const data = await res.json();
+        toast.success(data.message || (nextState ? "Added to wishlist" : "Removed from wishlist"));
+      }
+    } catch (err) {
+      // Rollback
+      setIsFavorite(!nextState);
+      toast.error("Error updating wishlist");
+    }
+  };
+
+  const handleShare = () => {
+    setShowShareModal(true);
+  };
 
   const DEFAULT_IMAGE =
     "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200";
@@ -366,19 +431,24 @@ const PropertyDetailsPage = () => {
         })()}
 
         {/* Action Buttons */}
-        {/* <div className="absolute top-4 right-4 flex gap-2">
+        <div className="absolute top-4 right-4 flex gap-2 z-20">
           <button
-            onClick={() => setIsFavorite(!isFavorite)}
-            className="p-3 bg-white rounded-full shadow-lg hover:bg-gray-100 transition-colors"
+            onClick={toggleFavorite}
+            className="p-3 bg-white rounded-full shadow-lg hover:bg-gray-100 transition-colors cursor-pointer"
+            aria-label={isFavorite ? "Remove from wishlist" : "Add to wishlist"}
           >
             <Heart
               className={`w-6 h-6 ${isFavorite ? "fill-red-600 text-red-600" : "text-gray-600"}`}
             />
           </button>
-          <button className="p-3 bg-white rounded-full shadow-lg hover:bg-gray-100 transition-colors">
+          <button
+            onClick={handleShare}
+            className="p-3 bg-white rounded-full shadow-lg hover:bg-gray-100 transition-colors cursor-pointer"
+            aria-label="Share property link"
+          >
             <Share2 className="w-6 h-6 text-gray-600" />
           </button>
-        </div> */}
+        </div>
 
         {property.featured && (
           <span className="absolute top-4 left-4 px-4 py-2 bg-red-600 text-white font-semibold rounded-full">
@@ -878,6 +948,131 @@ const PropertyDetailsPage = () => {
               {modalImageIndex + 1} / {images.length}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <div
+          className="fixed inset-0 bg-black/60 z-[999] flex items-center justify-center p-4 backdrop-blur-sm"
+          onClick={() => setShowShareModal(false)}
+        >
+          <div
+            className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative transform transition-all duration-300 scale-100"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-gray-900">Share Property</h3>
+              <button
+                onClick={() => setShowShareModal(false)}
+                className="p-1.5 rounded-full hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors cursor-pointer"
+                aria-label="Close share dialog"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Social Buttons Grid */}
+            <div className="grid grid-cols-4 gap-4 mb-6">
+              {/* WhatsApp */}
+              <a
+                href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`Check out this property: ${property?.title} in ${property?.location}\n${typeof window !== "undefined" ? window.location.href : ""}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex flex-col items-center gap-2 group cursor-pointer"
+              >
+                <div className="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center group-hover:bg-green-600 group-hover:text-white transition-all duration-300">
+                  <FaWhatsapp className="w-6 h-6" />
+                </div>
+                <span className="text-xs font-semibold text-gray-600 group-hover:text-gray-900">WhatsApp</span>
+              </a>
+
+              {/* Facebook */}
+              <a
+                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(typeof window !== "undefined" ? window.location.href : "")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex flex-col items-center gap-2 group cursor-pointer"
+              >
+                <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+                  <FaFacebook className="w-5 h-5" />
+                </div>
+                <span className="text-xs font-semibold text-gray-600 group-hover:text-gray-900">Facebook</span>
+              </a>
+
+              {/* Twitter/X */}
+              <a
+                href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(typeof window !== "undefined" ? window.location.href : "")}&text=${encodeURIComponent(`Check out this property: ${property?.title} in ${property?.location}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex flex-col items-center gap-2 group cursor-pointer"
+              >
+                <div className="w-12 h-12 rounded-full bg-gray-100 text-gray-800 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all duration-300">
+                  <FaTwitter className="w-5 h-5" />
+                </div>
+                <span className="text-xs font-semibold text-gray-600 group-hover:text-gray-900">Twitter</span>
+              </a>
+
+              {/* Email */}
+              <a
+                href={`mailto:?subject=${encodeURIComponent(`Interested in: ${property?.title}`)}&body=${encodeURIComponent(`Check out this property: ${property?.title} in ${property?.location}\n\nLink: ${typeof window !== "undefined" ? window.location.href : ""}`)}`}
+                className="flex flex-col items-center gap-2 group cursor-pointer"
+              >
+                <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-all duration-300">
+                  <Mail className="w-5 h-5" />
+                </div>
+                <span className="text-xs font-semibold text-gray-600 group-hover:text-gray-900">Email</span>
+              </a>
+            </div>
+
+            {/* Divider */}
+            <div className="border-t border-gray-100 my-4" />
+
+            {/* Copy Link Input */}
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700">Copy Link</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={typeof window !== "undefined" ? window.location.href : ""}
+                  className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-600 select-all outline-none focus:border-red-600"
+                />
+                <button
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      navigator.clipboard.writeText(window.location.href);
+                      toast.success("Link copied to clipboard!");
+                    }
+                  }}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold text-sm hover:bg-red-700 transition-colors flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Copy className="w-4 h-4" />
+                  Copy
+                </button>
+              </div>
+            </div>
+
+            {/* Native Share fallback if supported */}
+            {typeof navigator !== "undefined" && navigator.share && (
+              <div className="mt-4">
+                <button
+                  onClick={() => {
+                    navigator.share({
+                      title: property?.title,
+                      text: `Check out this property: ${property?.title} in ${property?.location}`,
+                      url: window.location.href,
+                    }).catch((err) => console.log('Error sharing:', err));
+                  }}
+                  className="w-full py-2 border border-gray-200 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Share2 className="w-4 h-4" />
+                  More Share Options
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
