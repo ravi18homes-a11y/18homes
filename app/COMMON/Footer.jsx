@@ -40,8 +40,11 @@ export default function Footer() {
     "4+ BHK Flat"
   ];
 
+  const customBgStyle = data?.bgColor ? { backgroundColor: data.bgColor } : {};
+  const customTextStyle = data?.textColor ? { color: data.textColor } : {};
+
   return (
-    <footer className="w-full bg-[#F6F6F6] pt-16 text-[#1E1E1E]">
+    <footer className="w-full pt-16" style={{ backgroundColor: "#F6F6F6", color: "#1E1E1E", ...customBgStyle, ...customTextStyle }}>
       <div className="max-w-[1450px] mx-auto px-6 lg:px-12 flex flex-col lg:flex-row justify-between gap-12">
         {/* LOGO */}
         <div className="flex flex-col md:items-start">
@@ -55,7 +58,7 @@ export default function Footer() {
         </div>
 
         {/* QUICK LINK + SERVICES */}
-        <div className="grid md:grid-cols-3 text-black">
+        <div className="grid md:grid-cols-3">
           {/* QUICK LINK */}
           <div className="lg:ml-[50px]">
             <h3 className="text-lg font-semibold mb-6 tracking-wide">
@@ -97,7 +100,7 @@ export default function Footer() {
             </ul>
           </div>
           
-          <div className="text-black">
+          <div>
             <h3 className="text-lg font-semibold mb-6 tracking-wide">OFFICE</h3>
 
             <p className="text-[16px] leading-7 mb-6 font-normal whitespace-pre-line">
@@ -145,7 +148,7 @@ export default function Footer() {
       <div className="max-w-[1350px] px-6 lg:px-12 mx-auto border-t border-[#9FABC1] mt-14"></div>
 
       {/* COPYRIGHT + SOCIAL */}
-      <div className="max-w-[1450px] mx-auto px-6 lg:pl-12 pr-[90px] py-8 flex flex-col md:flex-row items-center justify-between gap-6 text-black">
+      <div className="max-w-[1450px] mx-auto px-6 lg:pl-12 pr-[90px] py-8 flex flex-col md:flex-row items-center justify-between gap-6">
         <p className="text-[15px] font-normal">
           {copyright}
         </p>

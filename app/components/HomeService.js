@@ -42,11 +42,14 @@ export default function HomeServices({ data }) {
     3: "left-[60%]"   // 4th card
   };
 
+  const customBgStyle = data?.bgColor ? { backgroundColor: data.bgColor } : {};
+  const customTextStyle = data?.textColor ? { color: data.textColor } : {};
+
   return (
-    <section className="w-full bg-[#F7EFF2] py-16">
+    <section className="w-full py-16" style={customBgStyle}>
       <div className="text-center mb-16">
-        <h3 className="text-[32px] italic text-black">{subtitle}</h3>
-        <h2 className="text-[42px] font-extrabold text-black">{title}</h2>
+        <h3 className="text-[32px] italic" style={customTextStyle}>{subtitle}</h3>
+        <h2 className="text-[42px] font-extrabold" style={customTextStyle}>{title}</h2>
       </div>
 
       <div className="max-w-[1300px] mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-15">

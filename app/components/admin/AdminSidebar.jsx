@@ -70,12 +70,12 @@ export default function AdminLayout({ children }) {
             label="Pages"
           />
 
-          <NavItem
+          {/* <NavItem
             href="/admin/contacts"
             active={pathname.startsWith("/admin/contacts")}
             icon={<MessageSquare size={18} />}
             label="Contacts"
-          />
+          /> */}
         </nav>
 
         {/* LOGOUT */}

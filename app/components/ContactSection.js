@@ -87,13 +87,16 @@ export default function ContactSection({ data }) {
     setLoading(false);
   };
 
+  const customBgStyle = data?.bgColor ? { backgroundColor: data.bgColor } : {};
+  const customTextStyle = data?.textColor ? { color: data.textColor } : {};
+
   return (
     <section className="w-full max-w-[1720px] mx-auto">
       <div className="grid grid-cols-1 lg:grid-cols-2">
 
         {/* LEFT SECTION */}
-       <div className="bg-[#1D1D1D] text-white px-8 md:px-20 py-8 flex flex-col justify-center">
-          <h2 className="text-[48px] font-light mb-2">{title}</h2>
+       <div className="px-8 md:px-20 py-8 flex flex-col justify-center" style={{ backgroundColor: "#1D1D1D", ...customBgStyle }}>
+          <h2 className="text-[48px] font-light mb-2" style={{ color: "white", ...customTextStyle }}>{title}</h2>
           <div className="w-[120px] h-[4px] bg-[#28E7F7] mb-6"></div>
 
           <form className="space-y-4" onSubmit={handleSubmit}>

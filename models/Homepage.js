@@ -72,6 +72,8 @@ const FooterSchema = new mongoose.Schema(
     justdial: { type: String, default: "" },
     youtube: { type: String, default: "" },
     services: { type: [mongoose.Schema.Types.Mixed], default: [] },
+    bgColor: { type: String, default: "" },
+    textColor: { type: String, default: "" },
   },
   { _id: false }
 );
@@ -88,16 +90,22 @@ const HomepageSchema = new mongoose.Schema(
       description: { type: String, default: "" },
       image: { type: String, default: "" },
       points: { type: [String], default: [] },
+      bgColor: { type: String, default: "" },
+      textColor: { type: String, default: "" },
     },
     services: {
       subtitle: { type: String, default: "Service" },
       title: { type: String, default: "" },
       items: { type: [ServiceItemSchema], default: [] },
+      bgColor: { type: String, default: "" },
+      textColor: { type: String, default: "" },
     },
     blogs: {
       subtitle: { type: String, default: "Latest post" },
       title: { type: String, default: "" },
       items: { type: [BlogItemSchema], default: [] },
+      bgColor: { type: String, default: "" },
+      textColor: { type: String, default: "" },
     },
     instruments: {
       subtitle: { type: String, default: "" },
@@ -106,15 +114,21 @@ const HomepageSchema = new mongoose.Schema(
       desc2: { type: String, default: "" },
       desc3: { type: String, default: "" },
       image: { type: String, default: "" },
+      bgColor: { type: String, default: "" },
+      textColor: { type: String, default: "" },
     },
     testimonials: {
       title: { type: String, default: "" },
       description: { type: String, default: "" },
       items: { type: [TestimonialItemSchema], default: [] },
+      bgColor: { type: String, default: "" },
+      textColor: { type: String, default: "" },
     },
     contact: {
       title: { type: String, default: "" },
       image: { type: String, default: "" },
+      bgColor: { type: String, default: "" },
+      textColor: { type: String, default: "" },
     },
     footer: { type: FooterSchema, default: () => ({}) },
   },

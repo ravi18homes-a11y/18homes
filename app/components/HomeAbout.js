@@ -14,23 +14,26 @@ export default function HomeAbout({ data }) {
     "Transparent process and 100% assistance",
   ];
 
+  const customBgStyle = data?.bgColor ? { backgroundColor: data.bgColor } : {};
+  const customTextStyle = data?.textColor ? { color: data.textColor } : {};
+
   return (
-    <section className="w-full bg-[#eef6f8] max-w-[1720px] mx-auto lg:py-20 py-10">
+    <section className="w-full max-w-[1720px] mx-auto lg:py-20 py-10" style={customBgStyle}>
       <div className="mx-auto lg:pl-28 lg:pr-0 grid grid-cols-1 lg:grid-cols-2 gap-3 items-center px-6 pr-6">
         {/* LEFT SIDE */}
         <div>
           <h3
-            className="text-[42px] font-light text-black mb-2"
-            style={{ fontFamily: "'Dancing Script', cursive" }}
+            className="text-[42px] font-light mb-2"
+            style={{ fontFamily: "'Dancing Script', cursive", ...customTextStyle }}
           >
             {subtitle}
           </h3>
 
-          <h2 className="text-[46px] font-bold text-black leading-tight mb-4">
+          <h2 className="text-[46px] font-bold leading-tight mb-4" style={customTextStyle}>
             {title}
           </h2>
 
-          <p className="text-[16px] text-[#101010] leading-[1.8] max-w-[650px] mb-6">
+          <p className="text-[16px] leading-[1.8] max-w-[650px] mb-6" style={customTextStyle}>
             {description}
           </p>
 
@@ -39,7 +42,7 @@ export default function HomeAbout({ data }) {
             {points.map((text, i) => (
               <div key={i} className="flex items-start gap-3">
                 <IoMdCheckmarkCircleOutline className="text-[#00c777] text-[22px] " />
-                <span className="text-[17px] font-medium text-[#101010]">
+                <span className="text-[17px] font-medium" style={customTextStyle}>
                   {text}
                 </span>
               </div>

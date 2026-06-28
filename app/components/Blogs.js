@@ -27,17 +27,20 @@ export default function HomeBlogs({ data }) {
     },
   ];
 
+  const customBgStyle = data?.bgColor ? { backgroundColor: data.bgColor } : {};
+  const customTextStyle = data?.textColor ? { color: data.textColor } : {};
+
   return (
-    <section className="w-full bg-[#F7F7F7] py-16">
+    <section className="w-full py-16" style={customBgStyle}>
       {/* Heading */}
       <div className="text-center mb-14">
         <h3
-          className="text-[32px] text-gray-700 mb-3"
-          style={{ fontFamily: "'Dancing Script', cursive" }}
+          className="text-[32px] mb-3"
+          style={{ fontFamily: "'Dancing Script', cursive", ...customTextStyle }}
         >
           {subtitle}
         </h3>
-        <h2 className="text-[44px] md:text-[54px] font-bold text-black">
+        <h2 className="text-[44px] md:text-[54px] font-bold" style={customTextStyle}>
           {title}
         </h2>
       </div>
