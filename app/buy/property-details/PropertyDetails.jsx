@@ -1032,7 +1032,7 @@ const PropertyDetailsPage = () => {
             {/* Copy Link Input */}
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700">Copy Link</label>
-              <div className="flex gap-2">
+              <div className="flex sm:flex-row flex-col gap-2">
                 <input
                   type="text"
                   readOnly
@@ -1046,7 +1046,7 @@ const PropertyDetailsPage = () => {
                       toast.success("Link copied to clipboard!");
                     }
                   }}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg font-semibold text-sm hover:bg-red-700 transition-colors flex items-center gap-1.5 cursor-pointer"
+                  className="px-4 py-2 bg-red-600 max-w-[100px] text-white rounded-lg font-semibold text-sm hover:bg-red-700 transition-colors flex items-center gap-1.5 cursor-pointer"
                 >
                   <Copy className="w-4 h-4" />
                   Copy

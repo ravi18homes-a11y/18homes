@@ -1008,10 +1008,28 @@ export default function HomepageEditor() {
               </label>
 
               <label className="block space-y-2 text-sm text-slate-700">
-                <span className="font-semibold">Office Phone Number</span>
+                <span className="font-semibold">Office Phone Number 1</span>
                 <input
                   value={data.footer?.phone || ""}
                   onChange={(e) => updateField(["footer", "phone"], e.target.value)}
+                  className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-slate-400"
+                />
+              </label>
+
+              <label className="block space-y-2 text-sm text-slate-700">
+                <span className="font-semibold">Office Phone Number 2</span>
+                <input
+                  value={data.footer?.phone2 || ""}
+                  onChange={(e) => updateField(["footer", "phone2"], e.target.value)}
+                  className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-slate-400"
+                />
+              </label>
+
+              <label className="block space-y-2 text-sm text-slate-700">
+                <span className="font-semibold">Office Phone Number 3</span>
+                <input
+                  value={data.footer?.phone3 || ""}
+                  onChange={(e) => updateField(["footer", "phone3"], e.target.value)}
                   className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-slate-400"
                 />
               </label>
@@ -1049,6 +1067,24 @@ export default function HomepageEditor() {
                 <input
                   value={data.footer?.instagram || ""}
                   onChange={(e) => updateField(["footer", "instagram"], e.target.value)}
+                  className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-slate-400"
+                />
+              </label>
+
+              <label className="block space-y-2 text-sm text-slate-700">
+                <span className="font-semibold">Justdial Link</span>
+                <input
+                  value={data.footer?.justdial || ""}
+                  onChange={(e) => updateField(["footer", "justdial"], e.target.value)}
+                  className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-slate-400"
+                />
+              </label>
+
+              <label className="block space-y-2 text-sm text-slate-700">
+                <span className="font-semibold">YouTube Channel Link</span>
+                <input
+                  value={data.footer?.youtube || ""}
+                  onChange={(e) => updateField(["footer", "youtube"], e.target.value)}
                   className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none focus:border-slate-400"
                 />
               </label>
