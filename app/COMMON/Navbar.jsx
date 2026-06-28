@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
-import { FaWhatsapp, FaUser, FaEdit, FaCog, FaHome } from "react-icons/fa";
+import { FaWhatsapp, FaUser, FaEdit, FaCog, FaHome, FaHeart } from "react-icons/fa";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { IoMdClose } from "react-icons/io";
 import { MdLogin, MdPhone } from "react-icons/md";
@@ -271,6 +271,15 @@ export default function Navbar() {
                       >
                         <FaHome className="text-[#8c4bdc] text-xl" />
                         <span className="text-black">My Properties</span>
+                      </Link>
+
+                      <Link
+                        href="/wishlist"
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
+                        onClick={() => setShowProfileMenu(false)}
+                      >
+                        <FaHeart className="text-[#8c4bdc] text-xl" />
+                        <span className="text-black">Wishlist</span>
                       </Link>
 
                       {user?.role === "admin" && (

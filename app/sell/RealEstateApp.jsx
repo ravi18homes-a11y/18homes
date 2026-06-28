@@ -535,7 +535,6 @@ const RealEstateApp = () => {
                     <option value="house">House</option>
                     <option value="plot">Plot</option>
                     <option value="shop">Shop</option>
-                    <option value="office">Office</option>
                     <option value="apartment">Apartment</option>
                     <option value="commercial">Commercial</option>
                   </select>
