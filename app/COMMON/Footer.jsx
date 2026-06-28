@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import {
   FaFacebookF,
   FaInstagram,
+  FaYoutube,
 } from "react-icons/fa";
 import { IoMdCall, IoMdMail } from "react-icons/io";
 
@@ -28,6 +29,10 @@ export default function Footer() {
   const copyright = data?.copyright || "Copyright © 2025 18Homes All Rights Reserved. Design by RS & PS";
   const facebook = data?.facebook || "https://www.facebook.com/share/1AqkBeyC4R/";
   const instagram = data?.instagram || "https://www.instagram.com/18homes?igsh=amNlcWlvOTljY2E0";
+  const phone2 = data?.phone2 || "";
+  const phone3 = data?.phone3 || "";
+  const justdial = data?.justdial || "";
+  const youtube = data?.youtube || "";
   const services = data?.services || [
     "1 RK / 1 BHK Flat",
     "2 BHK Flat",
@@ -106,11 +111,31 @@ export default function Footer() {
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
-              <IoMdCall size={22} />
-              <p className="text-[16px] font-normal">
-                {phone}
-              </p>
+            <div className="space-y-3">
+              {phone && (
+                <div className="flex items-center gap-3">
+                  <IoMdCall size={22} />
+                  <p className="text-[16px] font-normal">
+                    {phone}
+                  </p>
+                </div>
+              )}
+              {phone2 && (
+                <div className="flex items-center gap-3">
+                  <IoMdCall size={22} />
+                  <p className="text-[16px] font-normal">
+                    {phone2}
+                  </p>
+                </div>
+              )}
+              {phone3 && (
+                <div className="flex items-center gap-3">
+                  <IoMdCall size={22} />
+                  <p className="text-[16px] font-normal">
+                    {phone3}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -137,6 +162,16 @@ export default function Footer() {
             {instagram && (
               <Link href={instagram} target="_blank">
                 <FaInstagram />
+              </Link>
+            )}
+            {youtube && (
+              <Link href={youtube} target="_blank">
+                <FaYoutube />
+              </Link>
+            )}
+            {justdial && (
+              <Link href={justdial} target="_blank" className="text-[14px] font-extrabold border border-current rounded-full w-6 h-6 flex items-center justify-center hover:bg-black hover:text-white transition-all" title="Justdial">
+                JD
               </Link>
             )}
           </div>

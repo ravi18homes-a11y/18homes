@@ -64,9 +64,13 @@ const FooterSchema = new mongoose.Schema(
     address: { type: String, default: "" },
     email: { type: String, default: "" },
     phone: { type: String, default: "" },
+    phone2: { type: String, default: "" },
+    phone3: { type: String, default: "" },
     copyright: { type: String, default: "" },
     facebook: { type: String, default: "" },
     instagram: { type: String, default: "" },
+    justdial: { type: String, default: "" },
+    youtube: { type: String, default: "" },
     services: { type: [mongoose.Schema.Types.Mixed], default: [] },
   },
   { _id: false }
