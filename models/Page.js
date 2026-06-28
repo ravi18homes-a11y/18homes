@@ -10,6 +10,7 @@ const SeoSchema = new mongoose.Schema(
     openGraphTitle: { type: String, default: "" },
     openGraphDescription: { type: String, default: "" },
     openGraphImage: { type: String, default: "" },
+    schemaMarkup: { type: String, default: "" },
   },
   { _id: false },
 );

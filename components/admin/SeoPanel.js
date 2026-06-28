@@ -93,6 +93,20 @@ export default function SeoPanel({ seo, onChange, preview }) {
         />
       </label>
 
+      <label className="space-y-2 text-sm text-slate-700 block">
+        <span className="font-semibold">Structured Schema (JSON-LD)</span>
+        <p className="text-xs text-slate-500">
+          Paste raw JSON-LD contents here. Do not include the script tags.
+        </p>
+        <textarea
+          value={seo.schemaMarkup || ""}
+          onChange={updateField("schemaMarkup")}
+          placeholder='{ "@context": "https://schema.org", "@type": "WebPage", ... }'
+          className="w-full rounded-3xl border border-slate-200 bg-white px-5 py-4 font-mono text-xs"
+          rows={6}
+        />
+      </label>
+
       <div className="rounded-3xl border border-slate-200 bg-slate-950 p-6 text-slate-100">
         <p className="text-sm font-semibold text-slate-200">
           Live SERP preview
