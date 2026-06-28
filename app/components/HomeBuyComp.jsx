@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { MapPin, Bed, Bath, Square, Heart, Home, Loader2 } from "lucide-react";
+import { MapPin, Bed, Bath, Square, Heart, Home, Loader2, Share2 } from "lucide-react";
 import { toast } from "react-hot-toast";
 
 const DEFAULT_IMAGE =
@@ -183,6 +183,37 @@ export default function HomeBuyComp() {
     }
   };
 
+  const handleShare = async (propertyId, propertyTitle) => {
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const shareUrl = `${origin}/buy/property-details?id=${propertyId}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: propertyTitle || "Property Details",
+          text: `Check out this property: ${propertyTitle}`,
+          url: shareUrl,
+        });
+        toast.success("Shared successfully!");
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          console.error("Error sharing:", err);
+          toast.error("Failed to share");
+        }
+      }
+    } else if (navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success("Link copied to clipboard!");
+      } catch (err) {
+        console.error("Failed to copy link:", err);
+        toast.error("Failed to copy link");
+      }
+    } else {
+      toast.error("Sharing not supported on this browser");
+    }
+  };
+
   const formatPrice = (price) => {
     if (typeof price === "object" && price !== null && price.unit) {
       return `${price.value} ${price.unit}`;
@@ -283,6 +314,18 @@ export default function HomeBuyComp() {
                   }}
                   className="w-full h-48 object-cover"
                 />
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleShare(property.id, property.title);
+                  }}
+                  className="absolute top-3 right-14 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 z-20"
+                  aria-label="Share property link"
+                >
+                  <Share2 className="w-5 h-5 text-gray-600" />
+                </button>
                 <button
                   type="button"
                   onClick={(e) => {
