@@ -15,21 +15,29 @@ const sectionTemplates = {
     heading: "Section heading",
     body: "Write a text block with rich content and details.",
     headingColor: "#0f172a",
+    backgroundColor: "#ffffff",
+    textColor: "#0f172a",
   },
   image: {
     url: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=80",
     alt: "Visual showcase",
     caption: "Highlight your product with a strong image.",
+    backgroundColor: "#ffffff",
+    textColor: "#0f172a",
   },
   features: {
     heading: "Features grid",
     items: ["Fast", "Flexible", "Beautiful"],
     columns: 3,
+    backgroundColor: "#020617",
+    textColor: "#ffffff",
   },
   cta: {
     ctaText: "Ready to get started?",
     ctaButton: "Contact sales",
     ctaUrl: "#",
+    backgroundColor: "#0f172a",
+    textColor: "#ffffff",
   },
   faq: {
     items: [
@@ -42,6 +50,8 @@ const sectionTemplates = {
         answer: "Yes, the SEO panel includes title, description, OG, and more.",
       },
     ],
+    backgroundColor: "#ffffff",
+    textColor: "#0f172a",
   },
 };
 
@@ -311,6 +321,58 @@ function SectionConfig({ section, onUpdate }) {
           </div>
         </>
       )}
+
+      {/* Color Customization Panel */}
+      <div className="border-t border-slate-200/60 pt-4 mt-6">
+        <h4 className="text-sm font-semibold text-slate-800 mb-3 flex items-center gap-1.5">
+          <span>🎨</span> Section Styling Colors
+        </h4>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {/* Background Color */}
+          <div className="space-y-2">
+            <label className="block text-xs font-semibold text-slate-600">Background Color</label>
+            <div className="flex items-center gap-2">
+              <div className="relative w-10 h-10 rounded-full border border-slate-200 overflow-hidden cursor-pointer flex-shrink-0">
+                <input
+                  type="color"
+                  value={data.backgroundColor || (type === "hero" || type === "cta" ? "#0f172a" : type === "features" ? "#020617" : "#ffffff")}
+                  onChange={handleChange("backgroundColor")}
+                  className="absolute inset-0 w-[200%] h-[200%] -translate-x-1/4 -translate-y-1/4 cursor-pointer border-none p-0"
+                />
+              </div>
+              <input
+                type="text"
+                value={data.backgroundColor || ""}
+                onChange={handleChange("backgroundColor")}
+                placeholder="HEX color e.g. #ffffff"
+                className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-2 text-sm outline-none focus:border-slate-400"
+              />
+            </div>
+          </div>
+
+          {/* Text Color */}
+          <div className="space-y-2">
+            <label className="block text-xs font-semibold text-slate-600">Text/Foreground Color</label>
+            <div className="flex items-center gap-2">
+              <div className="relative w-10 h-10 rounded-full border border-slate-200 overflow-hidden cursor-pointer flex-shrink-0">
+                <input
+                  type="color"
+                  value={data.textColor || (type === "hero" || type === "cta" || type === "features" ? "#ffffff" : "#0f172a")}
+                  onChange={handleChange("textColor")}
+                  className="absolute inset-0 w-[200%] h-[200%] -translate-x-1/4 -translate-y-1/4 cursor-pointer border-none p-0"
+                />
+              </div>
+              <input
+                type="text"
+                value={data.textColor || ""}
+                onChange={handleChange("textColor")}
+                placeholder="HEX color e.g. #0f172a"
+                className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-2 text-sm outline-none focus:border-slate-400"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

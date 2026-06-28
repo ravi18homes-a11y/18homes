@@ -59,10 +59,15 @@ export default function HomeBuyComp() {
 
       if (data.success && data.data && Array.isArray(data.data.properties)) {
         const transformedProperties = data.data.properties.map((prop) => {
-          let areaValue = 0;
+          let areaValue = "—";
           if (typeof prop.area === "object" && prop.area !== null) {
-            areaValue = prop.area.value || 0;
-          } else if (typeof prop.area === "number") {
+            if (prop.area.size) {
+              const sizeStr = String(prop.area.size);
+              areaValue = /^[0-9\s.,]+$/.test(sizeStr.trim())
+                ? `${sizeStr} ${prop.area.unit || "sqft"}`
+                : sizeStr;
+            }
+          } else if (prop.area !== undefined && prop.area !== null) {
             areaValue = prop.area;
           }
 
@@ -271,7 +276,11 @@ export default function HomeBuyComp() {
                     </div>
                     <div className="flex items-center gap-1">
                       <Square className="w-4 h-4" />
-                      <span>{property.area} sqft</span>
+                      <span>
+                        {/^[0-9\s.,]+$/.test(String(property.area).trim())
+                          ? `${property.area} sqft`
+                          : property.area}
+                      </span>
                     </div>
                   </div>
                 </div>

@@ -169,7 +169,9 @@ export default function AdminPropertyDetailPage() {
             label="Area"
             value={
               property.area?.size
-                ? `${property.area.size} ${property.area.unit || "sqft"}`
+                ? (/^[0-9\s.,]+$/.test(String(property.area.size).trim())
+                  ? `${property.area.size} ${property.area.unit || "sqft"}`
+                  : property.area.size)
                 : "—"
             }
           />

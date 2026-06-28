@@ -181,12 +181,15 @@ const BuyPage = () => {
 
         if (data.success && data.data && Array.isArray(data.data.properties)) {
           const transformedProperties = data.data.properties.map((prop) => {
-            let areaValue = 0;
+            let areaValue = "—";
             if (typeof prop.area === "object" && prop.area !== null) {
-              areaValue = prop.area.size && prop.area.unit
-                ? `${prop.area.size} ${prop.area.unit || "sqft"}`
-                : "—"
-            } else if (typeof prop.area === "number") {
+              if (prop.area.size) {
+                const sizeStr = String(prop.area.size);
+                areaValue = /^[0-9\s.,]+$/.test(sizeStr.trim())
+                  ? `${sizeStr} ${prop.area.unit || "sqft"}`
+                  : sizeStr;
+              }
+            } else if (prop.area !== undefined && prop.area !== null) {
               areaValue = prop.area;
             }
 
@@ -801,12 +804,16 @@ const BuyPage = () => {
                               </div>
                             )}
                           <div className="flex items-center gap-1">
-                            <Square className="w-4 h-4" />
-                            <span>{property.area} sqft</span>
-                          </div>
+                             <Square className="w-4 h-4" />
+                             <span>
+                               {/^[0-9\s.,]+$/.test(String(property.area).trim())
+                                 ? `${property.area} sqft`
+                                 : property.area}
+                             </span>
+                           </div>
                           {property.floorNo && (
                             <div className="flex items-center gap-1 bg-gray-100 px-2 py-0.5 rounded text-[11px] font-semibold text-gray-700">
-                              <span>Floor: {property.floorNo}{property.totalFloors ? `/${property.totalFloors}` : ""}</span>
+                              <span>Floor no: {property.floorNo}{property.totalFloors ? ` Total floors: ${property.totalFloors}` : ""}</span>
                             </div>
                           )}
                           {property.isHighRise && (

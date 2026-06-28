@@ -19,6 +19,8 @@ export default function AdminPropertiesPage() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [fetchTrigger, setFetchTrigger] = useState(0);
+  const [soldFilter, setSoldFilter] = useState("all");
+  const [viewsSort, setViewsSort] = useState("none");
 
   const token =
     typeof window !== "undefined"
@@ -135,27 +137,75 @@ export default function AdminPropertiesPage() {
     }
   };
 
+  const filteredProperties = properties
+    .filter((p) => {
+      if (soldFilter === "sold") return p?.isSold === true;
+      if (soldFilter === "available") return p?.isSold !== true;
+      return true;
+    })
+    .sort((a, b) => {
+      if (viewsSort === "most") {
+        return (b?.views ?? 0) - (a?.views ?? 0);
+      }
+      if (viewsSort === "least") {
+        return (a?.views ?? 0) - (b?.views ?? 0);
+      }
+      return 0;
+    });
+
   return (
     <div className="space-y-6">
       <div className="flex gap-6 items-center"><h1 className="text-2xl font-bold">Property Management</h1>
       <Link className=" bg-[green] text-white px-6 py-1" href="/sell">Sell</Link></div>
 
-      <input
-        placeholder="Search title / city / locality"
-        className="border px-4 py-2 rounded w-full md:w-1/3"
-        value={search}
-        onChange={(e) => {
-          setLoading(true);
-          setPage(1);
-          setSearch(e.target.value);
-        }}
-      />
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+        <input
+          placeholder="Search title / city / locality"
+          className="border px-4 py-2 rounded w-full md:w-1/3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          value={search}
+          onChange={(e) => {
+            setLoading(true);
+            setPage(1);
+            setSearch(e.target.value);
+          }}
+        />
+
+        <div className="flex flex-wrap gap-4 items-center w-full md:w-auto">
+          {/* Status Filter */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-gray-700">Status:</span>
+            <select
+              value={soldFilter}
+              onChange={(e) => setSoldFilter(e.target.value)}
+              className="border px-3 py-2 rounded bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">All Statuses</option>
+              <option value="available">Available (Not Sold)</option>
+              <option value="sold">Sold Out</option>
+            </select>
+          </div>
+
+          {/* Views Sorting */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-gray-700">Views:</span>
+            <select
+              value={viewsSort}
+              onChange={(e) => setViewsSort(e.target.value)}
+              className="border px-3 py-2 rounded bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="none">Default Order</option>
+              <option value="most">Most Viewed first</option>
+              <option value="least">Least Viewed first</option>
+            </select>
+          </div>
+        </div>
+      </div>
 
       {loading ? (
         <div className="p-10 text-center">Loading properties…</div>
       ) : (
         <PropertyTable
-          properties={properties}
+          properties={filteredProperties}
           page={page}
           limit={10}
           onView={async (id) => {

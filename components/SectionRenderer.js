@@ -31,6 +31,10 @@ export default function SectionRenderer({ sections = [] }) {
                     <a
                       href={data.buttonUrl || "#"}
                       className="mt-8 inline-flex rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-900 shadow-lg"
+                      style={{
+                        backgroundColor: data.textColor || "#ffffff",
+                        color: data.backgroundColor || "#0f172a",
+                      }}
                     >
                       {data.buttonText}
                     </a>
@@ -40,19 +44,33 @@ export default function SectionRenderer({ sections = [] }) {
             );
           case "text":
             return (
-              <section key={id} className="rounded-3xl bg-white p-10 shadow-sm">
+              <section
+                key={id}
+                className="rounded-3xl p-10 shadow-sm"
+                style={{
+                  backgroundColor: data.backgroundColor || "#ffffff",
+                  color: data.textColor || "#0f172a",
+                }}
+              >
                 <h3
                   className="text-3xl font-semibold mb-4"
-                  style={{ color: data.headingColor || "#0f172a" }}
+                  style={{ color: data.headingColor || data.textColor || "#0f172a" }}
                 >
                   {data.heading}
                 </h3>
-                <p className="text-slate-600 leading-8">{data.body}</p>
+                <p className="leading-8 opacity-90">{data.body}</p>
               </section>
             );
           case "image":
             return (
-              <section key={id} className="rounded-3xl bg-white p-6 shadow-sm">
+              <section
+                key={id}
+                className="rounded-3xl p-6 shadow-sm"
+                style={{
+                  backgroundColor: data.backgroundColor || "#ffffff",
+                  color: data.textColor || "#0f172a",
+                }}
+              >
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                   <img
                     src={data.url}
@@ -61,7 +79,7 @@ export default function SectionRenderer({ sections = [] }) {
                   />
                   <div className="space-y-3 sm:w-1/2">
                     <h3 className="text-2xl font-semibold">{data.caption}</h3>
-                    <p className="text-slate-600">{data.alt}</p>
+                    <p className="opacity-80">{data.alt}</p>
                   </div>
                 </div>
               </section>
@@ -70,14 +88,25 @@ export default function SectionRenderer({ sections = [] }) {
             return (
               <section
                 key={id}
-                className="rounded-3xl bg-slate-950 p-10 text-white shadow-sm"
+                className="rounded-3xl p-10 shadow-sm"
+                style={{
+                  backgroundColor: data.backgroundColor || "#020617",
+                  color: data.textColor || "#ffffff",
+                }}
               >
                 <h3 className="text-3xl font-semibold mb-6">{data.heading}</h3>
                 <div
                   className={`grid gap-6 ${data.columns === 2 ? "grid-cols-2" : data.columns === 3 ? "grid-cols-3" : "grid-cols-1"}`}
                 >
                   {data.items?.map((item, index) => (
-                    <div key={index} className="rounded-3xl bg-slate-900 p-6">
+                    <div
+                      key={index}
+                      className="rounded-3xl p-6"
+                      style={{
+                        backgroundColor: data.backgroundColor ? "rgba(255, 255, 255, 0.08)" : "#0f172a",
+                        color: data.textColor || "#ffffff",
+                      }}
+                    >
                       <p className="text-lg">{item}</p>
                     </div>
                   ))}
@@ -88,12 +117,20 @@ export default function SectionRenderer({ sections = [] }) {
             return (
               <section
                 key={id}
-                className="rounded-3xl bg-slate-900 p-10 text-center text-white shadow-sm"
+                className="rounded-3xl p-10 text-center shadow-sm"
+                style={{
+                  backgroundColor: data.backgroundColor || "#0f172a",
+                  color: data.textColor || "#ffffff",
+                }}
               >
                 <h3 className="text-3xl font-semibold mb-4">{data.ctaText}</h3>
                 <a
                   href={data.ctaUrl || "#"}
-                  className="inline-flex rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-900"
+                  className="inline-flex rounded-full px-6 py-3 text-sm font-semibold shadow-lg"
+                  style={{
+                    backgroundColor: data.textColor || "#ffffff",
+                    color: data.backgroundColor || "#0f172a",
+                  }}
                 >
                   {data.ctaButton}
                 </a>
@@ -101,16 +138,26 @@ export default function SectionRenderer({ sections = [] }) {
             );
           case "faq":
             return (
-              <section key={id} className="rounded-3xl bg-white p-10 shadow-sm">
+              <section
+                key={id}
+                className="rounded-3xl p-10 shadow-sm"
+                style={{
+                  backgroundColor: data.backgroundColor || "#ffffff",
+                  color: data.textColor || "#0f172a",
+                }}
+              >
                 <h3 className="text-3xl font-semibold mb-6">FAQ</h3>
                 <div className="space-y-4">
                   {data.items?.map((item, index) => (
                     <div
                       key={index}
-                      className="rounded-3xl border border-slate-200 p-5"
+                      className="rounded-3xl border p-5"
+                      style={{
+                        borderColor: data.textColor ? "rgba(255, 255, 255, 0.15)" : "#e2e8f0",
+                      }}
                     >
                       <p className="font-semibold">{item.question}</p>
-                      <p className="text-slate-600 mt-2">{item.answer}</p>
+                      <p className="opacity-80 mt-2">{item.answer}</p>
                     </div>
                   ))}
                 </div>

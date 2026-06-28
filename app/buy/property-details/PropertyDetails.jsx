@@ -15,6 +15,7 @@ import {
   Play,
   ChevronLeft,
   ChevronRight,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { FaWhatsapp } from "react-icons/fa";
@@ -84,11 +85,18 @@ const PropertyDetailsPage = () => {
   const [loading, setLoading] = useState(true);
   const [showDetails, setShowDetails] = useState(false);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [modalImageIndex, setModalImageIndex] = useState(0);
 
   const databaseUrl = process.env.NEXT_PUBLIC_APP_DATABASE_URL || "";
 
   const DEFAULT_IMAGE =
     "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200";
+
+  const validImages = (property?.images || []).filter(
+    (img) => img && !img.startsWith("blob:") && img.trim() !== "",
+  );
+  const images = validImages.length > 0 ? validImages : [DEFAULT_IMAGE];
 
   const getMediaThumbnail = (url) => {
     if (!url) return DEFAULT_IMAGE;
@@ -171,6 +179,21 @@ const PropertyDetailsPage = () => {
 
     fetchProperty().finally(() => setLoading(false));
   }, [id, databaseUrl]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!showImageModal) return;
+      if (e.key === "Escape") {
+        setShowImageModal(false);
+      } else if (e.key === "ArrowLeft") {
+        setModalImageIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length);
+      } else if (e.key === "ArrowRight") {
+        setModalImageIndex((prevIndex) => (prevIndex + 1) % images.length);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [showImageModal, images.length]);
 
   const touchStartX = useRef(null);
   const touchEndX = useRef(null);
@@ -296,11 +319,6 @@ const PropertyDetailsPage = () => {
     );
   }
 
-  const validImages = (property.images || []).filter(
-    (img) => img && !img.startsWith("blob:") && img.trim() !== "",
-  );
-  const images = validImages.length > 0 ? validImages : [DEFAULT_IMAGE];
-
   return (
     <div className="min-h-screen pt-[40px] bg-gray-50">
       {/* Back Button */}
@@ -338,7 +356,11 @@ const PropertyDetailsPage = () => {
               src={currentMedia}
               onError={(e) => (e.target.src = DEFAULT_IMAGE)}
               alt={property.title}
-              className="w-full h-[500px] object-cover"
+              className="w-full h-[500px] object-cover cursor-pointer hover:opacity-95 transition-opacity"
+              onClick={() => {
+                setModalImageIndex(currentImageIndex);
+                setShowImageModal(true);
+              }}
             />
           );
         })()}
@@ -475,15 +497,14 @@ const PropertyDetailsPage = () => {
                 <div className="flex items-center gap-2">
                   <Square className="w-5 h-5 text-gray-600" />
                   <span className="font-semibold">
-                    {typeof property.area === "number"
-                      ? property.area
-                      : property.area}{" "}
-                    sqft
+                    {/^[0-9\s.,]+$/.test(String(property.area).trim())
+                      ? `${property.area} sqft`
+                      : property.area}
                   </span>
                 </div>
                 {property.floorNo && (
                   <div className="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-full text-sm font-semibold text-gray-700">
-                    <span>Floor: {property.floorNo}{property.totalFloors ? ` of ${property.totalFloors}` : ""}</span>
+                    <span>Floor no : {property.floorNo}{property.totalFloors ? `  Total floors : ${property.totalFloors}` : ""}</span>
                   </div>
                 )}
               </div>
@@ -535,7 +556,11 @@ const PropertyDetailsPage = () => {
                         alt={`Property ${index + 1}`}
                         onError={(e) => (e.target.src = DEFAULT_IMAGE)}
                         className="w-full h-48 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
-                        onClick={() => setCurrentImageIndex(index)}
+                        onClick={() => {
+                          setCurrentImageIndex(index);
+                          setModalImageIndex(index);
+                          setShowImageModal(true);
+                        }}
                       />
                     );
                   })
@@ -735,7 +760,7 @@ const PropertyDetailsPage = () => {
                         Loading...
                       </span>
                     ) : (
-                      "View Details"
+                      "View Contact"
                     )}
                   </button>
                 </div>
@@ -776,6 +801,83 @@ const PropertyDetailsPage = () => {
               />
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Fullscreen Image/Media Modal */}
+      {showImageModal && (
+        <div
+          className="fixed inset-0 bg-black/95 z-[999] flex flex-col items-center justify-center p-4 transition-opacity duration-300"
+          onClick={() => setShowImageModal(false)}
+        >
+          {/* Close button */}
+          <button
+            onClick={() => setShowImageModal(false)}
+            className="absolute top-4 right-4 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors z-[1000] cursor-pointer"
+            aria-label="Close fullscreen view"
+          >
+            <X className="w-8 h-8" />
+          </button>
+
+          {/* Navigation Arrows inside modal */}
+          {images.length > 1 && (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setModalImageIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length);
+                }}
+                className="absolute left-6 top-1/2 transform -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-all z-[1000] cursor-pointer"
+                aria-label="Previous image"
+              >
+                <ChevronLeft className="w-8 h-8" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setModalImageIndex((prevIndex) => (prevIndex + 1) % images.length);
+                }}
+                className="absolute right-6 top-1/2 transform -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-all z-[1000] cursor-pointer"
+                aria-label="Next image"
+              >
+                <ChevronRight className="w-8 h-8" />
+              </button>
+            </>
+          )}
+
+          {/* Media Content */}
+          <div
+            className="max-w-[90%] max-h-[85vh] flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {(() => {
+              const modalMedia = images[modalImageIndex];
+              const isVideo = modalMedia && [".mp4", ".mov", ".avi", ".webm", ".mkv", ".3gp", ".ogg", ".ogv", ".wmv"].some(ext => modalMedia.toLowerCase().endsWith(ext) || modalMedia.toLowerCase().includes(ext + "?"));
+              return isVideo ? (
+                <video
+                  src={modalMedia}
+                  controls
+                  autoPlay
+                  poster={getMediaThumbnail(modalMedia)}
+                  className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl bg-black"
+                />
+              ) : (
+                <img
+                  src={modalMedia}
+                  onError={(e) => (e.target.src = DEFAULT_IMAGE)}
+                  alt={property.title}
+                  className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl select-none"
+                />
+              );
+            })()}
+          </div>
+
+          {/* Image Counter */}
+          {images.length > 1 && (
+            <div className="absolute bottom-6 text-white/80 font-medium text-lg px-4 py-2 bg-white/10 rounded-full select-none">
+              {modalImageIndex + 1} / {images.length}
+            </div>
+          )}
         </div>
       )}
     </div>
