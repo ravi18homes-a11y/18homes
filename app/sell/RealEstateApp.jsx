@@ -247,7 +247,7 @@ const RealEstateApp = () => {
           priceValue: parsePrice(sellForm.price),
 
           area: {
-            size: sellForm.area[0]?.size ? Number(sellForm.area[0].size) : 0,
+            size: sellForm.area[0]?.size || "",
             unit: sellForm.area[0]?.unit || "sqft",
           },
           bedrooms: showBedrooms ? Number(sellForm.bedrooms) : 0,
@@ -739,10 +739,10 @@ const RealEstateApp = () => {
 
                 <div className={areaColSpan}>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Area (sq.ft) *
+                    Area *
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     required
                     value={sellForm.area[0]?.size}
                     onChange={(e) =>
@@ -753,7 +753,7 @@ const RealEstateApp = () => {
                         },
                       ])
                     }
-                    placeholder="e.g. 1450"
+                    placeholder="e.g. 1450 sqft or 150 sq yards"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   />
                 </div>
@@ -799,7 +799,7 @@ const RealEstateApp = () => {
               </div>
 
               {/* Owner Details */}
-              <div className="border-t pt-6">
+              {/* <div className="border-t pt-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">
                   Owner Information
                 </h3>
@@ -849,7 +849,7 @@ const RealEstateApp = () => {
                     />
                   </div>
                 </div>
-              </div>
+              </div> */}
 
               {/* Submit Buttons */}
               <div className="flex justify-end gap-3 pt-6">
