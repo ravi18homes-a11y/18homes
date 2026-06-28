@@ -81,28 +81,46 @@ export default function HomepageEditor() {
             title: about.title || "",
             description: about.description || "",
             image: about.image || "",
-            points: points.slice(0, 4)
+            points: points.slice(0, 4),
+            bgColor: about.bgColor || "",
+            textColor: about.textColor || "",
           },
           services: {
             subtitle: services.subtitle || "Service",
             title: services.title || "",
-            items: serviceItems.slice(0, 6)
+            items: serviceItems.slice(0, 6),
+            bgColor: services.bgColor || "",
+            textColor: services.textColor || "",
           },
           blogs: {
             subtitle: blogs.subtitle || "Latest post",
             title: blogs.title || "",
-            items: blogItems.slice(0, 4)
+            items: blogItems.slice(0, 4),
+            bgColor: blogs.bgColor || "",
+            textColor: blogs.textColor || "",
           },
-          instruments: rawJson.instruments || {},
+          instruments: {
+            ...(rawJson.instruments || {}),
+            bgColor: rawJson.instruments?.bgColor || "",
+            textColor: rawJson.instruments?.textColor || "",
+          },
           testimonials: {
             title: testimonials.title || "",
             description: testimonials.description || "",
-            items: testimonialItems.slice(0, 4)
+            items: testimonialItems.slice(0, 4),
+            bgColor: testimonials.bgColor || "",
+            textColor: testimonials.textColor || "",
           },
-          contact: rawJson.contact || {},
+          contact: {
+            ...(rawJson.contact || {}),
+            bgColor: rawJson.contact?.bgColor || "",
+            textColor: rawJson.contact?.textColor || "",
+          },
           footer: {
             ...footer,
-            services: footerServices.slice(0, 4)
+            services: footerServices.slice(0, 4),
+            bgColor: footer.bgColor || "",
+            textColor: footer.textColor || "",
           },
         };
         setData(enriched);
@@ -615,6 +633,48 @@ export default function HomepageEditor() {
                 </label>
               </div>
             </div>
+
+            <div className="p-5 border border-slate-100 rounded-3xl bg-slate-50/50 space-y-4">
+              <h4 className="font-semibold text-slate-700">Section Colors</h4>
+              <div className="grid gap-6 md:grid-cols-2">
+                <label className="block space-y-2 text-sm text-slate-700">
+                  <span className="font-medium">Background Color</span>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="color"
+                      value={data.about?.bgColor || "#eef6f8"}
+                      onChange={(e) => updateField(["about", "bgColor"], e.target.value)}
+                      className="w-10 h-10 border border-slate-200 rounded cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={data.about?.bgColor || ""}
+                      onChange={(e) => updateField(["about", "bgColor"], e.target.value)}
+                      placeholder="#eef6f8"
+                      className="flex-1 rounded-3xl border border-slate-200 bg-white px-4 py-2 text-slate-900 outline-none focus:border-slate-400 text-sm"
+                    />
+                  </div>
+                </label>
+                <label className="block space-y-2 text-sm text-slate-700">
+                  <span className="font-medium">Text Color</span>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="color"
+                      value={data.about?.textColor || "#101010"}
+                      onChange={(e) => updateField(["about", "textColor"], e.target.value)}
+                      className="w-10 h-10 border border-slate-200 rounded cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={data.about?.textColor || ""}
+                      onChange={(e) => updateField(["about", "textColor"], e.target.value)}
+                      placeholder="#101010"
+                      className="flex-1 rounded-3xl border border-slate-200 bg-white px-4 py-2 text-slate-900 outline-none focus:border-slate-400 text-sm"
+                    />
+                  </div>
+                </label>
+              </div>
+            </div>
           </div>
         )}
 
@@ -694,6 +754,48 @@ export default function HomepageEditor() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            <div className="p-5 border border-slate-100 rounded-3xl bg-slate-50/50 space-y-4">
+              <h4 className="font-semibold text-slate-700">Section Colors</h4>
+              <div className="grid gap-6 md:grid-cols-2">
+                <label className="block space-y-2 text-sm text-slate-700">
+                  <span className="font-medium">Background Color</span>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="color"
+                      value={data.services?.bgColor || "#F7EFF2"}
+                      onChange={(e) => updateField(["services", "bgColor"], e.target.value)}
+                      className="w-10 h-10 border border-slate-200 rounded cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={data.services?.bgColor || ""}
+                      onChange={(e) => updateField(["services", "bgColor"], e.target.value)}
+                      placeholder="#F7EFF2"
+                      className="flex-1 rounded-3xl border border-slate-200 bg-white px-4 py-2 text-slate-900 outline-none focus:border-slate-400 text-sm"
+                    />
+                  </div>
+                </label>
+                <label className="block space-y-2 text-sm text-slate-700">
+                  <span className="font-medium">Text Color</span>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="color"
+                      value={data.services?.textColor || "#000000"}
+                      onChange={(e) => updateField(["services", "textColor"], e.target.value)}
+                      className="w-10 h-10 border border-slate-200 rounded cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={data.services?.textColor || ""}
+                      onChange={(e) => updateField(["services", "textColor"], e.target.value)}
+                      placeholder="#000000"
+                      className="flex-1 rounded-3xl border border-slate-200 bg-white px-4 py-2 text-slate-900 outline-none focus:border-slate-400 text-sm"
+                    />
+                  </div>
+                </label>
               </div>
             </div>
           </div>
@@ -777,6 +879,48 @@ export default function HomepageEditor() {
                 ))}
               </div>
             </div>
+
+            <div className="p-5 border border-slate-100 rounded-3xl bg-slate-50/50 space-y-4">
+              <h4 className="font-semibold text-slate-700">Section Colors</h4>
+              <div className="grid gap-6 md:grid-cols-2">
+                <label className="block space-y-2 text-sm text-slate-700">
+                  <span className="font-medium">Background Color</span>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="color"
+                      value={data.blogs?.bgColor || "#F7F7F7"}
+                      onChange={(e) => updateField(["blogs", "bgColor"], e.target.value)}
+                      className="w-10 h-10 border border-slate-200 rounded cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={data.blogs?.bgColor || ""}
+                      onChange={(e) => updateField(["blogs", "bgColor"], e.target.value)}
+                      placeholder="#F7F7F7"
+                      className="flex-1 rounded-3xl border border-slate-200 bg-white px-4 py-2 text-slate-900 outline-none focus:border-slate-400 text-sm"
+                    />
+                  </div>
+                </label>
+                <label className="block space-y-2 text-sm text-slate-700">
+                  <span className="font-medium">Text Color</span>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="color"
+                      value={data.blogs?.textColor || "#000000"}
+                      onChange={(e) => updateField(["blogs", "textColor"], e.target.value)}
+                      className="w-10 h-10 border border-slate-200 rounded cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={data.blogs?.textColor || ""}
+                      onChange={(e) => updateField(["blogs", "textColor"], e.target.value)}
+                      placeholder="#000000"
+                      className="flex-1 rounded-3xl border border-slate-200 bg-white px-4 py-2 text-slate-900 outline-none focus:border-slate-400 text-sm"
+                    />
+                  </div>
+                </label>
+              </div>
+            </div>
           </div>
         )}
 
@@ -853,6 +997,48 @@ export default function HomepageEditor() {
                       }
                     }}
                   />
+                </label>
+              </div>
+            </div>
+
+            <div className="p-5 border border-slate-100 rounded-3xl bg-slate-50/50 space-y-4">
+              <h4 className="font-semibold text-slate-700">Section Colors</h4>
+              <div className="grid gap-6 md:grid-cols-2">
+                <label className="block space-y-2 text-sm text-slate-700">
+                  <span className="font-medium">Background Color</span>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="color"
+                      value={data.instruments?.bgColor || "#F2F2F2"}
+                      onChange={(e) => updateField(["instruments", "bgColor"], e.target.value)}
+                      className="w-10 h-10 border border-slate-200 rounded cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={data.instruments?.bgColor || ""}
+                      onChange={(e) => updateField(["instruments", "bgColor"], e.target.value)}
+                      placeholder="#F2F2F2"
+                      className="flex-1 rounded-3xl border border-slate-200 bg-white px-4 py-2 text-slate-900 outline-none focus:border-slate-400 text-sm"
+                    />
+                  </div>
+                </label>
+                <label className="block space-y-2 text-sm text-slate-700">
+                  <span className="font-medium">Text Color</span>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="color"
+                      value={data.instruments?.textColor || "#000000"}
+                      onChange={(e) => updateField(["instruments", "textColor"], e.target.value)}
+                      className="w-10 h-10 border border-slate-200 rounded cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={data.instruments?.textColor || ""}
+                      onChange={(e) => updateField(["instruments", "textColor"], e.target.value)}
+                      placeholder="#000000"
+                      className="flex-1 rounded-3xl border border-slate-200 bg-white px-4 py-2 text-slate-900 outline-none focus:border-slate-400 text-sm"
+                    />
+                  </div>
                 </label>
               </div>
             </div>
@@ -947,6 +1133,48 @@ export default function HomepageEditor() {
                 ))}
               </div>
             </div>
+
+            <div className="p-5 border border-slate-100 rounded-3xl bg-slate-50/50 space-y-4">
+              <h4 className="font-semibold text-slate-700">Section Colors</h4>
+              <div className="grid gap-6 md:grid-cols-2">
+                <label className="block space-y-2 text-sm text-slate-700">
+                  <span className="font-medium">Background Color</span>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="color"
+                      value={data.testimonials?.bgColor || "#0d0128"}
+                      onChange={(e) => updateField(["testimonials", "bgColor"], e.target.value)}
+                      className="w-10 h-10 border border-slate-200 rounded cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={data.testimonials?.bgColor || ""}
+                      onChange={(e) => updateField(["testimonials", "bgColor"], e.target.value)}
+                      placeholder="#0d0128"
+                      className="flex-1 rounded-3xl border border-slate-200 bg-white px-4 py-2 text-slate-900 outline-none focus:border-slate-400 text-sm"
+                    />
+                  </div>
+                </label>
+                <label className="block space-y-2 text-sm text-slate-700">
+                  <span className="font-medium">Text Color</span>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="color"
+                      value={data.testimonials?.textColor || "#ffffff"}
+                      onChange={(e) => updateField(["testimonials", "textColor"], e.target.value)}
+                      className="w-10 h-10 border border-slate-200 rounded cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={data.testimonials?.textColor || ""}
+                      onChange={(e) => updateField(["testimonials", "textColor"], e.target.value)}
+                      placeholder="#ffffff"
+                      className="flex-1 rounded-3xl border border-slate-200 bg-white px-4 py-2 text-slate-900 outline-none focus:border-slate-400 text-sm"
+                    />
+                  </div>
+                </label>
+              </div>
+            </div>
           </div>
         )}
 
@@ -987,6 +1215,48 @@ export default function HomepageEditor() {
                       }
                     }}
                   />
+                </label>
+              </div>
+            </div>
+
+            <div className="p-5 border border-slate-100 rounded-3xl bg-slate-50/50 space-y-4">
+              <h4 className="font-semibold text-slate-700">Section Colors</h4>
+              <div className="grid gap-6 md:grid-cols-2">
+                <label className="block space-y-2 text-sm text-slate-700">
+                  <span className="font-medium">Background Color</span>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="color"
+                      value={data.contact?.bgColor || "#1d1d1d"}
+                      onChange={(e) => updateField(["contact", "bgColor"], e.target.value)}
+                      className="w-10 h-10 border border-slate-200 rounded cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={data.contact?.bgColor || ""}
+                      onChange={(e) => updateField(["contact", "bgColor"], e.target.value)}
+                      placeholder="#1d1d1d"
+                      className="flex-1 rounded-3xl border border-slate-200 bg-white px-4 py-2 text-slate-900 outline-none focus:border-slate-400 text-sm"
+                    />
+                  </div>
+                </label>
+                <label className="block space-y-2 text-sm text-slate-700">
+                  <span className="font-medium">Text Color</span>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="color"
+                      value={data.contact?.textColor || "#ffffff"}
+                      onChange={(e) => updateField(["contact", "textColor"], e.target.value)}
+                      className="w-10 h-10 border border-slate-200 rounded cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={data.contact?.textColor || ""}
+                      onChange={(e) => updateField(["contact", "textColor"], e.target.value)}
+                      placeholder="#ffffff"
+                      className="flex-1 rounded-3xl border border-slate-200 bg-white px-4 py-2 text-slate-900 outline-none focus:border-slate-400 text-sm"
+                    />
+                  </div>
                 </label>
               </div>
             </div>
@@ -1152,6 +1422,48 @@ export default function HomepageEditor() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            <div className="p-5 border border-slate-100 rounded-3xl bg-slate-50/50 space-y-4">
+              <h4 className="font-semibold text-slate-700">Section Colors</h4>
+              <div className="grid gap-6 md:grid-cols-2">
+                <label className="block space-y-2 text-sm text-slate-700">
+                  <span className="font-medium">Background Color</span>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="color"
+                      value={data.footer?.bgColor || "#F6F6F6"}
+                      onChange={(e) => updateField(["footer", "bgColor"], e.target.value)}
+                      className="w-10 h-10 border border-slate-200 rounded cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={data.footer?.bgColor || ""}
+                      onChange={(e) => updateField(["footer", "bgColor"], e.target.value)}
+                      placeholder="#F6F6F6"
+                      className="flex-1 rounded-3xl border border-slate-200 bg-white px-4 py-2 text-slate-900 outline-none focus:border-slate-400 text-sm"
+                    />
+                  </div>
+                </label>
+                <label className="block space-y-2 text-sm text-slate-700">
+                  <span className="font-medium">Text Color</span>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="color"
+                      value={data.footer?.textColor || "#1E1E1E"}
+                      onChange={(e) => updateField(["footer", "textColor"], e.target.value)}
+                      className="w-10 h-10 border border-slate-200 rounded cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={data.footer?.textColor || ""}
+                      onChange={(e) => updateField(["footer", "textColor"], e.target.value)}
+                      placeholder="#1E1E1E"
+                      className="flex-1 rounded-3xl border border-slate-200 bg-white px-4 py-2 text-slate-900 outline-none focus:border-slate-400 text-sm"
+                    />
+                  </div>
+                </label>
               </div>
             </div>
           </div>

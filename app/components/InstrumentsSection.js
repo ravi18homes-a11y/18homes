@@ -10,22 +10,25 @@ export default function InstrumentsSection({ data }) {
   const desc3 = data?.desc3 || "Keeping budget, location, and lifestyle in mind.";
   const image = data?.image || "https://res.cloudinary.com/dxlykgx6w/image/upload/v1764948145/hotel-building-ho-chi-minh-vietnam1_wtuqyd.jpg";
 
+  const customBgStyle = data?.bgColor ? { backgroundColor: data.bgColor } : {};
+  const customTextStyle = data?.textColor ? { color: data.textColor } : {};
+
   return (
-    <section className="w-full bg-[#F2F2F2] py-20">
+    <section className="w-full py-20" style={customBgStyle}>
       {/* TOP TEXT */}
       <div className="text-center max-w-[1100px] mx-auto px-6">
         <h3
-          className="text-[32px] md:text-[38px] text-black mb-3"
-          style={{ fontFamily: "'Dancing Script', cursive" }}
+          className="text-[32px] md:text-[38px] mb-3"
+          style={{ fontFamily: "'Dancing Script', cursive", ...customTextStyle }}
         >
           {subtitle}
         </h3>
 
-        <h2 className="text-[42px] md:text-[44px] font-bold text-black leading-snug mb-6">
+        <h2 className="text-[42px] md:text-[44px] font-bold leading-snug mb-6" style={customTextStyle}>
           {title}
         </h2>
 
-        <p className="text-[18px] md:text-[20px] text-gray-700 ">
+        <p className="text-[18px] md:text-[20px]" style={customTextStyle}>
           {desc1}
           <br />
           {desc2}

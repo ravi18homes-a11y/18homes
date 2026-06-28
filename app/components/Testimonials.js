@@ -38,17 +38,20 @@ export default function Testimonials({ data }) {
     },
   ];
 
+  const customBgStyle = data?.bgColor ? { background: data.bgColor } : {};
+  const customTextStyle = data?.textColor ? { color: data.textColor } : {};
+
   return (
-    <section className="w-full py-18 bg-gradient-to-b from-[#316c3f] via-[#0d0128] to-[#461d34]">
+    <section className="w-full py-18 bg-gradient-to-b from-[#316c3f] via-[#0d0128] to-[#461d34]" style={customBgStyle}>
       {/* Heading */}
       <div className="text-center mb-12 px-4">
-        <h2 className="text-[40px] text-white font-semibold mb-4">
+        <h2 className="text-[40px] font-semibold mb-4" style={customTextStyle}>
           {title}
         </h2>
 
         <div className="w-[140px] h-[3px] bg-gradient-to-r from-[#bc67ff] to-[#4da6ff] mx-auto mb-6"></div>
 
-        <p className="text-[#8f8f9a] max-w-[500px] mx-auto text-[18px] leading-relaxed">
+        <p className="max-w-[500px] mx-auto text-[18px] leading-relaxed" style={customTextStyle}>
           {description}
         </p>
       </div>
@@ -75,7 +78,7 @@ export default function Testimonials({ data }) {
         >
           {testimonials.map((t, i) => (
             <SwiperSlide key={i}>
-              <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-2xl p-8 h-[250px] flex flex-col justify-between text-white shadow-xl">
+              <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-2xl p-8 h-auto sm:h-[250px] flex flex-col justify-between text-white shadow-xl">
                 <p className="text-[17px] leading-relaxed text-[#8f8f9a]">
                   {t.text}
                 </p>
