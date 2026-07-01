@@ -218,7 +218,7 @@ export default function Navbar() {
                 className="w-12 h-12 rounded-full cursor-pointer border-2 border-[#8c4bdc] overflow-hidden hover:border-[#c04b7e] transition"
               >
                 <Image
-                  src="https://res.cloudinary.com/dxlykgx6w/image/upload/v1766862633/business-man-avatar-profile_1133257-2431_dygzgs.avif"
+                  src={user?.avatar || "https://res.cloudinary.com/dxlykgx6w/image/upload/v1766862633/business-man-avatar-profile_1133257-2431_dygzgs.avif"}
                   alt="Profile"
                   width={48}
                   height={48}
@@ -255,14 +255,14 @@ export default function Navbar() {
 
                   {isLoggedIn && (
                     <>
-                      {/* <Link
+                      <Link
                         href="/edit-profile"
                         className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
                         onClick={() => setShowProfileMenu(false)}
                       >
                         <FaEdit className="text-[#8c4bdc] text-xl" />
                         <span className="text-black">Edit Profile</span>
-                      </Link> */}
+                      </Link>
                       
                       <Link
                         href="/my-properties"
@@ -400,7 +400,7 @@ export default function Navbar() {
             </Link>
           )}
 
-          {/* {isLoggedIn && (
+          {isLoggedIn && (
             <Link
               href="/edit-profile"
               className="w-[153px] px-7 mt-4 py-2 border border-[black] text-[black] rounded-full"
@@ -408,7 +408,7 @@ export default function Navbar() {
             >
               Edit Profile
             </Link>
-          )} */}
+          )}
         </div>
       </div>
     </nav>

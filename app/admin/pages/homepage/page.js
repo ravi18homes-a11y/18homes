@@ -71,7 +71,24 @@ export default function HomepageEditor() {
 
         const enriched = {
           ...rawJson,
-          seo: rawJson.seo || {},
+          seo: {
+            metaTitle: rawJson.seo?.metaTitle || "",
+            metaDescription: rawJson.seo?.metaDescription || "",
+            keywords: rawJson.seo?.keywords || "",
+            canonicalUrl: rawJson.seo?.canonicalUrl || "",
+            noIndex: Boolean(rawJson.seo?.noIndex),
+            openGraphTitle: rawJson.seo?.openGraphTitle || "",
+            openGraphDescription: rawJson.seo?.openGraphDescription || "",
+            openGraphImage: rawJson.seo?.openGraphImage || "",
+            twitterTitle: rawJson.seo?.twitterTitle || "",
+            twitterDescription: rawJson.seo?.twitterDescription || "",
+            twitterImage: rawJson.seo?.twitterImage || "",
+            twitterCard: rawJson.seo?.twitterCard || "summary_large_image",
+            schemaMarkup: rawJson.seo?.schemaMarkup || "",
+            sitemapXml: rawJson.seo?.sitemapXml || "",
+            sitemapHtml: rawJson.seo?.sitemapHtml || "",
+            robotsTxt: rawJson.seo?.robotsTxt || "",
+          },
           hero: {
             ...hero,
             slides: slides.slice(0, 3)
@@ -473,6 +490,99 @@ export default function HomepageEditor() {
                     className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-5 py-4 text-slate-950 font-mono text-xs outline-none focus:border-slate-400"
                   />
                 </label>
+              </div>
+            </div>
+
+            {/* SEARCH ENGINE FILES (robots.txt, sitemap.xml, sitemap.html) */}
+            <div className="border-t pt-6 space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-800 border-b pb-2">Search Engine Files</h3>
+                <p className="mt-1 text-xs text-slate-500">
+                  Directly edit robots.txt, sitemap.xml, and sitemap.html contents. You can copy the contents or paste new ones.
+                </p>
+              </div>
+              
+              <div className="space-y-6">
+                {/* robots.txt */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-semibold text-slate-700">robots.txt</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(data.seo?.robotsTxt || "");
+                        toast.success("robots.txt copied to clipboard!");
+                      }}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-sm cursor-pointer active:scale-95 transition"
+                    >
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                      </svg>
+                      Copy robots.txt
+                    </button>
+                  </div>
+                  <textarea
+                    value={data.seo?.robotsTxt || ""}
+                    onChange={(e) => updateField(["seo", "robotsTxt"], e.target.value)}
+                    placeholder="User-agent: *..."
+                    rows="8"
+                    className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-5 py-4 text-slate-950 font-mono text-xs outline-none focus:border-slate-400"
+                  />
+                </div>
+
+                {/* sitemap.xml */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-semibold text-slate-700">sitemap.xml</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(data.seo?.sitemapXml || "");
+                        toast.success("sitemap.xml copied to clipboard!");
+                      }}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-sm cursor-pointer active:scale-95 transition"
+                    >
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                      </svg>
+                      Copy sitemap.xml
+                    </button>
+                  </div>
+                  <textarea
+                    value={data.seo?.sitemapXml || ""}
+                    onChange={(e) => updateField(["seo", "sitemapXml"], e.target.value)}
+                    placeholder="<?xml version='1.0' encoding='UTF-8'?>..."
+                    rows="12"
+                    className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-5 py-4 text-slate-950 font-mono text-xs outline-none focus:border-slate-400"
+                  />
+                </div>
+
+                {/* sitemap.html */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-semibold text-slate-700">sitemap.html</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(data.seo?.sitemapHtml || "");
+                        toast.success("sitemap.html copied to clipboard!");
+                      }}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-sm cursor-pointer active:scale-95 transition"
+                    >
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                      </svg>
+                      Copy sitemap.html
+                    </button>
+                  </div>
+                  <textarea
+                    value={data.seo?.sitemapHtml || ""}
+                    onChange={(e) => updateField(["seo", "sitemapHtml"], e.target.value)}
+                    placeholder="<!doctype html>..."
+                    rows="12"
+                    className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-5 py-4 text-slate-950 font-mono text-xs outline-none focus:border-slate-400"
+                  />
+                </div>
               </div>
             </div>
           </div>

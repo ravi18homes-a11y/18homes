@@ -56,10 +56,10 @@ export default async function Home() {
       <div>
         <Navbar />
         <HeroSlider data={data?.hero} />
-        <HomeAbout data={data?.about} />
         <FilterPropertiesComp />
         <HomeBuyComp />
         <HomeServices data={data?.services} />
+        <HomeAbout data={data?.about} />
         <HomeBlogs data={data?.blogs} />
         <InstrumentsSection data={data?.instruments} />
         <Testimonials data={data?.testimonials} />

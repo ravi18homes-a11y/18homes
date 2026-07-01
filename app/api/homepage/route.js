@@ -1,4 +1,6 @@
 import { getHomepageData, updateHomepageData } from "../../../lib/store";
+import fs from "fs";
+import path from "path";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -27,6 +29,31 @@ export async function POST(req) {
     const payload = await req.json();
     console.log("[POST /api/homepage] payload received:", payload);
     const data = await updateHomepageData(payload);
+
+    // Synchronize to physical files under the public/ folder if filesystem is writable
+    try {
+      if (payload?.seo) {
+        const publicDir = path.join(process.cwd(), "public");
+        
+        // Ensure public directory exists
+        if (!fs.existsSync(publicDir)) {
+          fs.mkdirSync(publicDir, { recursive: true });
+        }
+
+        if (payload.seo.sitemapXml !== undefined) {
+          fs.writeFileSync(path.join(publicDir, "sitemap.xml"), payload.seo.sitemapXml, "utf8");
+        }
+        if (payload.seo.sitemapHtml !== undefined) {
+          fs.writeFileSync(path.join(publicDir, "sitemap.html"), payload.seo.sitemapHtml, "utf8");
+        }
+        if (payload.seo.robotsTxt !== undefined) {
+          fs.writeFileSync(path.join(publicDir, "robots.txt"), payload.seo.robotsTxt, "utf8");
+        }
+      }
+    } catch (fsError) {
+      console.warn("[POST /api/homepage] Failed to sync SEO files to disk:", fsError.message);
+    }
+
     return new Response(JSON.stringify(data), {
       status: 200,
       headers: { "Content-Type": "application/json" },
