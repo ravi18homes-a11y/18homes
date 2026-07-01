@@ -1,0 +1,10 @@
+User-agent: *
+
+Allow: /
+
+Disallow: /cgi-bin/
+Disallow: /admin/
+Disallow: /private/
+Disallow: /thank-you/
+
+Sitemap: https://www.18homes.in/sitemap.xml

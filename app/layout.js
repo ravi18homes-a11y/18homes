@@ -10,6 +10,9 @@ import Script from "next/script";
 export const metadata = {
   title: "18 Homes - Best Property for Sale and Rent in NCR",
   description: "Leading Real Estate Company in NCR, Offering Prime Residential and Commercial Properties NCR Region.",
+  verification: {
+    google: "Pi6mrgXhctcaPWM_tvE-bzsUaTocDT7FWlYtjOXf0W0",
+  },
 };
 
 const poppins = Poppins({
@@ -24,22 +27,18 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={poppins.className}>
-        {/* Google Tag Manager (noscript) */}
-        <noscript>
-          <iframe
-            src="https://www.googletagmanager.com/ns.html?id=GTM-WMRP2SSJ"
-            height="0"
-            width="0"
-            style={{ display: "none", visibility: "hidden" }}
-          />
-        </noscript>
-        {/* Google Tag Manager Script */}
-        <Script id="google-tag-manager" strategy="afterInteractive">
-          {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-WMRP2SSJ');`}
+        {/* Google Tag Script */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-RPR1HLBTMG"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-RPR1HLBTMG');
+          `}
         </Script>
         <Toaster position="top-right" reverseOrder={false} />
         {children}

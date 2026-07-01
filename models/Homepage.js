@@ -15,6 +15,9 @@ const SeoSchema = new mongoose.Schema(
     twitterImage: { type: String, default: "" },
     twitterCard: { type: String, default: "summary_large_image" },
     schemaMarkup: { type: String, default: "" },
+    sitemapXml: { type: String, default: "" },
+    sitemapHtml: { type: String, default: "" },
+    robotsTxt: { type: String, default: "" },
   },
   { _id: false }
 );
