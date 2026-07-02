@@ -101,6 +101,9 @@
     .info-value {
       font-size: 18px;
     }
+    .contact-wrapper{
+      padding: 35px 35px;
+    }
   }
   /* Divider */
   .left-info hr {

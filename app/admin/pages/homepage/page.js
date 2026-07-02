@@ -71,6 +71,10 @@ export default function HomepageEditor() {
 
         const enriched = {
           ...rawJson,
+          navbar: {
+            logo: rawJson.navbar?.logo || "",
+            logoAlt: rawJson.navbar?.logoAlt || "Logo",
+          },
           seo: {
             metaTitle: rawJson.seo?.metaTitle || "",
             metaDescription: rawJson.seo?.metaDescription || "",
@@ -234,6 +238,7 @@ export default function HomepageEditor() {
   }
 
   const tabs = [
+    { key: "navbar", label: "🔝 Navbar" },
     { key: "seo", label: "SEO & Meta" },
     { key: "hero", label: "Hero Banner" },
     { key: "about", label: "About" },
@@ -291,6 +296,106 @@ export default function HomepageEditor() {
       )}
 
       <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-100 space-y-6">
+        {/* NAVBAR TAB */}
+        {activeTab === "navbar" && (
+          <div className="space-y-8">
+            <div>
+              <h3 className="text-lg font-semibold text-slate-800 border-b pb-2">Navbar Settings</h3>
+              <p className="mt-1 text-xs text-slate-500">
+                Upload or change the logo displayed in the navigation bar across the entire website.
+              </p>
+            </div>
+
+            <div className="p-6 border border-slate-100 rounded-3xl bg-slate-50/50 space-y-5">
+              <h4 className="font-semibold text-slate-700">Navbar Logo</h4>
+
+              <div className="flex items-center gap-6 flex-wrap">
+                <div className="flex flex-col items-center gap-2">
+                  <span className="text-xs text-slate-500 font-medium">Current Logo</span>
+                  <div className="w-32 h-24 rounded-2xl border border-slate-200 bg-white flex items-center justify-center overflow-hidden shadow-sm">
+                    {data.navbar?.logo ? (
+                      <img
+                        src={data.navbar.logo}
+                        alt={data.navbar?.logoAlt || "Logo"}
+                        className="object-contain w-full h-full p-2"
+                      />
+                    ) : (
+                      <span className="text-xs text-slate-400 text-center px-2">No logo set</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-700 transition">
+                    {uploadingImage["navbar-logo"] ? (
+                      <>
+                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                        </svg>
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M12 12V4m0 8l-3-3m3 3l3-3" />
+                        </svg>
+                        Upload New Logo
+                      </>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        if (e.target.files?.[0]) {
+                          handleImageUpload(e.target.files[0], ["navbar", "logo"]);
+                        }
+                      }}
+                    />
+                  </label>
+                  {data.navbar?.logo && (
+                    <button
+                      type="button"
+                      onClick={() => updateField(["navbar", "logo"], "")}
+                      className="inline-flex items-center justify-center gap-1.5 rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-100 transition"
+                    >
+                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Remove Logo
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <label className="block space-y-2 text-sm text-slate-700">
+                <span className="font-semibold">Logo Image URL <span className="font-normal text-slate-400">(or paste a direct URL)</span></span>
+                <input
+                  value={data.navbar?.logo || ""}
+                  onChange={(e) => updateField(["navbar", "logo"], e.target.value)}
+                  placeholder="https://..."
+                  className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none focus:border-slate-400 text-sm"
+                />
+              </label>
+
+              <label className="block space-y-2 text-sm text-slate-700">
+                <span className="font-semibold">Logo Alt Text</span>
+                <input
+                  value={data.navbar?.logoAlt || ""}
+                  onChange={(e) => updateField(["navbar", "logoAlt"], e.target.value)}
+                  placeholder="e.g. 18Homes Logo"
+                  className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none focus:border-slate-400 text-sm"
+                />
+              </label>
+            </div>
+
+            <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-xs text-amber-800">
+              💡 <strong>Tip:</strong> After saving, the new logo will appear on the live website immediately. Recommended: at least <strong>140×140px</strong>, PNG or SVG with a transparent background.
+            </div>
+          </div>
+        )}
+
         {/* SEO TAB */}
         {activeTab === "seo" && (
           <div className="space-y-6">
