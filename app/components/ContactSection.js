@@ -116,7 +116,7 @@ export default function ContactSection({ data }) {
               placeholder="Enter Name*"
               required
               autoComplete="off"
-              className="w-full border-2 border-white bg-transparent px-5 py-3 rounded-md text-lg outline-none "
+              className="w-full border-2 text-amber-50 border-white bg-transparent px-5 py-3 rounded-md text-lg outline-none "
             />
 
             <input
@@ -127,7 +127,7 @@ export default function ContactSection({ data }) {
               required
               autoComplete="off"
               placeholder="Enter your email"
-              className="w-full border-2 border-white bg-transparent px-5 py-3 rounded-md text-lg outline-none "
+              className="w-full border-2 border-white text-amber-50 bg-transparent px-5 py-3 rounded-md text-lg outline-none "
             />
 
             <input
@@ -144,7 +144,7 @@ export default function ContactSection({ data }) {
               required
               autoComplete="off"
               placeholder="Enter mobile number*"
-              className="w-full border-2 border-white bg-transparent px-5 py-3 rounded-md text-lg outline-none "
+              className="w-full border-2 border-white text-amber-50 bg-transparent px-5 py-3 rounded-md text-lg outline-none "
             />
 
             <div className="relative">
@@ -152,7 +152,7 @@ export default function ContactSection({ data }) {
                 name="website"
                 value={form?.website}
                 onChange={handleChange}
-                className="w-full border-2 border-white bg-transparent px-5 py-3 rounded-md text-lg outline-none appearance-none text-[gray]"
+                className="w-full border-2 border-white text-amber-50 bg-transparent px-5 py-3 rounded-md text-lg outline-none appearance-none "
               >
                 <option value="" disabled className="text-[gray]">
                   Select Room or Flat 1BHK/2BHK/3BHK*
@@ -180,12 +180,12 @@ export default function ContactSection({ data }) {
               value={form?.discussion}
               onChange={handleChange}
               rows="4"
-              className="w-full border-2 border-white bg-transparent px-5 py-4 rounded-md text-lg outline-none resize-none "
+              className="w-full border-2 text-amber-50 border-white bg-transparent px-5 py-4 rounded-md text-lg outline-none resize-none "
             />
             <div>
-              <label className="flex items-center" style={{ fontSize: "14px" }}>
+              <label className="flex items-center text-amber-50" style={{ fontSize: "14px" }}>
                 <input
-                  className="!w-[20px]"
+                  className="!w-[20px] text-amber-50"
                   type="checkbox"
                   checked={checked}
                   onChange={(e) => setChecked(e.target.checked)}
