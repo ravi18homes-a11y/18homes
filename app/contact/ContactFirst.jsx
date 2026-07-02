@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./contact.css";
 import { FaMapMarked, FaMapMarkedAlt } from "react-icons/fa";
 import { FiCheckCircle, FiPhoneCall } from "react-icons/fi";
@@ -16,8 +16,19 @@ export default function ContactFirst() {
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [showPopup, setShowPopup] = useState(false); // ✅ New state for popup
-  const [checked, setChecked] = useState(false); // ✅ Privacy policy checkbox state
+  const [showPopup, setShowPopup] = useState(false);
+  const [checked, setChecked] = useState(false);
+  const [footerData, setFooterData] = useState(null);
+
+  // Fetch phone numbers from the same homepage/footer settings as Footer.jsx
+  useEffect(() => {
+    fetch("/api/homepage")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        if (json && json.footer) setFooterData(json.footer);
+      })
+      .catch((err) => console.error("Error fetching contact info:", err));
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -107,9 +118,36 @@ export default function ContactFirst() {
                 <div>
                   <p className="info-title">Call Us</p>
 
-                 <p class="info-value">
-  <a href="tel:+917827602246" class="call-to-action">+91 7827602246</a>
-</p>
+                  {(() => {
+                    const phone = footerData?.phone || "+91 7827602246";
+                    const phone2 = footerData?.phone2 || "";
+                    const phone3 = footerData?.phone3 || "";
+                    return (
+                      <div className="space-y-1">
+                        {phone && (
+                          <p className="info-value">
+                            <a href={`tel:${phone.replace(/\s/g, "")}`} className="call-to-action">
+                              {phone}
+                            </a>
+                          </p>
+                        )}
+                        {phone2 && (
+                          <p className="info-value">
+                            <a href={`tel:${phone2.replace(/\s/g, "")}`} className="call-to-action">
+                              {phone2}
+                            </a>
+                          </p>
+                        )}
+                        {phone3 && (
+                          <p className="info-value">
+                            <a href={`tel:${phone3.replace(/\s/g, "")}`} className="call-to-action">
+                              {phone3}
+                            </a>
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })()}
 
                 </div>
               </div>

@@ -82,6 +82,8 @@ function MobileNavBranch({ node, onPick }) {
   );
 }
 
+const DEFAULT_LOGO = "https://res.cloudinary.com/dxlykgx6w/image/upload/v1765721624/18homess-removebg-preview_kqdv2j.png";
+
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -89,6 +91,8 @@ export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState("");
   const [navData, setNavData] = useState(null);
+  const [navbarLogo, setNavbarLogo] = useState(DEFAULT_LOGO);
+  const [navbarLogoAlt, setNavbarLogoAlt] = useState("Logo");
   const profileMenuRef = useRef(null);
 
   useEffect(() => {
@@ -101,6 +105,25 @@ export default function Navbar() {
       .catch(() => {
         if (!cancelled) setNavData(null);
       });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Fetch logo from homepage settings
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/homepage")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!cancelled && data?.navbar?.logo) {
+          setNavbarLogo(data.navbar.logo);
+        }
+        if (!cancelled && data?.navbar?.logoAlt) {
+          setNavbarLogoAlt(data.navbar.logoAlt);
+        }
+      })
+      .catch(() => {});
     return () => {
       cancelled = true;
     };
@@ -174,8 +197,8 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/">
             <Image
-              src="https://res.cloudinary.com/dxlykgx6w/image/upload/v1765721624/18homess-removebg-preview_kqdv2j.png"
-              alt="Logo"
+              src={navbarLogo}
+              alt={navbarLogoAlt}
               width={70}
               height={70}
               className="object-contain max-w-[70px] max-h-[70px]"
@@ -215,7 +238,7 @@ export default function Navbar() {
             <div className="relative" ref={profileMenuRef}>
               <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
-                className="w-12 h-12 rounded-full cursor-pointer border-2 border-[#8c4bdc] overflow-hidden hover:border-[#c04b7e] transition"
+                className="w-14 h-14 p-[4px] rounded-full cursor-pointer border-2 border-[#8c4bdc] overflow-hidden hover:border-[#c04b7e] transition"
               >
                 <Image
                   src={user?.avatar || "https://res.cloudinary.com/dxlykgx6w/image/upload/v1766862633/business-man-avatar-profile_1133257-2431_dygzgs.avif"}

@@ -218,7 +218,7 @@ export default function ContactSection({ data }) {
         </div>
 
         {/* RIGHT IMAGE SECTION */}
-        <div className="bg-[#14253e] relative hidden lg:block overflow-hidden">
+        <div className="bg-[#14253e] relative overflow-hidden min-h-[300px] sm:min-h-[420px] lg:min-h-0">
 
           {/* <div className="absolute top-0 left-0 w-full h-[5px] z-30"></div> */}
 
