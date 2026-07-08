@@ -13,7 +13,10 @@ const sectionTemplates = {
   },
   text: {
     heading: "Section heading",
+    contentType: "text",
     body: "Write a text block with rich content and details.",
+    listStyle: "disc",
+    listItems: ["First item", "Second item", "Third item"],
     headingColor: "#0f172a",
     backgroundColor: "#ffffff",
     textColor: "#0f172a",
@@ -61,6 +64,31 @@ function createSection(type, index) {
     type,
     data: sectionTemplates[type] || {},
   };
+}
+
+function toRoman(num) {
+  const roman = {
+    M: 1000,
+    CM: 900,
+    D: 500,
+    CD: 400,
+    C: 100,
+    XC: 90,
+    L: 50,
+    XL: 40,
+    X: 10,
+    IX: 9,
+    V: 5,
+    IV: 4,
+    I: 1
+  };
+  let str = '';
+  for (let i of Object.keys(roman)) {
+    let q = Math.floor(num / roman[i]);
+    num -= q * roman[i];
+    str += i.repeat(q);
+  }
+  return str;
 }
 
 function SectionConfig({ section, onUpdate }) {
@@ -172,15 +200,128 @@ function SectionConfig({ section, onUpdate }) {
             onChange={handleChange("heading")}
             className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3"
           />
-          <label className="block text-sm font-medium text-slate-700">
-            Body copy
-          </label>
-          <textarea
-            value={data.body}
-            onChange={handleChange("body")}
-            className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3"
-            rows={4}
-          />
+          
+          {/* Content Type Selector */}
+          <div className="space-y-2 mt-4">
+            <span className="block text-sm font-medium text-slate-700">Content Type</span>
+            <div className="flex bg-slate-200/60 p-0.5 rounded-full w-max">
+              <button
+                type="button"
+                onClick={() => onUpdate({ ...section, data: { ...data, contentType: "text" } })}
+                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                  (data.contentType || "text") === "text"
+                    ? "bg-white text-slate-900 shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                📄 Paragraph Text
+              </button>
+              <button
+                type="button"
+                onClick={() => onUpdate({ ...section, data: { ...data, contentType: "list" } })}
+                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                  data.contentType === "list"
+                    ? "bg-white text-slate-900 shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                📝 Point-wise List
+              </button>
+            </div>
+          </div>
+
+          {(data.contentType || "text") === "text" ? (
+            <div className="space-y-2 mt-4">
+              <label className="block text-sm font-medium text-slate-700">
+                Body copy
+              </label>
+              <textarea
+                value={data.body || ""}
+                onChange={handleChange("body")}
+                className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3"
+                rows={4}
+                placeholder="Write your text block here. New lines and spaces will be preserved exactly as typed on the webpage."
+              />
+              <p className="text-xs text-slate-500 mt-1">
+                💡 Formatting like paragraph breaks and line breaks will be preserved exactly as you write.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4 mt-4 rounded-2xl border border-slate-200/60 p-4 bg-white">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  List Style Type
+                </label>
+                <select
+                  value={data.listStyle || "disc"}
+                  onChange={handleChange("listStyle")}
+                  className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-slate-400 outline-none"
+                >
+                  <option value="disc">Bullet / Disc (•)</option>
+                  <option value="decimal">Numbered (1, 2, 3)</option>
+                  <option value="upper-roman">Roman Uppercase (I, II, III)</option>
+                  <option value="lower-roman">Roman Lowercase (i, ii, iii)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  List Items / Points
+                </label>
+                <div className="space-y-2.5">
+                  {(data.listItems || ["", "", ""]).map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <span className="text-slate-400 text-xs font-semibold w-7 text-right select-none">
+                        {data.listStyle === "upper-roman"
+                          ? `${toRoman(idx + 1)}.`
+                          : data.listStyle === "lower-roman"
+                          ? `${toRoman(idx + 1).toLowerCase()}.`
+                          : (data.listStyle || "disc") === "decimal"
+                          ? `${idx + 1}.`
+                          : "•"}
+                      </span>
+                      <input
+                        value={item}
+                        onChange={(e) => {
+                          const nextItems = [...(data.listItems || ["", "", ""])];
+                          nextItems[idx] = e.target.value;
+                          onUpdate({ ...section, data: { ...data, listItems: nextItems } });
+                        }}
+                        placeholder={`Enter list item ${idx + 1}`}
+                        className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-2.5 text-sm"
+                      />
+                      {(data.listItems || ["", "", ""]).length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const nextItems = (data.listItems || ["", "", ""]).filter((_, i) => i !== idx);
+                            onUpdate({ ...section, data: { ...data, listItems: nextItems } });
+                          }}
+                          className="p-2 text-rose-500 hover:bg-rose-50 rounded-full transition cursor-pointer"
+                          title="Delete item"
+                        >
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const currentItems = data.listItems || ["", "", ""];
+                    onUpdate({ ...section, data: { ...data, listItems: [...currentItems, ""] } });
+                  }}
+                  className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-full px-4 py-2 transition cursor-pointer"
+                >
+                  <span>➕</span> Add Point
+                </button>
+              </div>
+            </div>
+          )}
         </>
       )}
 

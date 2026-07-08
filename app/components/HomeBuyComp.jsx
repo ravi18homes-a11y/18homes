@@ -120,6 +120,7 @@ export default function HomeBuyComp() {
             image: validImages.length > 0 ? getMediaThumbnail(validImages[0]) : DEFAULT_IMAGE,
             status: prop.purpose === "rent" ? "For Rent" : "For Sale",
             featured: prop.featured || false,
+            isBoosted: prop.isBoosted || false,
             listedBy: prop.listedBy || "owner",
             isSold: prop.isSold || false,
           };
@@ -237,7 +238,10 @@ export default function HomeBuyComp() {
   return (
     <section className="max-w-7xl mx-auto px-4 py-12">
 
-      <h3 className="text-center sm:text-[30px] mb-[20px]">Top Premium Properties</h3>
+      <div className="flex flex-col items-center justify-center mb-[20px]">
+        <h3 className="text-center font-medium sm:text-[30px] text-gray-800">Top High Rated Properties</h3>
+        
+      </div>
       {/* <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
         <div className="flex items-center gap-2 flex-wrap">
           <button
@@ -343,9 +347,13 @@ export default function HomeBuyComp() {
                     }`}
                   />
                 </button>
-                {property.featured && (
-                  <span className="absolute top-3 left-3 px-3 py-1 bg-red-600 text-white text-sm rounded-full">
-                    Featured
+                {(property.featured || property.isBoosted) && (
+                  <span className={`absolute top-3 left-3 px-3 py-1 text-white text-sm font-bold rounded-full ${
+                    property.isBoosted 
+                      ? "bg-[blue] shadow-md" 
+                      : "bg-red-600"
+                  }`}>
+                    {property.isBoosted ? "★ High Rated (Boosted)" : "Featured"}
                   </span>
                 )}
                 <span className={`absolute bottom-3 left-3 px-3 py-1 ${property.status === "For Rent" ? "bg-red-600" : "bg-green-600"} text-white text-sm rounded-full`}>
@@ -397,6 +405,7 @@ export default function HomeBuyComp() {
               </div>
             </Link>
           ))}
+         
         </div>
       ) : (
         <div className="text-center py-16">
@@ -409,6 +418,15 @@ export default function HomeBuyComp() {
           </p>
         </div>
       )}
+
+
+       <Link
+          href="/buy?isBoosted=true"
+          className="mt-8 text-center text-[20px] justify-center items-center text-center bg-[blue] text-white p-2 rounded-lg max-w-[200px] mx-auto mx-auto font-semibold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transition flex items-center gap-1 group"
+        >
+          See More
+          <span className="transform group-hover:translate-x-1 transition-transform inline-block">➔</span>
+        </Link>
     </section>
   );
 }

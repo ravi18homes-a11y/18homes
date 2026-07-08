@@ -58,7 +58,31 @@ export default function SectionRenderer({ sections = [] }) {
                 >
                   {data.heading}
                 </h3>
-                <p className="leading-8 opacity-90">{data.body}</p>
+                {data.contentType === "list" ? (
+                  data.listStyle === "disc" ? (
+                    <ul
+                      className="space-y-2 leading-8 opacity-90 pl-6 list-disc"
+                      style={{ listStyleType: "disc" }}
+                    >
+                      {(data.listItems || []).map((item, idx) => (
+                        <li key={idx}>{item}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <ol
+                      className="space-y-2 leading-8 opacity-90 pl-6"
+                      style={{ listStyleType: data.listStyle || "decimal" }}
+                    >
+                      {(data.listItems || []).map((item, idx) => (
+                        <li key={idx}>{item}</li>
+                      ))}
+                    </ol>
+                  )
+                ) : (
+                  <p className="leading-8 opacity-90" style={{ whiteSpace: "pre-wrap" }}>
+                    {data.body}
+                  </p>
+                )}
               </section>
             );
           case "image":

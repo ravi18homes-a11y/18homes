@@ -45,6 +45,9 @@ const parsePrice = (priceStr) => {
 };
 
 const RealEstateApp = () => {
+  const databaseUrl =
+    process.env.NEXT_PUBLIC_APP_DATABASE_URL || "http://localhost:5000";
+
   const [currentPage, setCurrentPage] = useState("sell");
   const [favorites, setFavorites] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -52,6 +55,33 @@ const RealEstateApp = () => {
 
   const [token, setToken] = useState("");
   const router = useRouter();
+
+  const [shouldBoost, setShouldBoost] = useState(false);
+  const [boostPlan, setBoostPlan] = useState("7days");
+  const [boostPlans, setBoostPlans] = useState([]);
+
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const res = await fetch(`${databaseUrl}/api/properties/boost/plans`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && Array.isArray(data.data)) {
+            setBoostPlans(data.data);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching boost plans:", err);
+      }
+    };
+    fetchPlans();
+  }, [databaseUrl]);
+
+  const activePlans = boostPlans.length > 0 ? boostPlans : [
+    { key: "7days", name: "7 Days Boost", price: 19, durationDays: 7 },
+    { key: "15days", name: "15 Days Boost", price: 49, durationDays: 15 },
+    { key: "30days", name: "30 Days Boost", price: 99, durationDays: 30 },
+  ];
 
   // Track auth state from localStorage (login saves 'authToken')
   useEffect(() => {
@@ -68,8 +98,6 @@ const RealEstateApp = () => {
     return () => window.removeEventListener("storage", checkAuth);
   }, []);
 
-  const databaseUrl =
-    process.env.NEXT_PUBLIC_APP_DATABASE_URL || "http://localhost:5000";
   // const databaseUrl = "http://localhost:5000";
 
   const [sellForm, setSellForm] = useState({
@@ -267,35 +295,125 @@ const RealEstateApp = () => {
       const data = await response.json();
 
       if (data.success) {
-        setSubmitSuccess(true);
-        toast.success("Property submitted successfully!");
+        const createdProperty = data.data;
+        const propertyId = createdProperty?._id || createdProperty?.id;
 
-        // Reset form
-        setSellForm({
-          title: "",
-          description: "",
-          purpose: "sell",
-          propertyType: "apartment",
-          commercialType: "",
-          commercialTypeCustom: "",
-          isHighRise: false,
-          floorNo: "",
-          totalFloors: "",
-          price: "",
-          area: [{ size: "", unit: "sqft" }],
-          bedrooms: "1",
-          bathrooms: "1",
-          furnishing: "unfurnished",
-          address: "",
-          images: [],
-          videos: [],
-          ownerName: "",
-          ownerPhone: "",
-          ownerEmail: "",
-          listedBy: "owner",
-        });
+        const resetForm = () => {
+          setSellForm({
+            title: "",
+            description: "",
+            purpose: "sell",
+            propertyType: "apartment",
+            commercialType: "",
+            commercialTypeCustom: "",
+            isHighRise: false,
+            floorNo: "",
+            totalFloors: "",
+            price: "",
+            area: [{ size: "", unit: "sqft" }],
+            bedrooms: "1",
+            bathrooms: "1",
+            furnishing: "unfurnished",
+            address: "",
+            images: [],
+            videos: [],
+            ownerName: "",
+            ownerPhone: "",
+            ownerEmail: "",
+            listedBy: "owner",
+          });
+        };
 
-        router.push("/buy");
+        if (shouldBoost && propertyId) {
+          try {
+            toast.loading("Initiating payment gateway...", { id: "boost-toast" });
+            const orderRes = await fetch(`${databaseUrl}/api/properties/${propertyId}/boost/order`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ planKey: boostPlan }),
+            });
+            const orderData = await orderRes.json();
+            
+            if (!orderData.success) {
+              throw new Error(orderData.message || "Failed to create order");
+            }
+
+            toast.dismiss("boost-toast");
+
+            const options = {
+              key: orderData.data.keyId || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_TAwig7RAJNiuHo",
+              amount: orderData.data.amount,
+              currency: orderData.data.currency,
+              name: "18Homes",
+              description: `Property Boost - ${boostPlan}`,
+              order_id: orderData.data.orderId,
+              handler: async function (response) {
+                toast.loading("Verifying payment...", { id: "boost-toast" });
+                try {
+                  const verifyRes = await fetch(`${databaseUrl}/api/properties/${propertyId}/boost/verify`, {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                      razorpay_order_id: response.razorpay_order_id,
+                      razorpay_payment_id: response.razorpay_payment_id,
+                      razorpay_signature: response.razorpay_signature,
+                      planKey: boostPlan,
+                    }),
+                  });
+                  const verifyData = await verifyRes.json();
+                  if (verifyData.success) {
+                    toast.success("Property posted and boosted to Premium!", { id: "boost-toast" });
+                    resetForm();
+                    router.push("/my-properties");
+                  } else {
+                    toast.error("Payment verification failed. Property is listed without boost.", { id: "boost-toast" });
+                    resetForm();
+                    router.push("/my-properties");
+                  }
+                } catch (verifyErr) {
+                  console.error(verifyErr);
+                  toast.error("Error verifying payment. Property listed without boost.", { id: "boost-toast" });
+                  resetForm();
+                  router.push("/my-properties");
+                }
+              },
+              modal: {
+                ondismiss: function () {
+                  toast.success("Property submitted successfully! (Boost canceled)", { duration: 5000 });
+                  resetForm();
+                  router.push("/my-properties");
+                }
+              },
+              prefill: {
+                name: localStorage.getItem("userData") ? JSON.parse(localStorage.getItem("userData")).name : "",
+                email: localStorage.getItem("userData") ? JSON.parse(localStorage.getItem("userData")).email : "",
+                contact: localStorage.getItem("userData") ? JSON.parse(localStorage.getItem("userData")).phone : "",
+              },
+              theme: {
+                color: "#7c3aed",
+              },
+            };
+
+            const rzp = new window.Razorpay(options);
+            rzp.open();
+          } catch (boostError) {
+            console.error(boostError);
+            toast.error("Failed to boost property. Listing created successfully.", { id: "boost-toast" });
+            resetForm();
+            router.push("/my-properties");
+          }
+        } else {
+          setSubmitSuccess(true);
+          toast.success("Property submitted successfully!");
+          resetForm();
+          router.push("/buy");
+        }
       } else {
         toast.error(data.message || "Error submitting property");
       }
@@ -849,6 +967,54 @@ const RealEstateApp = () => {
                   </div>
                 </div>
               </div> */}
+
+              {/* Boost Property Option */}
+              <label className="block text-sm bg-[blue] px-4 py-2 font-medium text-white mb-0">Optional</label>
+              <div className="border-t border-purple-100 pt-6 mt-2 bg-gradient-to-r from-purple-50 to-indigo-50/50 p-6 rounded-2xl border border-purple-100/80">
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    id="shouldBoost"
+                    checked={shouldBoost}
+                    onChange={(e) => setShouldBoost(e.target.checked)}
+                    className="w-5 h-5 text-purple-600 border-purple-300 rounded focus:ring-purple-500 cursor-pointer"
+                  />
+                  <div>
+                    <label htmlFor="shouldBoost" className="text-base font-bold text-purple-900 select-none cursor-pointer flex items-center gap-2">
+                      🚀 Boost this property to High Rated!
+                    </label>
+                    <p className="text-xs text-purple-600 mt-0.5">
+                      High Rated (Boosted) properties rank at the very top of search results and appear in the homepage slider.
+                    </p>
+                  </div>
+                </div>
+
+                {shouldBoost && (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-5 animate-fadeIn">
+                    {activePlans.map((plan) => (
+                      <div
+                        key={plan.key}
+                        onClick={() => setBoostPlan(plan.key)}
+                        className={`border rounded-xl p-4 cursor-pointer transition-all flex flex-col items-center justify-center text-center ${
+                          boostPlan === plan.key
+                            ? "bg-purple-600 text-white border-transparent shadow-lg shadow-purple-600/20 scale-105"
+                            : "bg-white text-gray-700 border-purple-100 hover:border-purple-300 hover:shadow"
+                        }`}
+                      >
+                        <span className="text-xs font-semibold uppercase tracking-wider opacity-85">
+                          {plan.name}
+                        </span>
+                        <span className="text-2xl font-extrabold mt-2">
+                          ₹{plan.price}
+                        </span>
+                        <span className="text-[10px] mt-1 opacity-75">
+                          Valid for {plan.durationDays} days
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
 
               {/* Submit Buttons */}
               <div className="flex justify-end gap-3 pt-6">

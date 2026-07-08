@@ -158,23 +158,23 @@ export default function Footer() {
 
           <div className="flex items-center gap-5 text-[20px]">
             {facebook && (
-              <Link href={facebook} target="_blank">
+              <Link href={facebook} className="text-[blue]" target="_blank">
                 <FaFacebookF />
               </Link>
             )}
             {instagram && (
-              <Link href={instagram} target="_blank">
+              <Link href={instagram} className="text-[red]" target="_blank">
                 <FaInstagram />
               </Link>
             )}
             {youtube && (
-              <Link href={youtube} target="_blank">
+              <Link href={youtube} className="text-[red]" target="_blank">
                 <FaYoutube />
               </Link>
             )}
             {justdial && (
-              <Link href={justdial} target="_blank" className="text-[14px] font-extrabold border border-current rounded-full w-6 h-6 flex items-center justify-center hover:bg-black hover:text-white transition-all" title="Justdial">
-                JD
+              <Link href={justdial} target="_blank" className="text-[16px] text-[blue] font-normal" title="Justdial">
+                J<span className="text-[#ff6c00]">d</span>
               </Link>
             )}
           </div>
