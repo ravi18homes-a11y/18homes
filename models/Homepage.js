@@ -81,8 +81,17 @@ const FooterSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const NavbarSchema = new mongoose.Schema(
+  {
+    logo: { type: String, default: "" },
+    logoAlt: { type: String, default: "Logo" },
+  },
+  { _id: false }
+);
+
 const HomepageSchema = new mongoose.Schema(
   {
+    navbar: { type: NavbarSchema, default: () => ({}) },
     seo: { type: SeoSchema, default: () => ({}) },
     hero: {
       slides: { type: [HeroSlideSchema], default: [] },

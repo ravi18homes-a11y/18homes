@@ -148,7 +148,7 @@ export default function Footer() {
       <div className="max-w-[1350px] px-6 lg:px-12 mx-auto border-t border-[#9FABC1] mt-14"></div>
 
       {/* COPYRIGHT + SOCIAL */}
-      <div className="max-w-[1450px] mx-auto px-6 lg:pl-12 pr-[90px] py-8 flex flex-col md:flex-row items-center justify-between gap-6">
+      <div className="max-w-[1450px] mx-auto px-6 lg:pl-12 pr-[90px] py-8 flex flex-col md:flex-row  justify-between gap-6">
         <p className="text-[15px] font-normal">
           {copyright}
         </p>
