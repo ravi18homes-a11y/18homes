@@ -51,6 +51,7 @@ const INITIAL_FILTERS = {
   custom: "",
   shopSize: "",
   officeType: "",
+  isBoosted: "",
 };
 
 const BuyPage = () => {
@@ -125,6 +126,7 @@ const BuyPage = () => {
       "custom",
       "shopSize",
       "officeType",
+      "isBoosted",
     ];
 
     paramKeys.forEach((key) => {
@@ -141,6 +143,7 @@ const BuyPage = () => {
           "custom",
           "shopSize",
           "officeType",
+          "isBoosted",
         ].includes(key)
           ? normalizeString(value)
           : value;
@@ -190,6 +193,7 @@ const BuyPage = () => {
         if (filters.shopSize) params.append("shopSize", filters.shopSize);
         if (filters.officeType) params.append("officeType", filters.officeType);
         if (filters.custom) params.append("custom", filters.custom);
+        if (filters.isBoosted === "true") params.append("isBoosted", "true");
 
         let sortParam = "-createdAt";
         if (filters.sortBy === "price-low") sortParam = "price";
@@ -273,6 +277,7 @@ const BuyPage = () => {
                   ? "For Rent"
                   : "For Sale",
               featured: prop.featured || false,
+              isBoosted: prop.isBoosted || false,
               listedBy: prop.listedBy || "owner",
               isSold: prop.isSold || false,
             };
@@ -324,6 +329,7 @@ const BuyPage = () => {
     filters.shopSize !== "" ||
     filters.officeType !== "" ||
     filters.custom !== "" ||
+    filters.isBoosted === "true" ||
     (filters.propertyType === "commercial" && (filters.commercialType !== "all" || filters.commercialTypeCustom));
 
   const filteredProperties = shouldApplyClientFilters
@@ -383,6 +389,9 @@ const BuyPage = () => {
         const matchesCustom =
           !normalizedFilterCustom ||
           normalizedCustom === normalizedFilterCustom;
+        const matchesBoosted =
+          filters.isBoosted !== "true" ||
+          property.isBoosted === true;
 
         return (
           matchesBath &&
@@ -395,7 +404,8 @@ const BuyPage = () => {
           matchesAreaUnit &&
           matchesShopSize &&
           matchesOfficeType &&
-          matchesCustom
+          matchesCustom &&
+          matchesBoosted
         );
       })
     : properties;
@@ -889,9 +899,13 @@ const BuyPage = () => {
                           }`}
                         />
                       </button>
-                      {property.featured && (
-                        <span className="absolute top-3 left-3 px-3 py-1 bg-red-600 text-white text-sm rounded-full">
-                          Featured
+                      {(property.featured || property.isBoosted) && (
+                        <span className={`absolute top-3 left-3 px-3 py-1 text-white text-sm font-bold rounded-full ${
+                          property.isBoosted 
+                            ? "bg-[blue] shadow-md" 
+                            : "bg-red-600"
+                        }`}>
+                          {property.isBoosted ? "★ High Rated (Boosted)" : "Featured"}
                         </span>
                       )}
                       <span

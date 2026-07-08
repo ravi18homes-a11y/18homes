@@ -231,7 +231,7 @@ export default function ContactSection({ data }) {
             />
           </div>
 
-          <div className="absolute inset-0 backdrop-blur-[1px] z-20"></div>
+          <div className="absolute inset-0 z-20"></div>
         </div>
 {showPopup && (
                 <div className="popup-overlay">

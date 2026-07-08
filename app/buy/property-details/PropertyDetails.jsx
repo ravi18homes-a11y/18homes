@@ -450,9 +450,13 @@ const PropertyDetailsPage = () => {
           </button>
         </div>
 
-        {property.featured && (
-          <span className="absolute top-4 left-4 px-4 py-2 bg-red-600 text-white font-semibold rounded-full">
-            Featured
+        {(property.featured || property.isBoosted) && (
+          <span className={`absolute top-4 left-4 px-4 py-2 text-white font-bold rounded-full shadow-lg ${
+            property.isBoosted 
+              ? "bg-[blue]" 
+              : "bg-red-600"
+          }`}>
+            {property.isBoosted ? "★ High Rated (Boosted)" : "Featured"}
           </span>
         )}
 
@@ -511,6 +515,11 @@ const PropertyDetailsPage = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
+                  {property.isBoosted && (
+                    <span className="px-4 py-2 rounded-full bg-[blue] text-white font-bold whitespace-nowrap self-start shadow-sm border border-blue-300">
+                      ★ High Rated (Boosted)
+                    </span>
+                  )}
                   {property.isSold && (
                     <span className="px-4 py-2 rounded-full bg-red-600 text-white font-extrabold whitespace-nowrap self-start border border-white animate-pulse">
                       SOLD OUT

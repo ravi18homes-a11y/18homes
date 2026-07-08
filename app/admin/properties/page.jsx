@@ -260,6 +260,7 @@ function PropertyTable({
             <th className="p-3 text-left">Owner</th>
             <th className="p-3 text-left">Views</th>
             <th className="p-3 text-left">Admin Views</th>
+            <th className="p-3 text-left">Boosted</th>
             <th className="p-3 text-left">Status</th>
             <th className="p-3 text-left">Actions</th>
           </tr>
@@ -282,7 +283,14 @@ function PropertyTable({
                 </td>
 
                 {/* TITLE */}
-                <td className="p-3 font-medium">{p?.title}</td>
+                <td className="p-3 font-medium">
+                  <Link
+                    href={`/buy/property-details?id=${p?._id || p?.id}`}
+                    className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transition-colors"
+                  >
+                    {p?.title}
+                  </Link>
+                </td>
 
                 {/* CITY */}
                 <td className="p-3">{p?.address?.city || "—"}</td>
@@ -295,6 +303,24 @@ function PropertyTable({
 
                 {/* ADMIN VIEWS */}
                 <td className="p-3 font-semibold text-gray-700">{p?.adminViews ?? 0}</td>
+
+                {/* BOOSTED */}
+                <td className="p-3">
+                  {p?.isBoosted ? (
+                    <div className="flex flex-col">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-sm inline-block w-max">
+                        ★ Premium Boosted
+                      </span>
+                      {p?.boostExpiresAt && (
+                        <span className="text-[10px] text-gray-500 mt-1">
+                          Exp: {new Date(p.boostExpiresAt).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-gray-400 text-xs">—</span>
+                  )}
+                </td>
 
                 {/* STATUS */}
                 <td className="p-3">

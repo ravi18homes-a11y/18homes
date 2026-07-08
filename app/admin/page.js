@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Users, Home, MessageSquare, AlertTriangle } from "lucide-react";
+import { Users, Home, MessageSquare, AlertTriangle, Loader2 } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 import {
   BarChart,
@@ -185,6 +186,128 @@ export default function AdminDashboard() {
             </BarChart>
           </ResponsiveContainer>
         </div>
+      </div>
+
+      {/* ===== BOOST PLAN PRICE MANAGEMENT ===== */}
+      <BoostPlanManager BASE={BASE} />
+    </div>
+  );
+}
+
+/* ================= BOOST PLAN MANAGER COMPONENT ================= */
+
+function BoostPlanManager({ BASE }) {
+  const [plans, setPlans] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [updatingKey, setUpdatingKey] = useState("");
+  const [newPrices, setNewPrices] = useState({});
+
+  const token = typeof window !== "undefined" ? localStorage.getItem("authToken") : null;
+
+  const fetchPlans = async () => {
+    try {
+      const res = await fetch(`${BASE}/properties/boost/plans`, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+      });
+      const json = await res.json();
+      if (json?.success) {
+        setPlans(json.data || []);
+      }
+    } catch (err) {
+      console.error("Error fetching boost plans:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPlans();
+  }, []);
+
+  const handleUpdatePrice = async (planKey) => {
+    const priceToUpdate = newPrices[planKey];
+    if (priceToUpdate === undefined || priceToUpdate === "" || isNaN(Number(priceToUpdate))) {
+      return toast.error("Please enter a valid price");
+    }
+
+    setUpdatingKey(planKey);
+    try {
+      const res = await fetch(`${BASE}/properties/admin/boost/plans/${planKey}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ price: Number(priceToUpdate) }),
+      });
+
+      const json = await res.json();
+      if (res.ok && json.success) {
+        toast.success("Price updated successfully!");
+        setNewPrices((prev) => ({ ...prev, [planKey]: "" }));
+        fetchPlans();
+      } else {
+        toast.error(json.message || "Failed to update price");
+      }
+    } catch (err) {
+      console.error("Error updating price:", err);
+      toast.error("Error updating price");
+    } finally {
+      setUpdatingKey("");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white p-6 rounded-xl shadow mt-8 text-center text-gray-500">
+        Loading boost plan configuration...
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white p-6 rounded-xl shadow mt-8">
+      <h3 className="font-bold text-lg text-gray-800 mb-2 flex items-center gap-2">
+        ⚙️ Property Boost Plans Pricing Manager
+      </h3>
+      <p className="text-sm text-gray-500 mb-6">
+        Set the price in Rs. (INR) for each boost plan duration. Changes will reflect instantly on the listing page and user checkout.
+      </p>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {plans.map((plan) => (
+          <div key={plan.key} className="border border-purple-100 bg-purple-50/10 rounded-xl p-4 flex flex-col justify-between hover:shadow-sm transition">
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <h4 className="font-bold text-purple-950 text-sm">{plan.name}</h4>
+                <span className="text-purple-700 bg-purple-100 text-xs font-extrabold px-2.5 py-0.5 rounded-full">
+                  ₹{plan.price}
+                </span>
+              </div>
+              <p className="text-xs text-gray-500">Duration: {plan.durationDays} Days</p>
+            </div>
+            
+            <div className="mt-4 flex gap-2">
+              <input
+                type="number"
+                placeholder="New Price"
+                value={newPrices[plan.key] || ""}
+                onChange={(e) => {
+                  setNewPrices((prev) => ({ ...prev, [plan.key]: e.target.value }));
+                }}
+                className="w-full border border-purple-100 px-3 py-1.5 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+              <button
+                onClick={() => handleUpdatePrice(plan.key)}
+                disabled={updatingKey === plan.key}
+                className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold transition disabled:opacity-50 flex items-center justify-center min-w-[70px]"
+              >
+                {updatingKey === plan.key ? <Loader2 className="w-3 h-3 animate-spin" /> : "Update"}
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
