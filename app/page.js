@@ -50,7 +50,12 @@ export default async function Home() {
       {seo.schemaMarkup && (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: seo.schemaMarkup }}
+          dangerouslySetInnerHTML={{
+            __html: seo.schemaMarkup
+              .replace(/<script\b[^>]*>/gi, "")
+              .replace(/<\/script>/gi, "")
+              .trim(),
+          }}
         />
       )}
       <div>
