@@ -40,12 +40,8 @@ export async function POST(req) {
           fs.mkdirSync(publicDir, { recursive: true });
         }
 
-        if (payload.seo.sitemapXml !== undefined) {
-          fs.writeFileSync(path.join(publicDir, "sitemap.xml"), payload.seo.sitemapXml, "utf8");
-        }
-        if (payload.seo.sitemapHtml !== undefined) {
-          fs.writeFileSync(path.join(publicDir, "sitemap.html"), payload.seo.sitemapHtml, "utf8");
-        }
+        // We no longer write static sitemap.xml and sitemap.html to the public directory.
+        // This ensures the dynamic Next.js sitemap routes are used instead.
         if (payload.seo.robotsTxt !== undefined) {
           fs.writeFileSync(path.join(publicDir, "robots.txt"), payload.seo.robotsTxt, "utf8");
         }
