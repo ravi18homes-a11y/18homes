@@ -44,7 +44,12 @@ export default async function CmsSlugPage({ params }) {
     {page.seo?.schemaMarkup && (
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: page.seo.schemaMarkup }}
+        dangerouslySetInnerHTML={{
+          __html: page.seo.schemaMarkup
+            .replace(/<script\b[^>]*>/gi, "")
+            .replace(/<\/script>/gi, "")
+            .trim(),
+        }}
       />
     )}
    <Navbar/>
