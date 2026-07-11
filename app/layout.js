@@ -4,6 +4,7 @@ import FloatingActions from "./COMMON/FloatingActions";
 import { Poppins } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import Script from "next/script";
+import PwaProvider from "@/components/PwaProvider";
 
 export const metadata = {
   title: "18 Homes - Best Property for Sale and Rent in NCR",
@@ -25,6 +26,18 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={poppins.className}>
+        {/* Early PWA Install Prompt Capture */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                window.deferredPrompt = e;
+                window.dispatchEvent(new CustomEvent('pwa-installable'));
+              });
+            `
+          }}
+        />
         {/* Google Tag Script */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-RPR1HLBTMG"
@@ -43,7 +56,9 @@ export default function RootLayout({ children }) {
           `}
         </Script>
         <Toaster position="top-right" reverseOrder={false} />
-        {children}
+        <PwaProvider>
+          {children}
+        </PwaProvider>
         <FloatingActions />
       </body>
     </html>
