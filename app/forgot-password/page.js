@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
+import Footer from "../COMMON/Footer";
+import Navbar from "../COMMON/Navbar";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -43,6 +45,8 @@ export default function ForgotPasswordPage() {
   };
 
   return (
+    <>
+    <Navbar/>
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
         <h2 className="text-2xl font-bold text-center text-gray-800">
@@ -83,5 +87,7 @@ export default function ForgotPasswordPage() {
         </p>
       </div>
     </div>
+    <Footer/>
+    </>
   );
 }

@@ -9,6 +9,12 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Missing user or property details' }, { status: 400 });
     }
 
+    const host = request.headers.get("host") || "www.18homes.in";
+    const protocol = host.includes("localhost") ? "http" : "https";
+    const baseUrl = `${protocol}://${host}`;
+    const propertyId = property._id || property.id;
+    const propertyUrl = propertyId ? `${baseUrl}/buy/property-details?id=${propertyId}` : null;
+
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
       port: 465,
@@ -43,6 +49,12 @@ export async function POST(request) {
             <p style="margin: 8px 0;"><strong>Price:</strong> ${property.formattedPrice || (property.price ? `₹${property.price}` : 'N/A')}</p>
             <p style="margin: 8px 0;"><strong>Status:</strong> ${property.status || 'N/A'}</p>
             <p style="margin: 8px 0;"><strong>Owner:</strong> ${property.owner?.name || 'N/A'}</p>
+            ${propertyUrl ? `
+            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #e2e8f0;">
+              <a href="${propertyUrl}" style="display: inline-block; background-color: #e53e3e; color: #ffffff; padding: 10px 15px; border-radius: 5px; text-decoration: none; font-weight: bold;">View Property Details</a>
+              <p style="margin: 8px 0 0 0; font-size: 12px; color: #718096;">Link: <a href="${propertyUrl}" style="color: #3182ce; text-decoration: underline;">${propertyUrl}</a></p>
+            </div>
+            ` : ''}
           </div>
           
           <div style="margin-top: 30px; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 15px;">
