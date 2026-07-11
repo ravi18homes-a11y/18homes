@@ -31,13 +31,13 @@ export default function AdminLayout({ children }) {
           className="flex items-center gap-3 p-5 border-b border-green-600"
         >
           <Image
-            src="https://res.cloudinary.com/dxlykgx6w/image/upload/v1765721624/18homess-removebg-preview_kqdv2j.png"
+            src="https://res.cloudinary.com/dxlykgx6w/image/upload/v1783796029/icon-192_bkv7wb.png"
             alt="18Homes"
             width={40}
             height={40}
             priority
           />
-          <span className="text-xl font-bold">18Homes Admin</span>
+          {/* <span className="text-xl font-bold">18Homes Admin</span> */}
         </a>
 
         {/* NAV */}

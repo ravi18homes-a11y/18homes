@@ -7,6 +7,7 @@ import { GiHamburgerMenu } from "react-icons/gi";
 import { IoMdClose } from "react-icons/io";
 import { MdLogin, MdPhone } from "react-icons/md";
 import { RiAdminLine } from "react-icons/ri";
+import { usePwa } from "@/components/PwaProvider";
 
 function flattenNavTree(nodes, depth = 0, acc = []) {
   for (const n of nodes || []) {
@@ -82,9 +83,10 @@ function MobileNavBranch({ node, onPick }) {
   );
 }
 
-const DEFAULT_LOGO = "https://res.cloudinary.com/dxlykgx6w/image/upload/v1765721624/18homess-removebg-preview_kqdv2j.png";
+const DEFAULT_LOGO = "https://res.cloudinary.com/dxlykgx6w/image/upload/v1783796029/icon-192_bkv7wb.png";
 
 export default function Navbar() {
+  const { isInstallable, installApp } = usePwa();
   const [open, setOpen] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -334,6 +336,19 @@ export default function Navbar() {
                     </button>
                   )}
 
+                  {isInstallable && (
+                    <button
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition w-full text-left cursor-pointer font-medium"
+                      onClick={() => {
+                        installApp();
+                        setShowProfileMenu(false);
+                      }}
+                    >
+                      <span className="text-[#8c4bdc] text-xl">📲</span>
+                      <span className="text-black">Install App</span>
+                    </button>
+                  )}
+
                   <div className="border-t border-gray-200 my-2"></div>
 
                   {/* <Link
@@ -390,6 +405,19 @@ export default function Navbar() {
               )}
             </div>
           ))}
+
+          {isInstallable && (
+            <button
+              onClick={() => {
+                installApp();
+                setOpen(false);
+              }}
+              className="text-left text-[#8c4bdc] font-semibold flex items-center gap-2 py-1 cursor-pointer"
+            >
+              <span>📲</span> Install App
+            </button>
+          )}
+
           {(navData?.sitePages || []).map((p) => (
             <div key={p.id} className="space-y-2">
               <Link href={p.href} onClick={() => setOpen(false)}>

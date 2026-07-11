@@ -716,10 +716,10 @@ const BuyPage = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Min Area (sq.ft)
+                  Min Area 
                 </label>
                 <input
-                  type="number"
+                  type="text"
                   placeholder="sq.ft"
                   value={filters.minArea}
                   onChange={(e) =>
@@ -731,10 +731,10 @@ const BuyPage = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Max Area (sq.ft)
+                  Max Area 
                 </label>
                 <input
-                  type="number"
+                  type="text"
                   placeholder="sq.ft"
                   value={filters.maxArea}
                   onChange={(e) =>

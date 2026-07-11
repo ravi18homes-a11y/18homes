@@ -225,7 +225,7 @@ export default function AuthPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
       <div className="w-full max-w-6xl bg-white rounded-2xl shadow-2xl overflow-hidden grid md:grid-cols-2">
         {/* Left Side - Branding */}
-        <div className="bg-gradient-to-br from-green-600 gap-[20px] to-green-800 p-12 text-white flex flex-col justify-around relative overflow-hidden">
+        <div className="bg-gradient-to-br from-green-600 gap-[20px] to-green-800 p-12  order-1 text-white flex flex-col justify-around relative overflow-hidden">
           <button
             className="bg-[#f3bdf3] text-black p-2 cursor-pointer"
             onClick={() => router.back()}
