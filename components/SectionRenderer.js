@@ -7,12 +7,26 @@ export default function SectionRenderer({ sections = [] }) {
     );
   }
 
+  // Pre-calculate heading tags for each section to enforce SEO hierarchy
+  // "first heading h1 and second h2 and there should be two h2 then h3 then h4"
+  const headingTags = ["h1", "h2", "h2", "h3", "h4", "h5", "h6"];
+  let headingCount = 0;
+
+  const getHeadingTag = (hasHeading) => {
+    if (!hasHeading) return "h2";
+    const tag = headingTags[headingCount] || "h6";
+    headingCount++;
+    return tag;
+  };
+
   return (
     <div className="space-y-8">
       {sections.map((section) => {
         const { id, type, data } = section;
         switch (type) {
-          case "hero":
+          case "hero": {
+            const hasHeading = Boolean(data.title);
+            const HeadingTag = getHeadingTag(hasHeading);
             return (
               <section
                 key={id}
@@ -23,7 +37,9 @@ export default function SectionRenderer({ sections = [] }) {
                   className="px-6 py-16 text-center sm:px-12"
                   style={{ color: data.textColor || "#f8fafc" }}
                 >
-                  <h2 className="text-4xl font-semibold mb-4">{data.title}</h2>
+                  {data.title && (
+                    <HeadingTag className="text-4xl font-semibold mb-4">{data.title}</HeadingTag>
+                  )}
                   <p className="mx-auto max-w-2xl text-lg opacity-90">
                     {data.subtitle}
                   </p>
@@ -42,7 +58,10 @@ export default function SectionRenderer({ sections = [] }) {
                 </div>
               </section>
             );
-          case "text":
+          }
+          case "text": {
+            const hasHeading = Boolean(data.heading);
+            const HeadingTag = getHeadingTag(hasHeading);
             return (
               <section
                 key={id}
@@ -52,12 +71,14 @@ export default function SectionRenderer({ sections = [] }) {
                   color: data.textColor || "#0f172a",
                 }}
               >
-                <h3
-                  className="text-3xl font-semibold mb-4"
-                  style={{ color: data.headingColor || data.textColor || "#0f172a" }}
-                >
-                  {data.heading}
-                </h3>
+                {data.heading && (
+                  <HeadingTag
+                    className="text-3xl font-semibold mb-4"
+                    style={{ color: data.headingColor || data.textColor || "#0f172a" }}
+                  >
+                    {data.heading}
+                  </HeadingTag>
+                )}
                 {data.contentType === "list" ? (
                   data.listStyle === "disc" ? (
                     <ul
@@ -85,7 +106,10 @@ export default function SectionRenderer({ sections = [] }) {
                 )}
               </section>
             );
-          case "image":
+          }
+          case "image": {
+            const hasHeading = Boolean(data.caption);
+            const HeadingTag = getHeadingTag(hasHeading);
             return (
               <section
                 key={id}
@@ -102,13 +126,18 @@ export default function SectionRenderer({ sections = [] }) {
                     className="h-72 w-full rounded-3xl object-cover sm:w-1/2"
                   />
                   <div className="space-y-3 sm:w-1/2">
-                    <h3 className="text-2xl font-semibold">{data.caption}</h3>
+                    {data.caption && (
+                      <HeadingTag className="text-2xl font-semibold">{data.caption}</HeadingTag>
+                    )}
                     <p className="opacity-80">{data.alt}</p>
                   </div>
                 </div>
               </section>
             );
-          case "features":
+          }
+          case "features": {
+            const hasHeading = Boolean(data.heading);
+            const HeadingTag = getHeadingTag(hasHeading);
             return (
               <section
                 key={id}
@@ -118,7 +147,9 @@ export default function SectionRenderer({ sections = [] }) {
                   color: data.textColor || "#ffffff",
                 }}
               >
-                <h3 className="text-3xl font-semibold mb-6">{data.heading}</h3>
+                {data.heading && (
+                  <HeadingTag className="text-3xl font-semibold mb-6">{data.heading}</HeadingTag>
+                )}
                 <div
                   className={`grid gap-6 ${data.columns === 2 ? "grid-cols-2" : data.columns === 3 ? "grid-cols-3" : "grid-cols-1"}`}
                 >
@@ -137,7 +168,10 @@ export default function SectionRenderer({ sections = [] }) {
                 </div>
               </section>
             );
-          case "cta":
+          }
+          case "cta": {
+            const hasHeading = Boolean(data.ctaText);
+            const HeadingTag = getHeadingTag(hasHeading);
             return (
               <section
                 key={id}
@@ -147,7 +181,9 @@ export default function SectionRenderer({ sections = [] }) {
                   color: data.textColor || "#ffffff",
                 }}
               >
-                <h3 className="text-3xl font-semibold mb-4">{data.ctaText}</h3>
+                {data.ctaText && (
+                  <HeadingTag className="text-3xl font-semibold mb-4">{data.ctaText}</HeadingTag>
+                )}
                 <a
                   href={data.ctaUrl || "#"}
                   className="inline-flex rounded-full px-6 py-3 text-sm font-semibold shadow-lg"
@@ -160,7 +196,9 @@ export default function SectionRenderer({ sections = [] }) {
                 </a>
               </section>
             );
-          case "faq":
+          }
+          case "faq": {
+            const HeadingTag = getHeadingTag(true);
             return (
               <section
                 key={id}
@@ -170,7 +208,7 @@ export default function SectionRenderer({ sections = [] }) {
                   color: data.textColor || "#0f172a",
                 }}
               >
-                <h3 className="text-3xl font-semibold mb-6">FAQ</h3>
+                <HeadingTag className="text-3xl font-semibold mb-6">FAQ</HeadingTag>
                 <div className="space-y-4">
                   {data.items?.map((item, index) => (
                     <div
@@ -187,6 +225,7 @@ export default function SectionRenderer({ sections = [] }) {
                 </div>
               </section>
             );
+          }
           default:
             return (
               <section
