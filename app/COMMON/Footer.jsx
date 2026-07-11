@@ -22,7 +22,7 @@ export default function Footer() {
       .catch((err) => console.error("Error fetching footer data:", err));
   }, []);
 
-  const logo = data?.logo || "https://res.cloudinary.com/dxlykgx6w/image/upload/v1765721624/18homess-removebg-preview_kqdv2j.png";
+  const logo = data?.logo || "https://res.cloudinary.com/dxlykgx6w/image/upload/v1783796029/icon-192_bkv7wb.png";
   const address = data?.address || "Kanak Farm House ,\nGovindPuram , Ghaziabad, (U.P.)\n201013";
   const email = data?.email || "18homes.website@gmail.com";
   const phone = data?.phone || "+91 7827602246";

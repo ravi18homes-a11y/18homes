@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
+import Image from "next/image";
 
 const PwaContext = createContext({
   isInstallable: false,
@@ -125,6 +126,8 @@ export default function PwaProvider({ children }) {
     setShowInstallPopup(false);
   };
 
+  const DEFAULT_LOGO = "https://res.cloudinary.com/dxlykgx6w/image/upload/v1783796029/icon-192_bkv7wb.png";
+
   return (
     <PwaContext.Provider
       value={{
@@ -150,7 +153,7 @@ export default function PwaProvider({ children }) {
         <div className="fixed bottom-6 right-3 sm:right-6 z-[9999] max-w-sm rounded-3xl border border-slate-100 bg-white p-5 shadow-2xl ring-1 ring-slate-100/50 transition-all duration-300">
           <div className="flex items-start gap-4">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-violet-50 text-2xl">
-              🏠
+              <Image src={DEFAULT_LOGO} alt="18Homes" width={40} height={40} className="rounded-xl object-contain" />
             </div>
             <div className="space-y-1">
               <h4 className="font-semibold text-slate-900">Install 18 Homes</h4>
