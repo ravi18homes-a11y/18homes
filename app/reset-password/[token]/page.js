@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "react-hot-toast";
+import Footer from "@/app/COMMON/Footer";
+import Navbar from "@/app/COMMON/Navbar";
 
 export default function ResetPasswordPage() {
   const { token } = useParams();
@@ -49,6 +51,8 @@ export default function ResetPasswordPage() {
   };
 
   return (
+    <>
+    <Navbar/>
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
         <h2 className="text-2xl font-bold text-center text-gray-800">
@@ -94,5 +98,7 @@ export default function ResetPasswordPage() {
         )}
       </div>
     </div>
+    <Footer/>
+    </>
   );
 }
