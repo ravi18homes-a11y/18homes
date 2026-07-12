@@ -17,7 +17,7 @@ export default function HomepageEditor() {
       .then((res) => res.json())
       .then((json) => {
         const rawJson = json || {};
-        
+
         // Enrich Hero Slides
         const hero = rawJson.hero || {};
         const slides = Array.isArray(hero.slides) ? [...hero.slides] : [];
@@ -272,11 +272,10 @@ export default function HomepageEditor() {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`rounded-full px-4 py-2 text-sm font-medium transition cursor-pointer ${
-              activeTab === tab.key
+            className={`rounded-full px-4 py-2 text-sm font-medium transition cursor-pointer ${activeTab === tab.key
                 ? "bg-slate-900 text-white"
                 : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-            }`}
+              }`}
           >
             {tab.label}
           </button>
@@ -285,11 +284,10 @@ export default function HomepageEditor() {
 
       {message && (
         <div
-          className={`rounded-2xl border px-4 py-3 text-sm ${
-            message.type === "success"
+          className={`rounded-2xl border px-4 py-3 text-sm ${message.type === "success"
               ? "border-emerald-200 bg-emerald-50 text-emerald-800"
               : "border-rose-200 bg-rose-50 text-rose-800"
-          }`}
+            }`}
         >
           {message.text}
         </div>
@@ -606,7 +604,7 @@ export default function HomepageEditor() {
                   Directly edit robots.txt, sitemap.xml, and sitemap.html contents. You can copy the contents or paste new ones.
                 </p>
               </div>
-              
+
               <div className="space-y-6">
                 {/* robots.txt */}
                 <div className="space-y-2">
