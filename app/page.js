@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata() {
   const data = await getHomepageData();
   const seo = data?.seo || {};
-  
+
   const robots = seo.noIndex ? { index: false, follow: false } : undefined;
 
   return {
