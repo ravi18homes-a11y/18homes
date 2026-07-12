@@ -30,11 +30,19 @@ export default function SectionRenderer({ sections = [] }) {
             return (
               <section
                 key={id}
-                className="rounded-3xl overflow-hidden shadow-sm"
-                style={{ backgroundColor: data.backgroundColor || "#0f172a" }}
+                className="relative rounded-3xl overflow-hidden shadow-sm"
+                style={{
+                  backgroundColor: data.backgroundColor || "#0f172a",
+                  backgroundImage: data.bgImage ? `url(${data.bgImage})` : "none",
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }}
               >
+                {data.bgImage && (
+                  <div className="absolute inset-0 bg-black/45 z-0 pointer-events-none" />
+                )}
                 <div
-                  className="px-6 py-16 text-center sm:px-12"
+                  className="relative z-10 px-6 py-16 text-center sm:px-12"
                   style={{ color: data.textColor || "#f8fafc" }}
                 >
                   {data.title && (

@@ -104,7 +104,7 @@ function SectionConfig({ section, onUpdate }) {
     onUpdate({ ...section, data: { ...data, [field]: value } });
   };
 
-  const handleFileUpload = async (event) => {
+  const handleFileUpload = (field) => async (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
@@ -122,7 +122,7 @@ function SectionConfig({ section, onUpdate }) {
       const result = await res.json();
 
       if (res.ok) {
-        onUpdate({ ...section, data: { ...data, url: result.url } });
+        onUpdate({ ...section, data: { ...data, [field]: result.url } });
         setUploadMessage("Image uploaded successfully!");
       } else {
         setUploadMessage(`Upload failed: ${result.error}`);
@@ -186,6 +186,41 @@ function SectionConfig({ section, onUpdate }) {
               onChange={handleChange("buttonUrl")}
               className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3"
             />
+          </div>
+
+          <label className="block text-sm font-medium text-slate-700 mt-4">
+            Background Image
+          </label>
+          <div className="flex flex-col gap-3">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileUpload("bgImage")}
+              disabled={isUploading}
+              className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3"
+            />
+            {uploadMessage && (
+              <p className={`text-sm ${uploadMessage.includes('failed') || uploadMessage.includes('error') ? 'text-red-500' : 'text-green-600'}`}>
+                {uploadMessage}
+              </p>
+            )}
+            {data.bgImage && (
+              <div 
+                className="relative mt-2 rounded-3xl overflow-hidden w-full h-48 border border-slate-200 flex items-center p-6 shadow-inner"
+                style={{
+                  backgroundImage: `url(${data.bgImage})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                }}
+              >
+                <div className="absolute inset-0 bg-black/45 z-0" />
+                <div className="relative z-10 text-white space-y-1 w-full">
+                  <p className="text-xs font-semibold uppercase tracking-wider opacity-75">Preview (Background Image)</p>
+                  <p className="text-lg font-bold truncate">{data.title || "No title yet"}</p>
+                  <p className="text-sm opacity-90 truncate">{data.subtitle || "No subtitle yet"}</p>
+                </div>
+              </div>
+            )}
           </div>
         </>
       )}
@@ -334,7 +369,7 @@ function SectionConfig({ section, onUpdate }) {
             <input
               type="file"
               accept="image/*"
-              onChange={handleFileUpload}
+              onChange={handleFileUpload("url")}
               disabled={isUploading}
               className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3"
             />
