@@ -118,7 +118,7 @@ export default function AdminPropertyDetailPage() {
       {/* ================= IMAGES ================= */}
       <Section title="Property Images">
         {property.images?.length ? (
-  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
     {property.images.map((file, i) => {
       const isVideo = file?.toLowerCase().includes(".mp4");
 
@@ -233,7 +233,7 @@ function Section({ title, children }) {
 
 function Grid({ children }) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-sm">
       {children}
     </div>
   );

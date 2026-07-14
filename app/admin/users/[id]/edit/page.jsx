@@ -136,7 +136,7 @@ export default function EditUserPage() {
 
       {/* ================= BASIC INFO ================= */}
       <Card title="Edit User">
-        <div className="flex gap-6 mb-6 items-center">
+        <div className="flex flex-col sm:flex-row gap-6 mb-6 sm:items-center">
           <div className="w-24 h-24 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center">
             {user.avatar ? (
               <img
@@ -246,25 +246,25 @@ export default function EditUserPage() {
       </Card>
 
       {/* ================= ACTIONS ================= */}
-      <div className="flex gap-4 items-center">
+      <div className="flex flex-col sm:flex-row gap-4 sm:items-center">
         <button
           onClick={saveChanges}
           disabled={saving}
-          className="bg-blue-600 text-white px-6 py-2 rounded"
+          className="w-full sm:w-auto bg-blue-600 text-white px-6 py-2 rounded"
         >
           {saving ? "Saving..." : "Save Changes"}
         </button>
 
         <button
           onClick={() => router.push(`/admin/users/${id}`)}
-          className="bg-gray-600 text-white px-6 py-2 rounded"
+          className="w-full sm:w-auto bg-gray-600 text-white px-6 py-2 rounded"
         >
           Cancel
         </button>
 
         <button
           onClick={deleteUser}
-          className="bg-red-600 text-white px-6 py-2 rounded"
+          className="w-full sm:w-auto bg-red-600 text-white px-6 py-2 rounded"
         >
           Delete User
         </button>
@@ -285,7 +285,8 @@ function Card({ title, children }) {
 }
 
 function Grid({ children, cols = 4 }) {
-  return <div className={`grid grid-cols-${cols} gap-4`}>{children}</div>;
+  const colsClass = cols === 3 ? "md:grid-cols-3" : "md:grid-cols-4";
+  return <div className={`grid grid-cols-1 sm:grid-cols-2 ${colsClass} gap-4`}>{children}</div>;
 }
 
 function Input({ label, value, onChange, disabled }) {

@@ -335,7 +335,7 @@ function Stat({ title, value, icon, danger }) {
 
 function Skeleton() {
   return (
-    <div className="max-w-7xl mx-auto p-6 grid grid-cols-4 gap-6">
+    <div className="max-w-7xl mx-auto p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
       {[1, 2, 3, 4].map((i) => (
         <div key={i} className="h-24 bg-gray-200 rounded-xl animate-pulse" />
       ))}

@@ -56,7 +56,7 @@ export default function AdminContactViewPage() {
           <Field label="Pincode" value={contact.property?.address?.pincode} />
         </div>
 
-        <div className="grid grid-cols-3 gap-4 mt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
           {contact.property?.images?.map((img, i) => (
             <img
               key={i}
@@ -68,7 +68,7 @@ export default function AdminContactViewPage() {
       </Card>
 
       {/* BUYER + OWNER */}
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card title="Buyer">
           <Field label="Name" value={contact.buyer?.name} />
           <Field label="Email" value={contact.buyer?.email} />

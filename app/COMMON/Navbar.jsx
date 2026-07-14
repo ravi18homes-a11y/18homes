@@ -125,7 +125,7 @@ export default function Navbar() {
           setNavbarLogoAlt(data.navbar.logoAlt);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
     return () => {
       cancelled = true;
     };
@@ -288,7 +288,7 @@ export default function Navbar() {
                         <FaEdit className="text-[#8c4bdc] text-xl" />
                         <span className="text-black">Edit Profile</span>
                       </Link>
-                      
+
                       <Link
                         href="/my-properties"
                         className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
@@ -381,7 +381,7 @@ export default function Navbar() {
       )}
 
       <div
-        className={`border-t border-t-neutral-300 mt-2 fixed top-19 left-0 h-full w-full bg-white shadow-xl z-50 p-8 pt-5
+        className={`border-t h-full overflow-y-auto border-t-neutral-300 mt-2 fixed top-19 left-0  w-full bg-white shadow-xl z-50 p-8 pt-5
     transform transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
     ${open ? "translate-x-0" : "-translate-x-full"}`}
       >

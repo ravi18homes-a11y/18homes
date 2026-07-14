@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "react-hot-toast";
+import { MoreVertical } from "lucide-react";
 
 const FIXED_MENUS = [
   { key: "home", label: "Home", href: "/" },
@@ -47,6 +48,7 @@ export default function PagesTreeList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [openDropdownId, setOpenDropdownId] = useState(null);
 
   useEffect(() => {
     let ignore = false;
@@ -186,19 +188,18 @@ export default function PagesTreeList() {
                       style={{ width: depth * 16 }}
                     />
                     <span className="text-slate-300">{depth > 0 ? "↳" : ""}</span>
-                    <span>{item.title}</span>
+                    <span className="whitespace-nowrap">{item.title}</span>
                   </div>
                 </td>
                 <td className="px-6 py-4 text-sm text-slate-600">
-                  <code className="rounded-xl bg-slate-100 px-2 py-1">/{item.slug}</code>
+                  <code className="rounded-xl whitespace-nowrap bg-slate-100 px-2 py-1">/{item.slug}</code>
                 </td>
                 <td className="px-6 py-4 text-sm">
                   <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                      item.status === "published"
-                        ? "bg-emerald-50 text-emerald-700"
-                        : "bg-slate-100 text-slate-600"
-                    }`}
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${item.status === "published"
+                      ? "bg-emerald-50 text-emerald-700"
+                      : "bg-slate-100 text-slate-600"
+                      }`}
                   >
                     {item.status || "draft"}
                   </span>
@@ -214,26 +215,51 @@ export default function PagesTreeList() {
                     </span>
                   )}
                 </td>
-                <td className="px-6 py-4 text-right text-sm font-medium">
-                  <Link
-                    href={`/admin/pages/edit/${item.id}`}
-                    className="mr-3 text-slate-900 hover:text-slate-700"
-                  >
-                    Edit
-                  </Link>
-                  <Link
-                    href={`/admin/pages/new?parentId=${item.id}`}
-                    className="mr-3 text-indigo-600 hover:text-indigo-800"
-                  >
-                    Add child
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={() => setDeleteTarget({ id: item.id, title: item.title })}
-                    className="text-rose-600 hover:text-rose-800 cursor-pointer"
-                  >
-                    Delete
-                  </button>
+                <td className="px-6 py-4 text-right text-sm font-medium relative">
+                  <div className="flex items-center justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setOpenDropdownId(openDropdownId === item.id ? null : item.id)}
+                      className="p-1.5 hover:bg-slate-100 rounded-full transition text-slate-500 hover:text-slate-700 cursor-pointer"
+                    >
+                      <MoreVertical size={16} />
+                    </button>
+
+                    {openDropdownId === item.id && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-10"
+                          onClick={() => setOpenDropdownId(null)}
+                        />
+                        <div className="absolute right-6 top-10 w-36 bg-white border border-slate-200 rounded-xl shadow-lg z-20 py-1 text-left">
+                          <Link
+                            href={`/admin/pages/edit/${item.id}`}
+                            className="block px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 hover:text-slate-900"
+                            onClick={() => setOpenDropdownId(null)}
+                          >
+                            Edit
+                          </Link>
+                          <Link
+                            href={`/admin/pages/new?parentId=${item.id}`}
+                            className="block px-4 py-2 text-xs text-indigo-600 hover:bg-slate-50 hover:text-indigo-800"
+                            onClick={() => setOpenDropdownId(null)}
+                          >
+                            Add child
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOpenDropdownId(null);
+                              setDeleteTarget({ id: item.id, title: item.title });
+                            }}
+                            className="w-full text-left block px-4 py-2 text-xs text-rose-600 hover:bg-slate-50 hover:text-rose-800 cursor-pointer"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
@@ -253,16 +279,16 @@ export default function PagesTreeList() {
             pages with <strong>Add child</strong> on any row.
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
           <Link
             href="/admin/pages/homepage"
-            className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+            className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 w-full sm:w-auto"
           >
             Edit Homepage
           </Link>
           <Link
             href="/admin/pages/new"
-            className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-700"
+            className="inline-flex items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-700 w-full sm:w-auto"
           >
             Create page
           </Link>

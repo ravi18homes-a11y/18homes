@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { MapPin, Bed, Bath, Square, Heart, Home, Loader2, Share2 } from "lucide-react";
 import { toast } from "react-hot-toast";
+import confetti from "canvas-confetti";
 
 const DEFAULT_IMAGE =
   "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800";
@@ -174,6 +175,13 @@ export default function HomeBuyComp() {
       } else {
         const data = await res.json();
         toast.success(data.message || (isSaved ? "Removed from wishlist" : "Added to wishlist"));
+        if (!isSaved) {
+          confetti({
+            particleCount: 120,
+            spread: 70,
+            origin: { y: 0.8 }
+          });
+        }
       }
     } catch (err) {
       // Rollback

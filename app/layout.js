@@ -70,12 +70,12 @@ export default function RootLayout({ children }) {
             Tawk_API.customStyle = {
               visibility: {
                 desktop: {
-                  position: 'bl',
+                  position: 'br',
                   xOffset: 20,
                   yOffset: 20
                 },
                 mobile: {
-                  position: 'bl',
+                  position: 'br',
                   xOffset: 15,
                   yOffset: 15
                 }

@@ -35,21 +35,21 @@ export default function AdminUserDetailPage() {
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">
       {/* ================= USER CARD ================= */}
-      <div className="bg-white rounded-xl shadow p-6 flex gap-6">
+      <div className="bg-white rounded-xl shadow p-6 flex flex-col md:flex-row gap-6 items-center md:items-start text-center md:text-left">
         {user?.avatar ? (
           <img
             src={user.avatar}
             alt="avatar"
-            className="w-20 h-20 rounded-full object-cover"
+            className="w-20 h-20 rounded-full object-cover shrink-0"
           />
         ) : (
-          <div className="w-20 h-20 rounded-full bg-gray-300 flex items-center justify-center text-xl font-bold">
+          <div className="w-20 h-20 rounded-full bg-gray-300 flex items-center justify-center text-xl font-bold shrink-0">
             {user?.name?.[0] || "U"}
           </div>
         )}
 
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
+        <div className="flex-1 w-full">
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-3">
             <h2 className="text-xl font-bold">{user?.name || "—"}</h2>
 
             {user?.role === "admin" && (
@@ -62,7 +62,7 @@ export default function AdminUserDetailPage() {
           <p className="text-gray-600">{user?.email}</p>
           <p className="text-gray-600">{user?.phone || "—"}</p>
 
-          <div className="grid grid-cols-3 gap-4 mt-4 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4 text-sm text-left">
             <Info
               label="Status"
               value={user?.isBlocked ? "Blocked" : "Active"}
@@ -85,7 +85,7 @@ export default function AdminUserDetailPage() {
             />
           </div>
 
-          <div className="flex gap-3 mt-4">
+          <div className="flex flex-wrap gap-3 mt-6 justify-center md:justify-start">
             <button
               onClick={() => router.back()}
               className="px-4 py-2 bg-gray-600 text-white rounded"
@@ -189,8 +189,9 @@ function Section({ title, children }) {
 }
 
 function Grid({ children, cols = 4 }) {
+  const colsClass = cols === 3 ? "md:grid-cols-3" : "md:grid-cols-4";
   return (
-    <div className={`grid grid-cols-${cols} gap-4 text-sm`}>{children}</div>
+    <div className={`grid grid-cols-1 sm:grid-cols-2 ${colsClass} gap-4 text-sm`}>{children}</div>
   );
 }
 

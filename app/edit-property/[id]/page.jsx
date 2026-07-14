@@ -15,7 +15,7 @@ import { toast } from "react-hot-toast";
 const parsePrice = (priceStr) => {
   if (!priceStr) return 0;
   let cleaned = String(priceStr).replace(/[₹,\s]/g, "").toLowerCase();
-  
+
   const match = cleaned.match(/^([\d.]+)([a-z]*)$/);
   if (!match) {
     let num = parseFloat(cleaned);
@@ -25,11 +25,11 @@ const parsePrice = (priceStr) => {
     if (cleaned.includes("k") || cleaned.includes("thousand")) return num * 1000;
     return num;
   }
-  
+
   const numVal = parseFloat(match[1]);
   const suffix = match[2];
   if (isNaN(numVal)) return 0;
-  
+
   if (suffix.includes("cr") || suffix.includes("crore")) return numVal * 10000000;
   if (suffix.includes("lakh") || suffix.includes("lac") || suffix.includes("l")) return numVal * 100000;
   if (suffix.includes("k") || suffix.includes("thousand")) return numVal * 1000;
@@ -369,7 +369,7 @@ const EditPropertyApp = ({ params }) => {
             </div>
           )}
 
-          <div className="bg-white rounded-lg shadow-md p-6 md:p-8 border border-gray-100">
+          <div className="bg-white rounded-lg shadow-md p-3 sm:p-6 md:p-8 border border-gray-100">
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-gray-800 mb-2">
                 Edit Property
@@ -564,92 +564,92 @@ const EditPropertyApp = ({ params }) => {
                   </select>
                 </div>
 
-              {sellForm.propertyType === "commercial" && (
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Commercial Type *
-                  </label>
-                  <select
-                    required
-                    value={sellForm.commercialType}
-                    onChange={(e) => handleSellFormChange("commercialType", e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                  >
-                    <option value="" disabled hidden>Select Commercial Type</option>
-                    <option value="hotel">Hotel</option>
-                    <option value="hospital">Hospital</option>
-                    <option value="school">School</option>
-                    <option value="pg">P.G</option>
-                    <option value="lease land">Lease Land</option>
-                    <option value="commercial land">Commercial Land</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-              )}
-
-              {sellForm.propertyType === "commercial" && sellForm.commercialType === "other" && (
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Specify Commercial Type *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={sellForm.commercialTypeCustom || ""}
-                    onChange={(e) => handleSellFormChange("commercialTypeCustom", e.target.value)}
-                    placeholder="e.g. Warehouse, Showroom"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                  />
-                </div>
-              )}
-
-              {(sellForm.propertyType === "flat" || sellForm.propertyType === "apartment") && (
-                <div className="flex items-center gap-2 pt-2 md:col-span-2">
-                  <input
-                    type="checkbox"
-                    id="isHighRise"
-                    checked={sellForm.isHighRise}
-                    onChange={(e) => handleSellFormChange("isHighRise", e.target.checked)}
-                    className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
-                  />
-                  <label htmlFor="isHighRise" className="text-sm font-medium text-gray-700 select-none cursor-pointer">
-                    Flat in High-Rise Building
-                  </label>
-                </div>
-              )}
-
-              {(sellForm.propertyType === "flat" ||
-                sellForm.propertyType === "apartment" ||
-                sellForm.propertyType === "office" ||
-                sellForm.propertyType === "shop" ||
-                sellForm.propertyType === "commercial") && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-2">
-                  <div>
+                {sellForm.propertyType === "commercial" && (
+                  <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Floor Number
+                      Commercial Type *
+                    </label>
+                    <select
+                      required
+                      value={sellForm.commercialType}
+                      onChange={(e) => handleSellFormChange("commercialType", e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                    >
+                      <option value="" disabled hidden>Select Commercial Type</option>
+                      <option value="hotel">Hotel</option>
+                      <option value="hospital">Hospital</option>
+                      <option value="school">School</option>
+                      <option value="pg">P.G</option>
+                      <option value="lease land">Lease Land</option>
+                      <option value="commercial land">Commercial Land</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                )}
+
+                {sellForm.propertyType === "commercial" && sellForm.commercialType === "other" && (
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Specify Commercial Type *
                     </label>
                     <input
                       type="text"
-                      value={sellForm.floorNo || ""}
-                      onChange={(e) => handleSellFormChange("floorNo", e.target.value)}
-                      placeholder="e.g. 5 (or Ground, Basement)"
+                      required
+                      value={sellForm.commercialTypeCustom || ""}
+                      onChange={(e) => handleSellFormChange("commercialTypeCustom", e.target.value)}
+                      placeholder="e.g. Warehouse, Showroom"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Total Floors in Building
-                    </label>
+                )}
+
+                {(sellForm.propertyType === "flat" || sellForm.propertyType === "apartment") && (
+                  <div className="flex items-center gap-2 pt-2 md:col-span-2">
                     <input
-                      type="text"
-                      value={sellForm.totalFloors || ""}
-                      onChange={(e) => handleSellFormChange("totalFloors", e.target.value)}
-                      placeholder="e.g. 12"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                      type="checkbox"
+                      id="isHighRise"
+                      checked={sellForm.isHighRise}
+                      onChange={(e) => handleSellFormChange("isHighRise", e.target.checked)}
+                      className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
                     />
+                    <label htmlFor="isHighRise" className="text-sm font-medium text-gray-700 select-none cursor-pointer">
+                      Flat in High-Rise Building
+                    </label>
                   </div>
-                </div>
-              )}
+                )}
+
+                {(sellForm.propertyType === "flat" ||
+                  sellForm.propertyType === "apartment" ||
+                  sellForm.propertyType === "office" ||
+                  sellForm.propertyType === "shop" ||
+                  sellForm.propertyType === "commercial") && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-2">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Floor Number
+                        </label>
+                        <input
+                          type="text"
+                          value={sellForm.floorNo || ""}
+                          onChange={(e) => handleSellFormChange("floorNo", e.target.value)}
+                          placeholder="e.g. 5 (or Ground, Basement)"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Total Floors in Building
+                        </label>
+                        <input
+                          type="text"
+                          value={sellForm.totalFloors || ""}
+                          onChange={(e) => handleSellFormChange("totalFloors", e.target.value)}
+                          placeholder="e.g. 12"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                        />
+                      </div>
+                    </div>
+                  )}
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">

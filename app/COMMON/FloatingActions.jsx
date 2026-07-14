@@ -58,7 +58,7 @@ export default function FloatingActions() {
         }
       `}</style>
 
-      <div className="fixed bottom-4 right-4 flex flex-col items-center z-50">
+      <div className="fixed bottom-4 left-4 flex flex-col items-center z-50">
         {/* Expanded Links Area */}
         <div
           className={`absolute bottom-20 flex flex-col gap-4 transition-all duration-300 ease-out origin-bottom ${
