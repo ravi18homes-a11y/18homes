@@ -23,7 +23,7 @@ import { toast } from "react-hot-toast";
 const parsePrice = (priceStr) => {
   if (!priceStr) return 0;
   let cleaned = String(priceStr).replace(/[₹,\s]/g, "").toLowerCase();
-  
+
   const match = cleaned.match(/^([\d.]+)([a-z]*)$/);
   if (!match) {
     let num = parseFloat(cleaned);
@@ -33,11 +33,11 @@ const parsePrice = (priceStr) => {
     if (cleaned.includes("k") || cleaned.includes("thousand")) return num * 1000;
     return num;
   }
-  
+
   const numVal = parseFloat(match[1]);
   const suffix = match[2];
   if (isNaN(numVal)) return 0;
-  
+
   if (suffix.includes("cr") || suffix.includes("crore")) return numVal * 10000000;
   if (suffix.includes("lakh") || suffix.includes("lac") || suffix.includes("l")) return numVal * 100000;
   if (suffix.includes("k") || suffix.includes("thousand")) return numVal * 1000;
@@ -336,7 +336,7 @@ const RealEstateApp = () => {
               body: JSON.stringify({ planKey: boostPlan }),
             });
             const orderData = await orderRes.json();
-            
+
             if (!orderData.success) {
               throw new Error(orderData.message || "Failed to create order");
             }
@@ -455,7 +455,7 @@ const RealEstateApp = () => {
             </div>
           )}
 
-          <div className="bg-white rounded-lg shadow-md p-6 md:p-8">
+          <div className="bg-white rounded-lg shadow-md p-3 sm:p-6 md:p-8">
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-gray-800 mb-2">
                 Sell Your Property
@@ -658,102 +658,102 @@ const RealEstateApp = () => {
                   </select>
                 </div>
 
-              {sellForm.propertyType === "commercial" && (
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Commercial Type *
-                  </label>
-                  <select
-                    required
-                    value={sellForm.commercialType}
-                    onChange={(e) =>
-                      handleSellFormChange("commercialType", e.target.value)
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                  >
-                    <option value="" disabled hidden>Select Commercial Type</option>
-                    <option value="hotel">Hotel</option>
-                    <option value="hospital">Hospital</option>
-                    <option value="school">School</option>
-                    <option value="pg">P.G</option>
-                    <option value="lease land">Lease Land</option>
-                    <option value="commercial land">Commercial Land</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-              )}
-
-              {sellForm.propertyType === "commercial" && sellForm.commercialType === "other" && (
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Specify Commercial Type *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={sellForm.commercialTypeCustom || ""}
-                    onChange={(e) =>
-                      handleSellFormChange("commercialTypeCustom", e.target.value)
-                    }
-                    placeholder="e.g. Warehouse, Showroom"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                  />
-                </div>
-              )}
-
-              {(sellForm.propertyType === "flat" || sellForm.propertyType === "apartment") && (
-                <div className="flex items-center gap-2 pt-2 md:col-span-2">
-                  <input
-                    type="checkbox"
-                    id="isHighRise"
-                    checked={sellForm.isHighRise}
-                    onChange={(e) =>
-                      handleSellFormChange("isHighRise", e.target.checked)
-                    }
-                    className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
-                  />
-                  <label htmlFor="isHighRise" className="text-sm font-medium text-gray-700 select-none cursor-pointer">
-                    Flat in High-Rise Building
-                  </label>
-                </div>
-              )}
-
-              {(sellForm.propertyType === "flat" ||
-                sellForm.propertyType === "apartment" ||
-                sellForm.propertyType === "office" ||
-                sellForm.propertyType === "shop" ||
-                sellForm.propertyType === "commercial") && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-2">
-                  <div>
+                {sellForm.propertyType === "commercial" && (
+                  <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Floor Number
+                      Commercial Type *
+                    </label>
+                    <select
+                      required
+                      value={sellForm.commercialType}
+                      onChange={(e) =>
+                        handleSellFormChange("commercialType", e.target.value)
+                      }
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                    >
+                      <option value="" disabled hidden>Select Commercial Type</option>
+                      <option value="hotel">Hotel</option>
+                      <option value="hospital">Hospital</option>
+                      <option value="school">School</option>
+                      <option value="pg">P.G</option>
+                      <option value="lease land">Lease Land</option>
+                      <option value="commercial land">Commercial Land</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                )}
+
+                {sellForm.propertyType === "commercial" && sellForm.commercialType === "other" && (
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Specify Commercial Type *
                     </label>
                     <input
                       type="text"
-                      value={sellForm.floorNo || ""}
+                      required
+                      value={sellForm.commercialTypeCustom || ""}
                       onChange={(e) =>
-                        handleSellFormChange("floorNo", e.target.value)
+                        handleSellFormChange("commercialTypeCustom", e.target.value)
                       }
-                      placeholder="e.g. 5 (or Ground, Basement)"
+                      placeholder="e.g. Warehouse, Showroom"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Total Floors in Building
-                    </label>
+                )}
+
+                {(sellForm.propertyType === "flat" || sellForm.propertyType === "apartment") && (
+                  <div className="flex items-center gap-2 pt-2 md:col-span-2">
                     <input
-                      type="text"
-                      value={sellForm.totalFloors || ""}
+                      type="checkbox"
+                      id="isHighRise"
+                      checked={sellForm.isHighRise}
                       onChange={(e) =>
-                        handleSellFormChange("totalFloors", e.target.value)
+                        handleSellFormChange("isHighRise", e.target.checked)
                       }
-                      placeholder="e.g. 12"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                      className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
                     />
+                    <label htmlFor="isHighRise" className="text-sm font-medium text-gray-700 select-none cursor-pointer">
+                      Flat in High-Rise Building
+                    </label>
                   </div>
-                </div>
-              )}
+                )}
+
+                {(sellForm.propertyType === "flat" ||
+                  sellForm.propertyType === "apartment" ||
+                  sellForm.propertyType === "office" ||
+                  sellForm.propertyType === "shop" ||
+                  sellForm.propertyType === "commercial") && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-2">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Floor Number
+                        </label>
+                        <input
+                          type="text"
+                          value={sellForm.floorNo || ""}
+                          onChange={(e) =>
+                            handleSellFormChange("floorNo", e.target.value)
+                          }
+                          placeholder="e.g. 5 (or Ground, Basement)"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Total Floors in Building
+                        </label>
+                        <input
+                          type="text"
+                          value={sellForm.totalFloors || ""}
+                          onChange={(e) =>
+                            handleSellFormChange("totalFloors", e.target.value)
+                          }
+                          placeholder="e.g. 12"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                        />
+                      </div>
+                    </div>
+                  )}
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -995,11 +995,10 @@ const RealEstateApp = () => {
                       <div
                         key={plan.key}
                         onClick={() => setBoostPlan(plan.key)}
-                        className={`border rounded-xl p-4 cursor-pointer transition-all flex flex-col items-center justify-center text-center ${
-                          boostPlan === plan.key
+                        className={`border rounded-xl p-4 cursor-pointer transition-all flex flex-col items-center justify-center text-center ${boostPlan === plan.key
                             ? "bg-purple-600 text-white border-transparent shadow-lg shadow-purple-600/20 scale-105"
                             : "bg-white text-gray-700 border-purple-100 hover:border-purple-300 hover:shadow"
-                        }`}
+                          }`}
                       >
                         <span className="text-xs font-semibold uppercase tracking-wider opacity-85">
                           {plan.name}

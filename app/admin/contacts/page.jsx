@@ -78,7 +78,7 @@ export default function AdminContactsPage() {
   if (loading) return <div className="p-10">Loading contacts...</div>;
 
   return (
-    <div className=" space-x-6">
+    <div className="space-y-6">
       {/* ================= HEADER ================= */}
       <div className="flex flex-col md:flex-row justify-between gap-4">
         <h2 className="text-2xl font-bold">Contact Enquiries</h2>

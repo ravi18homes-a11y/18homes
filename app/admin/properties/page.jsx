@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Pagination from "../../components/admin/Pagination";
 import { toast } from "react-hot-toast";
+import { MoreVertical } from "lucide-react";
 
 const BASE =
   (process.env.NEXT_PUBLIC_APP_DATABASE_URL || "http://localhost:5000") +
@@ -249,6 +250,8 @@ function PropertyTable({
   onFlag,
   onToggleSold,
 }) {
+  const [openDropdownId, setOpenDropdownId] = useState(null);
+
   return (
     <div className="bg-white rounded-xl shadow overflow-x-auto">
       <table className="w-full text-sm">
@@ -262,7 +265,7 @@ function PropertyTable({
             <th className="p-3 text-left">Admin Views</th>
             <th className="p-3 text-left">Boosted</th>
             <th className="p-3 text-left">Status</th>
-            <th className="p-3 text-left">Actions</th>
+            <th className="p-3 text-right">Actions</th>
           </tr>
         </thead>
 
@@ -347,42 +350,66 @@ function PropertyTable({
                 </td>
 
                 {/* ACTIONS */}
-                <td className="p-3 flex gap-2 flex-wrap">
-                  <button
-                    onClick={() => onView(p._id)}
-                    className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded"
-                  >
-                    View
-                  </button>
+                <td className="p-3 text-right relative">
+                  <div className="flex items-center justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setOpenDropdownId(openDropdownId === p._id ? null : p._id)}
+                      className="p-1.5 hover:bg-slate-100 rounded-full transition text-slate-500 hover:text-slate-700 cursor-pointer"
+                    >
+                      <MoreVertical size={16} />
+                    </button>
 
-                  <button
-                    onClick={() => onToggleSold(p._id, p?.isSold)}
-                    className={`px-3 py-1 rounded text-white ${
-                      p?.isSold
-                        ? "bg-emerald-600 hover:bg-emerald-700"
-                        : "bg-orange-500 hover:bg-orange-600"
-                    }`}
-                  >
-                    {p?.isSold ? "Make Available" : "Mark Sold"}
-                  </button>
+                    {openDropdownId === p._id && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-10"
+                          onClick={() => setOpenDropdownId(null)}
+                        />
+                        <div className="absolute right-6 top-10 w-40 bg-white border border-slate-200 rounded-xl shadow-lg z-20 py-1 text-left">
+                          <button
+                            onClick={() => {
+                              setOpenDropdownId(null);
+                              onView(p._id);
+                            }}
+                            className="w-full text-left block px-4 py-2 text-xs text-blue-600 hover:bg-slate-50 transition cursor-pointer"
+                          >
+                            View Details
+                          </button>
+                          
+                          <button
+                            onClick={() => {
+                              setOpenDropdownId(null);
+                              onToggleSold(p._id, p?.isSold);
+                            }}
+                            className="w-full text-left block px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 transition cursor-pointer"
+                          >
+                            {p?.isSold ? "Make Available" : "Mark Sold"}
+                          </button>
 
-                  <button
-                    onClick={() => onFlag(p._id, isFlagged)}
-                    className={`px-3 py-1 rounded text-white ${
-                      isFlagged
-                        ? "bg-green-600 hover:bg-green-700"
-                        : "bg-yellow-500 hover:bg-yellow-600"
-                    }`}
-                  >
-                    {isFlagged ? "Visible" : "Hide"}
-                  </button>
+                          <button
+                            onClick={() => {
+                              setOpenDropdownId(null);
+                              onFlag(p._id, isFlagged);
+                            }}
+                            className="w-full text-left block px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 transition cursor-pointer"
+                          >
+                            {isFlagged ? "Make Visible" : "Hide Property"}
+                          </button>
 
-                  <button
-                    onClick={() => onDelete(p._id)}
-                    className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded"
-                  >
-                    Delete
-                  </button>
+                          <button
+                            onClick={() => {
+                              setOpenDropdownId(null);
+                              onDelete(p._id);
+                            }}
+                            className="w-full text-left block px-4 py-2 text-xs text-rose-600 hover:bg-slate-50 transition font-medium cursor-pointer"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </td>
               </tr>
             );

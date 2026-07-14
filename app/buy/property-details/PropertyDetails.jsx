@@ -21,6 +21,7 @@ import {
 import Link from "next/link";
 import { FaWhatsapp, FaFacebook, FaTwitter } from "react-icons/fa";
 import { toast } from "react-hot-toast";
+import confetti from "canvas-confetti";
 
 // const staticProperties = [
 //   {
@@ -143,6 +144,13 @@ const PropertyDetailsPage = () => {
       } else {
         const data = await res.json();
         toast.success(data.message || (nextState ? "Added to wishlist" : "Removed from wishlist"));
+        if (nextState) {
+          confetti({
+            particleCount: 120,
+            spread: 70,
+            origin: { y: 0.8 }
+          });
+        }
       }
     } catch (err) {
       // Rollback

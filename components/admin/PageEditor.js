@@ -289,7 +289,7 @@ export default function PageEditor({
               />
               <div className="flex flex-wrap items-center gap-2 text-sm text-slate-600">
                 <span>Full path:</span>
-                <code className="rounded-xl bg-slate-100 px-2 py-1">
+                <code className="rounded-xl whitespace-nowrap bg-slate-100 px-2 py-1">
                   /{computedSlug || "your-path"}
                 </code>
                 {finalSlugError ? (

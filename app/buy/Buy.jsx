@@ -17,6 +17,7 @@ import {
   Share2,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
+import confetti from "canvas-confetti";
 
 const DEFAULT_IMAGE =
   "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800";
@@ -26,7 +27,7 @@ const getMediaThumbnail = (url) => {
   const lowerUrl = url.toLowerCase();
   const videoExtensions = [".mp4", ".mov", ".avi", ".webm", ".mkv", ".3gp", ".ogg", ".ogv", ".wmv"];
   const isVideo = videoExtensions.some(ext => lowerUrl.endsWith(ext) || lowerUrl.includes(ext + "?"));
-  
+
   if (isVideo) {
     return url.replace(/\.(mp4|mov|avi|webm|mkv|3gp|ogg|ogv|wmv)(?=\?|$)/i, ".jpg");
   }
@@ -232,8 +233,8 @@ const BuyPage = () => {
 
             const validImages = Array.isArray(prop.images)
               ? prop.images.filter(
-                  (img) => img && !img.startsWith("blob:") && img.trim() !== "",
-                )
+                (img) => img && !img.startsWith("blob:") && img.trim() !== "",
+              )
               : [];
 
             const ownerInfo = prop.owner
@@ -252,7 +253,7 @@ const BuyPage = () => {
               isHighRise: prop.isHighRise || false,
               updatedAt: prop.updatedAt || 0,
               createdAt: prop.createdAt || 0,
-              area: areaValue, 
+              area: areaValue,
               areaUnit:
                 typeof prop.area === "object" && prop.area !== null
                   ? normalizeString(prop.area.unit || "")
@@ -334,80 +335,80 @@ const BuyPage = () => {
 
   const filteredProperties = shouldApplyClientFilters
     ? properties.filter((property) => {
-        const matchesBath =
-          filters.bathrooms === "any" ||
-          property.bathrooms >= parseInt(filters.bathrooms);
-        const matchesMinArea =
-          !filters.minArea || property.area >= parseInt(filters.minArea);
-        const matchesMaxArea =
-          !filters.maxArea || property.area <= parseInt(filters.maxArea);
+      const matchesBath =
+        filters.bathrooms === "any" ||
+        property.bathrooms >= parseInt(filters.bathrooms);
+      const matchesMinArea =
+        !filters.minArea || property.area >= parseInt(filters.minArea);
+      const matchesMaxArea =
+        !filters.maxArea || property.area <= parseInt(filters.maxArea);
 
-        const normalizedPropertyType = normalizeString(property.type);
-        const normalizedPropertyPurpose = normalizeString(property.purpose);
-        const normalizedAreaUnit = normalizeString(property.areaUnit);
-        const normalizedShopSize = normalizeString(property.shopSize);
-        const normalizedOfficeType = normalizeString(property.officeType);
-        const normalizedCustom = String(property.custom).toLowerCase();
+      const normalizedPropertyType = normalizeString(property.type);
+      const normalizedPropertyPurpose = normalizeString(property.purpose);
+      const normalizedAreaUnit = normalizeString(property.areaUnit);
+      const normalizedShopSize = normalizeString(property.shopSize);
+      const normalizedOfficeType = normalizeString(property.officeType);
+      const normalizedCustom = String(property.custom).toLowerCase();
 
-        const normalizedFilterType = normalizeString(filters.propertyType);
-        const normalizedFilterPurpose = normalizeString(filters.purpose);
-        const normalizedFilterAreaUnit = normalizeString(filters.areaUnit);
-        const normalizedFilterShopSize = normalizeString(filters.shopSize);
-        const normalizedFilterOfficeType = normalizeString(filters.officeType);
-        const normalizedFilterCustom = normalizeString(filters.custom);
+      const normalizedFilterType = normalizeString(filters.propertyType);
+      const normalizedFilterPurpose = normalizeString(filters.purpose);
+      const normalizedFilterAreaUnit = normalizeString(filters.areaUnit);
+      const normalizedFilterShopSize = normalizeString(filters.shopSize);
+      const normalizedFilterOfficeType = normalizeString(filters.officeType);
+      const normalizedFilterCustom = normalizeString(filters.custom);
 
-        const matchesType =
-          normalizedFilterType === "all" ||
-          !normalizedFilterType ||
-          normalizedPropertyType === normalizedFilterType ||
-          (normalizedFilterType === "commercial" && normalizedPropertyType.startsWith("commercial"));
+      const matchesType =
+        normalizedFilterType === "all" ||
+        !normalizedFilterType ||
+        normalizedPropertyType === normalizedFilterType ||
+        (normalizedFilterType === "commercial" && normalizedPropertyType.startsWith("commercial"));
 
-        const matchesCommercialType =
-          normalizedFilterType !== "commercial" ||
-          filters.commercialType === "all" ||
-          !filters.commercialType ||
-          normalizeString(property.commercialType) === normalizeString(filters.commercialType);
+      const matchesCommercialType =
+        normalizedFilterType !== "commercial" ||
+        filters.commercialType === "all" ||
+        !filters.commercialType ||
+        normalizeString(property.commercialType) === normalizeString(filters.commercialType);
 
-        const matchesCommercialTypeCustom =
-          normalizedFilterType !== "commercial" ||
-          filters.commercialType !== "other" ||
-          !filters.commercialTypeCustom ||
-          normalizeString(property.commercialTypeCustom).includes(normalizeString(filters.commercialTypeCustom));
+      const matchesCommercialTypeCustom =
+        normalizedFilterType !== "commercial" ||
+        filters.commercialType !== "other" ||
+        !filters.commercialTypeCustom ||
+        normalizeString(property.commercialTypeCustom).includes(normalizeString(filters.commercialTypeCustom));
 
-        const matchesPurpose =
-          !normalizedFilterPurpose ||
-          normalizedPropertyPurpose === normalizedFilterPurpose;
-        const matchesAreaUnit =
-          !normalizedFilterAreaUnit ||
-          normalizedAreaUnit === normalizedFilterAreaUnit;
-        const matchesShopSize =
-          !normalizedFilterShopSize ||
-          normalizedShopSize === normalizedFilterShopSize;
-        const matchesOfficeType =
-          !normalizedFilterOfficeType ||
-          normalizedOfficeType === normalizedFilterOfficeType;
-        const matchesCustom =
-          !normalizedFilterCustom ||
-          normalizedCustom === normalizedFilterCustom;
-        const matchesBoosted =
-          filters.isBoosted !== "true" ||
-          property.isBoosted === true;
+      const matchesPurpose =
+        !normalizedFilterPurpose ||
+        normalizedPropertyPurpose === normalizedFilterPurpose;
+      const matchesAreaUnit =
+        !normalizedFilterAreaUnit ||
+        normalizedAreaUnit === normalizedFilterAreaUnit;
+      const matchesShopSize =
+        !normalizedFilterShopSize ||
+        normalizedShopSize === normalizedFilterShopSize;
+      const matchesOfficeType =
+        !normalizedFilterOfficeType ||
+        normalizedOfficeType === normalizedFilterOfficeType;
+      const matchesCustom =
+        !normalizedFilterCustom ||
+        normalizedCustom === normalizedFilterCustom;
+      const matchesBoosted =
+        filters.isBoosted !== "true" ||
+        property.isBoosted === true;
 
-        return (
-          matchesBath &&
-          matchesMinArea &&
-          matchesMaxArea &&
-          matchesType &&
-          matchesCommercialType &&
-          matchesCommercialTypeCustom &&
-          matchesPurpose &&
-          matchesAreaUnit &&
-          matchesShopSize &&
-          matchesOfficeType &&
-          matchesCustom &&
-          matchesBoosted
-        );
-      })
+      return (
+        matchesBath &&
+        matchesMinArea &&
+        matchesMaxArea &&
+        matchesType &&
+        matchesCommercialType &&
+        matchesCommercialTypeCustom &&
+        matchesPurpose &&
+        matchesAreaUnit &&
+        matchesShopSize &&
+        matchesOfficeType &&
+        matchesCustom &&
+        matchesBoosted
+      );
+    })
     : properties;
 
   const toggleFavorite = async (id) => {
@@ -441,6 +442,13 @@ const BuyPage = () => {
       } else {
         const data = await res.json();
         toast.success(data.message || (isSaved ? "Removed from wishlist" : "Added to wishlist"));
+        if (!isSaved) {
+          confetti({
+            particleCount: 120,
+            spread: 70,
+            origin: { y: 0.8 }
+          });
+        }
       }
     } catch (err) {
       // Rollback
@@ -487,7 +495,7 @@ const BuyPage = () => {
       return `${price.value} ${price.unit}`;
     }
     if (!price || price === 0) return "Price on Request";
-    
+
     // If price is a string and contains alphabetic characters
     if (typeof price === "string" && /[a-zA-Z]/.test(price)) {
       if (!price.includes("₹")) {
@@ -716,7 +724,7 @@ const BuyPage = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Min Area 
+                  Min Area
                 </label>
                 <input
                   type="text"
@@ -731,7 +739,7 @@ const BuyPage = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Max Area 
+                  Max Area
                 </label>
                 <input
                   type="text"
@@ -783,22 +791,20 @@ const BuyPage = () => {
             <button
               type="button"
               onClick={() => setFilters({ ...filters, purpose: "sell" })}
-              className={`px-4 py-2 rounded-full border transition ${
-                filters.purpose === "sell"
-                  ? "bg-green-600 text-white border-green-600"
-                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-              }`}
+              className={`px-4 py-2 rounded-full border transition ${filters.purpose === "sell"
+                ? "bg-green-600 text-white border-green-600"
+                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                }`}
             >
               Sell
             </button>
             <button
               type="button"
               onClick={() => setFilters({ ...filters, purpose: "rent" })}
-              className={`px-4 py-2 rounded-full border transition ${
-                filters.purpose === "rent"
-                  ? "bg-red-600 text-white border-red-600"
-                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-              }`}
+              className={`px-4 py-2 rounded-full border transition ${filters.purpose === "rent"
+                ? "bg-red-600 text-white border-red-600"
+                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                }`}
             >
               Rent
             </button>
@@ -892,19 +898,17 @@ const BuyPage = () => {
                         className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 z-20"
                       >
                         <Heart
-                          className={`w-5 h-5 ${
-                            favorites.includes(property.id)
-                              ? "fill-red-600 text-red-600"
-                              : "text-gray-600"
-                          }`}
+                          className={`w-5 h-5 ${favorites.includes(property.id)
+                            ? "fill-red-600 text-red-600"
+                            : "text-gray-600"
+                            }`}
                         />
                       </button>
                       {(property.featured || property.isBoosted) && (
-                        <span className={`absolute top-3 left-3 px-3 py-1 text-white text-sm font-bold rounded-full ${
-                          property.isBoosted 
-                            ? "bg-[blue] shadow-md" 
-                            : "bg-red-600"
-                        }`}>
+                        <span className={`absolute top-3 left-3 px-3 py-1 text-white text-sm font-bold rounded-full ${property.isBoosted
+                          ? "bg-[blue] shadow-md"
+                          : "bg-red-600"
+                          }`}>
                           {property.isBoosted ? "★ High Rated (Boosted)" : "Featured"}
                         </span>
                       )}
@@ -929,17 +933,17 @@ const BuyPage = () => {
                         </span>
                       </div>
                       <div className="flex items-center text-gray-600 mb-3">
-                        
+
                         <span className="text-sm truncate">
-                          
-                         Created at : {new Date(property.createdAt).toLocaleDateString("en-IN")}
+
+                          Created at : {new Date(property.createdAt).toLocaleDateString("en-IN")}
                         </span>
                       </div>
                       <div className="flex items-center text-gray-600 mb-3">
-                     
+
                         <span className="text-sm truncate">
-                        
-                           Updated at : {new Date(property.updatedAt).toLocaleDateString("en-IN")}
+
+                          Updated at : {new Date(property.updatedAt).toLocaleDateString("en-IN")}
                         </span>
                       </div>
 
@@ -963,13 +967,13 @@ const BuyPage = () => {
                               </div>
                             )}
                           <div className="flex items-center gap-1">
-                             <Square className="w-4 h-4" />
-                             <span>
-                               {/^[0-9\s.,]+$/.test(String(property.area).trim())
-                                 ? `${property.area} sqft`
-                                 : property.area}
-                             </span>
-                           </div>
+                            <Square className="w-4 h-4" />
+                            <span>
+                              {/^[0-9\s.,]+$/.test(String(property.area).trim())
+                                ? `${property.area} sqft`
+                                : property.area}
+                            </span>
+                          </div>
                           {property.floorNo && (
                             <div className="flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-[11px] font-semibold ">
                               <span>Floor no: {property.floorNo}{property.totalFloors ? ` Total floors: ${property.totalFloors}` : ""}</span>
@@ -984,7 +988,7 @@ const BuyPage = () => {
                       </div>
 
                       <div className="flex items-center justify-between">
-                        <div className="text-2xl font-bold text-red-600">
+                        <div className="text-2xl font-bold text-[#3a40c6]">
                           {formatPrice(property.price)}
                         </div>
                         <Link
@@ -992,7 +996,7 @@ const BuyPage = () => {
                             pathname: "/buy/property-details",
                             query: { id: property.id },
                           }}
-                          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                          className="px-4 py-2 bg-[#3a40c6] text-white rounded-lg hover:bg-[#3a40c6] transition-colors"
                         >
                           View Details
                         </Link>
@@ -1057,11 +1061,10 @@ const BuyPage = () => {
                         <button
                           key={item}
                           onClick={() => handlePageChange(item)}
-                          className={`px-4 py-2 border rounded-lg transition-colors ${
-                            pagination.page === item
-                              ? "bg-red-600 text-white border-red-600"
-                              : "hover:bg-gray-100"
-                          }`}
+                          className={`px-4 py-2 border rounded-lg transition-colors ${pagination.page === item
+                            ? "bg-[#3a40c6] text-white border-[#3a40c6]"
+                            : "hover:bg-gray-100"
+                            }`}
                         >
                           {item}
                         </button>
@@ -1083,7 +1086,7 @@ const BuyPage = () => {
       </div>
 
       {/* Footer CTA */}
-      <div className="bg-linear-to-r from-red-600 to-red-700 text-white py-12 mt-16">
+      <div className="bg-[#3a40c6] text-white py-12 mt-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-4">
             Didn&apos;t find your dream property?
@@ -1091,7 +1094,7 @@ const BuyPage = () => {
           <p className="text-lg mb-6">
             Tell us what you&apos;re looking for, we&apos;ll find the best options for you
           </p>
-          <Link href={"/contact"} className="px-8 py-3 bg-white text-red-600 rounded-lg font-semibold hover:bg-gray-100 text-lg">
+          <Link href={"/contact"} className="px-8 py-3 bg-white text-[#3a40c6] rounded-lg font-semibold hover:bg-gray-100 text-lg">
             Contact Us
           </Link>
         </div>
