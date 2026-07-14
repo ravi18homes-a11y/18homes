@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Navbar from "../COMMON/Navbar";
 import Footer from "../COMMON/Footer";
 import { toast } from "react-hot-toast";
+import confetti from "canvas-confetti";
 
 const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800";
 
@@ -14,7 +15,7 @@ const getMediaThumbnail = (url) => {
   const lowerUrl = url.toLowerCase();
   const videoExtensions = [".mp4", ".mov", ".avi", ".webm", ".mkv", ".3gp", ".ogg", ".ogv", ".wmv"];
   const isVideo = videoExtensions.some(ext => lowerUrl.endsWith(ext) || lowerUrl.includes(ext + "?"));
-  
+
   if (isVideo) {
     return url.replace(/\.(mp4|mov|avi|webm|mkv|3gp|ogg|ogv|wmv)(?=\?|$)/i, ".jpg");
   }
@@ -85,7 +86,7 @@ export default function MyPropertiesPage() {
         body: JSON.stringify({ planKey: boostPlan }),
       });
       const orderData = await orderRes.json();
-      
+
       if (!orderData.success) {
         throw new Error(orderData.message || "Failed to create order");
       }
@@ -118,6 +119,11 @@ export default function MyPropertiesPage() {
             const verifyData = await verifyRes.json();
             if (verifyData.success) {
               toast.success("Property boosted to Premium successfully!", { id: "boost-pay" });
+              confetti({
+                particleCount: 150,
+                spread: 80,
+                origin: { y: 0.6 }
+              });
               setOpenBoostModal(false);
               fetchProperties();
             } else {
@@ -339,14 +345,13 @@ export default function MyPropertiesPage() {
                         </Link>
                         <button
                           onClick={() => handleOpenBoostModal(property)}
-                          className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg font-medium text-sm transition-all ${
-                            property.isBoosted
-                              ? "bg-amber-100 text-amber-800 cursor-default"
-                              : "bg-purple-50 text-purple-600 hover:bg-purple-100"
-                          }`}
+                          className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg font-medium text-sm transition-all ${property.isBoosted
+                            ? "bg-amber-100 text-amber-800 cursor-default"
+                            : "bg-purple-50 text-purple-600 hover:bg-purple-100"
+                            }`}
                           disabled={property.isBoosted}
                         >
-                          🚀 {property.isBoosted ? "Boost Active" : "Boost Listing"}
+                          🚀 {property.isBoosted ? "Boost Active" : "Boost Property"}
                         </button>
                       </div>
                     </div>
@@ -373,7 +378,7 @@ export default function MyPropertiesPage() {
               </span>
               <h2 className="text-2xl font-bold text-gray-900">Boost Property</h2>
               <p className="text-md font-medium text-[blue]  mt-1">
-              Increase Visibility of Property "{selectedProperty.title}"
+                Increase Visibility of Property "{selectedProperty.title}"
               </p>
             </div>
 
@@ -382,11 +387,10 @@ export default function MyPropertiesPage() {
                 <div
                   key={plan.key}
                   onClick={() => setBoostPlan(plan.key)}
-                  className={`border rounded-xl p-4 cursor-pointer transition-all flex items-center justify-between ${
-                    boostPlan === plan.key
-                      ? "bg-purple-600 text-white border-transparent shadow-lg shadow-purple-600/20"
-                      : "bg-white text-gray-700 border-gray-200 hover:border-purple-300"
-                  }`}
+                  className={`border rounded-xl p-4 cursor-pointer transition-all flex items-center justify-between ${boostPlan === plan.key
+                    ? "bg-purple-600 text-white border-transparent shadow-lg shadow-purple-600/20"
+                    : "bg-white text-gray-700 border-gray-200 hover:border-purple-300"
+                    }`}
                 >
                   <div className="flex flex-col text-left">
                     <span className="text-sm font-bold">{plan.name}</span>
