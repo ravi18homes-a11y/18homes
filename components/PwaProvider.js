@@ -5,9 +5,9 @@ import Image from "next/image";
 
 const PwaContext = createContext({
   isInstallable: false,
-  installApp: async () => {},
+  installApp: async () => { },
   showInstallPopup: false,
-  setShowInstallPopup: () => {},
+  setShowInstallPopup: () => { },
 });
 
 export const usePwa = () => useContext(PwaContext);
@@ -50,8 +50,10 @@ export default function PwaProvider({ children }) {
 
     // Check if the event was already captured by the early inline script in layout
     if (typeof window !== "undefined" && window.deferredPrompt) {
-      setDeferredPrompt(window.deferredPrompt);
-      setIsInstallable(true);
+      setTimeout(() => {
+        setDeferredPrompt(window.deferredPrompt);
+        setIsInstallable(true);
+      }, 0);
       console.log("Found stashed deferredPrompt from window.");
     }
 
@@ -143,14 +145,29 @@ export default function PwaProvider({ children }) {
             } catch (e) {
               console.error(e);
             }
-          } 
+          }
         },
       }}
     >
       {children}
       {/* Homepage Install Popup */}
       {showInstallPopup && (
-        <div className="fixed bottom-6 right-3 sm:right-6 z-[9999] max-w-sm rounded-3xl border border-slate-100 bg-white p-5 shadow-2xl ring-1 ring-slate-100/50 transition-all duration-300">
+        <div className="fixed bottom-70 sm:bottom-6 right-2 sm:right-6 z-[9999] max-w-sm rounded-3xl border border-slate-100 bg-white p-5 pr-8 shadow-2xl ring-1 ring-slate-100/50 transition-all duration-300 ">
+          <button
+            onClick={() => setShowInstallPopup(false)}
+            className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-full hover:bg-slate-50 cursor-pointer"
+            aria-label="Close installation popup"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
           <div className="flex items-start gap-4">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-violet-50 text-2xl">
               <Image src={DEFAULT_LOGO} alt="18Homes" width={40} height={40} className="rounded-xl object-contain" />

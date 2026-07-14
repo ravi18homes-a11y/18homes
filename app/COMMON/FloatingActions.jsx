@@ -11,13 +11,13 @@ export default function FloatingActions() {
 
   const links = [
     {
-      href: "tel:+917827602246",
+      href: "tel:+918796763688",
       className:
         "px-3 py-3 font-bold bg-[#c04b7e] border-[#c04b7e] text-[#101010] rounded-full text-[18px] border hover:border-[#8c4bdc] hover:bg-transparent hover:text-[#8c4bdc] transition shadow-md flex items-center justify-center",
       icon: <IoCall size={24} />,
     },
     {
-      href: "https://wa.me/+917827602246",
+      href: "https://wa.me/+918796763688",
       className:
         "px-3 py-3 font-bold border gap-2 flex border-[#43b852] text-[#2fb464] bg-[white] rounded-full text-[18px] hover:border-[#3be8f3] hover:text-[black] transition shadow-md flex items-center justify-center",
       icon: <FaWhatsapp size={24} />,
@@ -58,14 +58,13 @@ export default function FloatingActions() {
         }
       `}</style>
 
-      <div className="fixed bottom-4 left-4 flex flex-col items-center z-50">
+      <div className="fixed bottom-4 right-4 flex flex-col items-center z-50">
         {/* Expanded Links Area */}
         <div
-          className={`absolute bottom-20 flex flex-col gap-4 transition-all duration-300 ease-out origin-bottom ${
-            isOpen
-              ? "opacity-100 translate-y-0 scale-100 pointer-events-auto"
-              : "opacity-0 translate-y-4 scale-75 pointer-events-none"
-          }`}
+          className={`absolute bottom-20 flex flex-col gap-4 transition-all duration-300 ease-out origin-bottom ${isOpen
+            ? "opacity-100 translate-y-0 scale-100 pointer-events-auto"
+            : "opacity-0 translate-y-4 scale-75 pointer-events-none"
+            }`}
         >
           {links.map((link, idx) => (
             <Link key={idx} href={link.href} className={link.className}>
@@ -77,29 +76,26 @@ export default function FloatingActions() {
         {/* Toggle Button */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className={`w-14 h-14 rounded-full text-white bg-gradient-to-tr from-[#c04b7e] to-[#8c4bdc] hover:from-[#8c4bdc] hover:to-[#c04b7e] transition-all duration-300 shadow-lg flex items-center justify-center focus:outline-none cursor-pointer ${
-            !isOpen ? "animate-blink-pulse" : ""
-          }`}
+          className={`w-14 h-14 rounded-full text-white bg-gradient-to-tr from-[#c04b7e] to-[#8c4bdc] hover:from-[#8c4bdc] hover:to-[#c04b7e] transition-all duration-300 shadow-lg flex items-center justify-center focus:outline-none cursor-pointer ${!isOpen ? "animate-blink-pulse" : ""
+            }`}
           aria-label="Toggle quick contact options"
         >
           <div className="relative w-7 h-7 flex items-center justify-center">
             {/* Message Icon */}
             <div
-              className={`absolute transition-all duration-300 ${
-                isOpen
-                  ? "opacity-0 scale-50 rotate-90"
-                  : "opacity-100 scale-100 rotate-0"
-              }`}
+              className={`absolute transition-all duration-300 ${isOpen
+                ? "opacity-0 scale-50 rotate-90"
+                : "opacity-100 scale-100 rotate-0"
+                }`}
             >
               <IoChatbubbleEllipses size={28} />
             </div>
             {/* Arrow/Collapse Icon */}
             <div
-              className={`absolute transition-all duration-300 ${
-                isOpen
-                  ? "opacity-100 scale-100 rotate-0"
-                  : "opacity-0 scale-50 -rotate-90"
-              }`}
+              className={`absolute transition-all duration-300 ${isOpen
+                ? "opacity-100 scale-100 rotate-0"
+                : "opacity-0 scale-50 -rotate-90"
+                }`}
             >
               <IoChevronDown size={28} />
             </div>
