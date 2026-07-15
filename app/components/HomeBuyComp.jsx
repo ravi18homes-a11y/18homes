@@ -13,7 +13,7 @@ const getMediaThumbnail = (url) => {
   const lowerUrl = url.toLowerCase();
   const videoExtensions = [".mp4", ".mov", ".avi", ".webm", ".mkv", ".3gp", ".ogg", ".ogv", ".wmv"];
   const isVideo = videoExtensions.some(ext => lowerUrl.endsWith(ext) || lowerUrl.includes(ext + "?"));
-  
+
   if (isVideo) {
     return url.replace(/\.(mp4|mov|avi|webm|mkv|3gp|ogg|ogv|wmv)(?=\?|$)/i, ".jpg");
   }
@@ -70,7 +70,8 @@ export default function HomeBuyComp() {
     try {
       const params = new URLSearchParams();
       if (filters.purpose) params.append("purpose", filters.purpose);
-      params.append("limit", "3");
+      params.append("isBoosted", "true");
+      params.append("limit", "6");
 
       const apiUrl = `${databaseUrl}/api/properties?${params.toString()}`;
       const response = await fetch(apiUrl);
@@ -97,8 +98,8 @@ export default function HomeBuyComp() {
 
           const validImages = Array.isArray(prop.images)
             ? prop.images.filter(
-                (img) => img && !img.startsWith("blob:") && img.trim() !== "",
-              )
+              (img) => img && !img.startsWith("blob:") && img.trim() !== "",
+            )
             : [];
 
           const ownerInfo = prop.owner
@@ -127,7 +128,7 @@ export default function HomeBuyComp() {
           };
         });
 
-        setProperties(transformedProperties.slice(0, 3));
+        setProperties(transformedProperties.slice(0, 6));
       } else {
         setProperties([]);
       }
@@ -228,7 +229,7 @@ export default function HomeBuyComp() {
       return `${price.value} ${price.unit}`;
     }
     if (!price || price === 0) return "Price on Request";
-    
+
     // If price is a string and contains alphabetic characters
     if (typeof price === "string" && /[a-zA-Z]/.test(price)) {
       if (!price.includes("₹")) {
@@ -248,7 +249,7 @@ export default function HomeBuyComp() {
 
       <div className="flex flex-col items-center justify-center mb-[20px]">
         <h3 className="text-center font-medium sm:text-[30px] text-gray-800">Top High Rated Properties</h3>
-        
+
       </div>
       {/* <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
         <div className="flex items-center gap-2 flex-wrap">
@@ -348,19 +349,17 @@ export default function HomeBuyComp() {
                   className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 z-20"
                 >
                   <Heart
-                    className={`w-5 h-5 ${
-                      favorites.includes(property.id)
-                        ? "fill-red-600 text-red-600"
-                        : "text-gray-600"
-                    }`}
+                    className={`w-5 h-5 ${favorites.includes(property.id)
+                      ? "fill-red-600 text-red-600"
+                      : "text-gray-600"
+                      }`}
                   />
                 </button>
                 {(property.featured || property.isBoosted) && (
-                  <span className={`absolute top-3 left-3 px-3 py-1 text-white text-sm font-bold rounded-full ${
-                    property.isBoosted 
-                      ? "bg-[blue] shadow-md" 
-                      : "bg-red-600"
-                  }`}>
+                  <span className={`absolute top-3 left-3 px-3 py-1 text-white text-sm font-bold rounded-full ${property.isBoosted
+                    ? "bg-[blue] shadow-md"
+                    : "bg-red-600"
+                    }`}>
                     {property.isBoosted ? "★ High Rated (Boosted)" : "Featured"}
                   </span>
                 )}
@@ -413,7 +412,7 @@ export default function HomeBuyComp() {
               </div>
             </Link>
           ))}
-         
+
         </div>
       ) : (
         <div className="text-center py-16">
@@ -428,13 +427,13 @@ export default function HomeBuyComp() {
       )}
 
 
-       <Link
-          href="/buy?isBoosted=true"
-          className="mt-8 text-center text-[20px] justify-center items-center text-center bg-[blue] text-white p-2 rounded-lg max-w-[200px] mx-auto mx-auto font-semibold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transition flex items-center gap-1 group"
-        >
-          See More
-          <span className="transform group-hover:translate-x-1 transition-transform inline-block">➔</span>
-        </Link>
+      <Link
+        href="/buy?isBoosted=true"
+        className="mt-8 text-center text-[20px] justify-center  bg-[blue] text-white p-2 rounded-lg max-w-[200px] mx-auto font-semibold  hover:underline cursor-pointer transition flex items-center gap-1 group"
+      >
+        See More
+        <span className="transform group-hover:translate-x-1 transition-transform inline-block">➔</span>
+      </Link>
     </section>
   );
 }

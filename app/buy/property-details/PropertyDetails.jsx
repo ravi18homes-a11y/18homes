@@ -17,7 +17,44 @@ import {
   ChevronRight,
   X,
   Copy,
+  Trees,
+  Car,
+  ParkingCircle,
+  ArrowUpDown,
+  ShieldCheck,
+  Trash2,
+  Droplet,
+  Smile,
+  Bus,
+  Flame,
+  CreditCard,
+  Train,
+  GraduationCap,
+  HeartPulse,
 } from "lucide-react";
+
+const AMENITY_ICONS = {
+  "garden": { label: "Garden", icon: <Trees className="w-10 h-10 text-[#ff6c00] flex-shrink-0" /> },
+  "reserve parking": { label: "Reserve Parking", icon: <Car className="w-10 h-10 text-[#ff6c00] flex-shrink-0" /> },
+  "visitor parking": { label: "Visitor Parking", icon: <ParkingCircle className="w-10 h-10 text-[#ff6c00] flex-shrink-0" /> },
+  "lift": { label: "Lift", icon: <ArrowUpDown className="w-10 h-10 text-[#ff6c00] flex-shrink-0" /> },
+  "security": { label: "Security", icon: <ShieldCheck className="w-10 h-10 text-[#ff6c00] flex-shrink-0" /> },
+  "waste disposal": { label: "Waste Disposal", icon: <Trash2 className="w-10 h-10 text-[#ff6c00] flex-shrink-0" /> },
+  "parks": { label: "Parks", icon: <Trees className="w-10 h-10 text-[#ff6c00] flex-shrink-0" /> },
+  "24x7 water": { label: "24X7 Water", icon: <Droplet className="w-10 h-10 text-[#ff6c00] flex-shrink-0" /> },
+  "kids area": { label: "Kids Area", icon: <Smile className="w-10 h-10 text-[#ff6c00] flex-shrink-0" /> },
+  "bus service": { label: "Bus Service", icon: <Bus className="w-10 h-10 text-[#ff6c00] flex-shrink-0" /> },
+  "piped gas": { label: "Piped Gas", icon: <Flame className="w-10 h-10 text-[#ff6c00] flex-shrink-0" /> },
+  "atm": { label: "ATM", icon: <CreditCard className="w-10 h-10 text-[#ff6c00] flex-shrink-0" /> },
+};
+
+const DISTANCE_INFO = {
+  "busStand": { label: "Bus Stand", icon: <Bus className="w-10 h-10 text-[#0f3460] flex-shrink-0" /> },
+  "metroStation": { label: "Metro Station", icon: <Train className="w-10 h-10 text-[#0f3460] flex-shrink-0" /> },
+  "atm": { label: "ATM", icon: <CreditCard className="w-10 h-10 text-[#0f3460] flex-shrink-0" /> },
+  "school": { label: "School", icon: <GraduationCap className="w-10 h-10 text-[#0f3460] flex-shrink-0" /> },
+  "hospital": { label: "Hospital", icon: <HeartPulse className="w-10 h-10 text-[#0f3460] flex-shrink-0" /> },
+};
 import Link from "next/link";
 import { FaWhatsapp, FaFacebook, FaTwitter } from "react-icons/fa";
 import { toast } from "react-hot-toast";
@@ -558,51 +595,181 @@ const PropertyDetailsPage = () => {
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-6 py-4 border-t border-b">
-                {property.propertyType !== "plot" &&
-                  property.propertyType !== "shop" &&
-                  property.propertyType !== "office" &&
-                  property.propertyType !== "commercial" && (
-                    <div className="flex items-center gap-2">
-                      <Bed className="w-5 h-5 text-gray-600" />
-                      <span className="font-semibold">
-                        {property.bedrooms || 0} BHK
+              {/* Premium Property Specifications Grid */}
+              <div className="mt-8 bg-slate-50 border border-slate-100 rounded-2xl p-6 md:p-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-8 gap-x-6">
+                  {/* PROPERTY FOR */}
+                  {property.purpose && (
+                    <div>
+                      <span className="block text-xs font-semibold text-gray-400 uppercase tracking-wider">PROPERTY FOR:</span>
+                      <span className="block text-base font-bold text-slate-800 mt-1 uppercase">
+                        {property.purpose === "sell" ? "SALE" : "RENT"}
                       </span>
                     </div>
                   )}
-                {property.propertyType !== "plot" &&
-                  property.propertyType !== "shop" &&
-                  property.commercialType !== "commercial land" &&
-                  property.commercialType !== "lease land" && (
-                    <div className="flex items-center gap-2">
-                      <Bath className="w-5 h-5 text-gray-600" />
-                      <span className="font-semibold">
-                        {property.bathrooms || 0} Bathrooms
-                      </span>
-                    </div>
-                  )}
-                <div className="flex items-center gap-2">
-                  <Square className="w-5 h-5 text-gray-600" />
-                  <span className="font-semibold">
-                    {/^[0-9\s.,]+$/.test(String(property.area).trim())
-                      ? `${property.area} sqft`
-                      : property.area}
-                  </span>
-                </div>
-                {property.floorNo && (
-                  <div className="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-full text-sm font-semibold text-gray-700">
-                    <span>Floor no : {property.floorNo}{property.totalFloors ? `  Total floors : ${property.totalFloors}` : ""}</span>
-                  </div>
-                )}
-              </div>
 
-              <div className="mt-4 flex justify-between items-center flex-wrap gap-4">
-                <span className="text-4xl font-bold text-red-600">
-                  {formatPrice(property.priceText || property.priceValue || property.price)}
-                </span>
-                <span className="px-4 py-1.5 bg-gray-100 border border-gray-200 text-gray-700 text-sm font-semibold rounded-full">
-                  Listed by: <span className="text-red-600 capitalize font-bold">{property.listedBy === "dealer" ? "Dealer / Broker" : "Owner"}</span>
-                </span>
+                  {/* PROPERTY TYPE */}
+                  {property.propertyType && (
+                    <div>
+                      <span className="block text-xs font-semibold text-gray-400 uppercase tracking-wider">PROPERTY TYPE:</span>
+                      <span className="block text-base font-bold text-slate-800 mt-1 uppercase">
+                        {property.propertyType === "commercial" ? "COMMERCIAL" : "RESIDENTIAL"}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* CATEGORY */}
+                  {property.propertyType && (
+                    <div>
+                      <span className="block text-xs font-semibold text-gray-400 uppercase tracking-wider">CATEGORY:</span>
+                      <span className="block text-base font-bold text-slate-800 mt-1 uppercase">
+                        {property.propertyType === "commercial"
+                          ? (property.commercialType === "other" && property.commercialTypeCustom
+                            ? property.commercialTypeCustom
+                            : property.commercialType || "COMMERCIAL")
+                          : (property.propertyType === "apartment" ? "SOCIETY FLATS" : property.propertyType || "RESIDENTIAL")}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* UNIT SIZE */}
+                  {property.area && !["—", "N/A", "not specified", "Not specified"].includes(String(property.area).trim()) && (
+                    <div>
+                      <span className="block text-xs font-semibold text-gray-400 uppercase tracking-wider">UNIT SIZE:</span>
+                      <span className="block text-base font-bold text-slate-800 mt-1 uppercase font-bold">
+                        {/^[0-9\s.,]+$/.test(String(property.area).trim())
+                          ? `${property.area} SQ-FT`
+                          : property.area}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* TOTAL FLOORS */}
+                  {property.totalFloors && !["—", "N/A"].includes(String(property.totalFloors).trim()) && (
+                    <div>
+                      <span className="block text-xs font-semibold text-gray-400 uppercase tracking-wider">TOTAL FLOORS:</span>
+                      <span className="block text-base font-bold text-slate-800 mt-1 uppercase font-bold">
+                        {property.totalFloors} FLOORS
+                      </span>
+                    </div>
+                  )}
+
+                  {/* FLOOR NO */}
+                  {property.floorNo && !["—", "N/A"].includes(String(property.floorNo).trim()) && (
+                    <div>
+                      <span className="block text-xs font-semibold text-gray-400 uppercase tracking-wider">FLOOR NO.:</span>
+                      <span className="block text-base font-bold text-slate-800 mt-1 uppercase font-bold">
+                        {property.floorNo} TH
+                      </span>
+                    </div>
+                  )}
+
+                  {/* AGE OF PROPERTY */}
+                  {property.ageOfProperty && !["—", "N/A"].includes(String(property.ageOfProperty).trim()) && (
+                    <div>
+                      <span className="block text-xs font-semibold text-gray-400 uppercase tracking-wider">AGE OF PROPERTY:</span>
+                      <span className="block text-base font-bold text-slate-800 mt-1 uppercase font-bold">
+                        {property.ageOfProperty}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* BEDROOMS */}
+                  {property.bedrooms && Number(property.bedrooms) > 0 ? (
+                    <div>
+                      <span className="block text-xs font-semibold text-gray-400 uppercase tracking-wider">BEDROOM(S):</span>
+                      <span className="block text-base font-bold text-slate-800 mt-1 uppercase font-bold">
+                        {property.bedrooms}
+                      </span>
+                    </div>
+                  ) : null}
+
+                  {/* BATHROOMS */}
+                  {property.bathrooms && Number(property.bathrooms) > 0 ? (
+                    <div>
+                      <span className="block text-xs font-semibold text-gray-400 uppercase tracking-wider">BATHROOM(S):</span>
+                      <span className="block text-base font-bold text-slate-800 mt-1 uppercase font-bold">
+                        {property.bathrooms}
+                      </span>
+                    </div>
+                  ) : null}
+
+                  {/* BALCONIES */}
+                  {property.balconies && Number(property.balconies) > 0 ? (
+                    <div>
+                      <span className="block text-xs font-semibold text-gray-400 uppercase tracking-wider">BALCONY(S):</span>
+                      <span className="block text-base font-bold text-slate-800 mt-1 uppercase font-bold">
+                        {property.balconies}
+                      </span>
+                    </div>
+                  ) : null}
+
+                  {/* PRICE / SQ.FT. */}
+                  {(() => {
+                    if (!property.priceValue || !property.area) return null;
+                    const numericArea = parseFloat(String(property.area).replace(/[^\d.]/g, ""));
+                    if (isNaN(numericArea) || numericArea === 0) return null;
+                    return (
+                      <div>
+                        <span className="block text-xs font-semibold text-gray-400 uppercase tracking-wider">PRICE / SQ.FT.:</span>
+                        <span className="block text-base font-bold text-slate-800 mt-1 uppercase font-bold">
+                          {Math.round(property.priceValue / numericArea)} PER SQFT.
+                        </span>
+                      </div>
+                    );
+                  })()}
+
+                  {/* FURNISHING */}
+                  {property.furnishing && (
+                    <div>
+                      <span className="block text-xs font-semibold text-gray-400 uppercase tracking-wider">FURNISHING:</span>
+                      <span className="block text-base font-bold text-slate-800 mt-1 uppercase font-bold">
+                        {String(property.furnishing).replace("-", " ")}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* PRICE */}
+                  {(property.priceText || property.priceValue || property.price) && (
+                    <div>
+                      <span className="block text-xs font-semibold text-gray-400 uppercase tracking-wider">PRICE:</span>
+                      <span className="block text-lg font-extrabold text-red-600 mt-1 uppercase">
+                        {(() => {
+                          const pr = property.priceText || property.priceValue || property.price;
+                          let formatted = String(pr).toUpperCase();
+                          if (!formatted.endsWith(".")) formatted = formatted + ".";
+                          if (!formatted.startsWith("₹")) formatted = "₹ " + formatted;
+                          return formatted;
+                        })()}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* STATUS */}
+                  {property.status && (
+                    <div>
+                      <span className="block text-xs font-semibold text-gray-400 uppercase tracking-wider">STATUS:</span>
+                      <span className="block text-base font-bold text-slate-800 mt-1 uppercase font-bold">
+                        {property.status}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* POSTED ON */}
+                  {property.createdAt && (
+                    <div>
+                      <span className="block text-xs font-semibold text-gray-400 uppercase tracking-wider">POSTED ON:</span>
+                      <span className="block text-base font-bold text-slate-800 mt-1 uppercase font-bold">
+                        {(() => {
+                          const date = new Date(property.createdAt);
+                          if (isNaN(date.getTime())) return String(property.createdAt).toUpperCase();
+                          const options = { year: "numeric", month: "long", day: "2-digit" };
+                          return date.toLocaleDateString("en-US", options).toUpperCase();
+                        })()}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -697,41 +864,53 @@ const PropertyDetailsPage = () => {
               </div>
             )}
 
-            {/* Amenities */}
+            {/* Amenities Section */}
             {property.amenities && property.amenities.length > 0 && (
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4">
+              <div className="bg-white rounded-lg shadow-md p-8">
+                <h2 className="text-2xl font-bold text-[#0f3460] mb-6">
                   Amenities
                 </h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {property.amenities.map((amenity, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                      <span className="text-gray-700">{amenity}</span>
-                    </div>
-                  ))}
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+                  {property.amenities.map((amenity, index) => {
+                    const normKey = String(amenity).trim().toLowerCase();
+                    const info = AMENITY_ICONS[normKey] || {
+                      label: amenity,
+                      icon: <CheckCircle className="w-10 h-10 text-[#ff6c00] flex-shrink-0" />
+                    };
+                    return (
+                      <div key={index} className="flex flex-col items-center justify-center p-4 border border-gray-100 rounded-2xl hover:shadow-md transition-shadow bg-slate-50/50">
+                        <div className="mb-2">{info.icon}</div>
+                        <span className="text-sm font-semibold text-gray-700 text-center">{info.label}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
 
-            {/* Nearby Places */}
-            {property.nearbyPlaces && property.nearbyPlaces.length > 0 && (
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                  Nearby Places
+            {/* Distances Section */}
+            {property.distances && Object.values(property.distances).some(Boolean) && (
+              <div className="bg-white rounded-lg shadow-md p-8">
+                <h2 className="text-2xl font-bold text-[#0f3460] mb-6">
+                  Distances
                 </h2>
-                <div className="space-y-3">
-                  {property.nearbyPlaces.map((place, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between py-2 border-b last:border-b-0"
-                    >
-                      <span className="text-gray-700 font-medium">
-                        {place.name}
-                      </span>
-                      <span className="text-gray-600">{place.distance}</span>
-                    </div>
-                  ))}
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+                  {Object.entries(property.distances).map(([key, val]) => {
+                    if (!val) return null;
+                    const info = DISTANCE_INFO[key] || {
+                      label: key.charAt(0).toUpperCase() + key.slice(1),
+                      icon: <MapPin className="w-10 h-10 text-[#0f3460] flex-shrink-0" />
+                    };
+                    return (
+                      <div key={key} className="flex flex-col items-center justify-center p-4 border border-gray-100 rounded-2xl hover:shadow-md transition-shadow bg-slate-50/50">
+                        <div className="mb-2">{info.icon}</div>
+                        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">{info.label}</span>
+                        <span className="text-sm font-bold text-slate-800 text-center mt-1">
+                          {val}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}

@@ -364,12 +364,12 @@ export default function Navbar() {
             </div>
           </div>
 
-          <button
+          {/* <button
             className="hamburger-icon lg:hidden text-black text-4xl"
             onClick={() => setOpen(!open)}
           >
             {open ? <IoMdClose /> : <GiHamburgerMenu />}
-          </button>
+          </button> */}
         </div>
       </div>
 
