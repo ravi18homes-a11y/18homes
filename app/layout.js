@@ -1,6 +1,7 @@
 import "./globals.css";
 import Navbar from "./COMMON/Navbar"; // navbar import
 import FloatingActions from "./COMMON/FloatingActions";
+import BottomTaskbar from "./COMMON/BottomTaskbar";
 import { Poppins } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import Script from "next/script";
@@ -69,6 +70,7 @@ export default function RootLayout({ children }) {
           {children}
         </PwaProvider>
         <FloatingActions />
+        <BottomTaskbar />
       </body>
     </html>
   );

@@ -89,3 +89,9 @@ html, body {
   color: #0070f3;
   cursor: pointer;
 }
+
+@media (max-width: 639px) {
+  body {
+    padding-bottom: 76px;
+  }
+}

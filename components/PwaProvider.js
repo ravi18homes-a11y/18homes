@@ -152,48 +152,53 @@ export default function PwaProvider({ children }) {
       {children}
       {/* Homepage Install Popup */}
       {showInstallPopup && (
-        <div className="fixed bottom-70 sm:bottom-6 right-2 sm:right-6 z-[9999] max-w-sm rounded-3xl border border-slate-100 bg-white p-5 pr-8 shadow-2xl ring-1 ring-slate-100/50 transition-all duration-300 ">
-          <button
+        <>
+          {/* Backdrop overlay */}
+          <div 
+            className="fixed inset-0 bg-black/30 z-[9998] backdrop-blur-xs transition-opacity duration-300"
             onClick={() => setShowInstallPopup(false)}
-            className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-full hover:bg-slate-50 cursor-pointer"
-            aria-label="Close installation popup"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
+          />
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9999] w-[90vw] max-w-sm rounded-3xl border border-slate-100 bg-white p-6 shadow-2xl ring-1 ring-slate-100/50 transition-all duration-300 flex flex-col items-center text-center">
+            <button
+              onClick={() => setShowInstallPopup(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-full hover:bg-slate-50 cursor-pointer"
+              aria-label="Close installation popup"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-          <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-violet-50 text-2xl">
-              <Image src={DEFAULT_LOGO} alt="18Homes" width={40} height={40} className="rounded-xl object-contain" />
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-violet-50 text-2xl mb-2 shadow-sm">
+              <Image src={DEFAULT_LOGO} alt="18Homes" width={48} height={48} className="rounded-xl object-contain" />
             </div>
-            <div className="space-y-1">
-              <h4 className="font-semibold text-slate-900">Install 18 Homes</h4>
-              <p className="text-xs text-slate-600 leading-relaxed">
+            <div className="space-y-2 w-full">
+              <h4 className="font-bold text-slate-900 text-lg">Install 18 Homes</h4>
+              <p className="text-xs text-slate-600 leading-relaxed px-2">
                 Add 18 Homes to your home screen for quick access and offline features.
               </p>
-              <div className="pt-2 flex items-center gap-2">
+              <div className="pt-3 flex items-center justify-center gap-3 w-full">
                 <button
                   onClick={installApp}
-                  className="rounded-full bg-slate-900 px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-800 cursor-pointer"
+                  className="flex-1 rounded-full bg-slate-900 py-2.5 text-xs font-semibold text-white transition hover:bg-slate-800 cursor-pointer shadow-md"
                 >
                   Install Now
                 </button>
                 <button
                   onClick={() => setShowInstallPopup(false)}
-                  className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-200 cursor-pointer"
+                  className="flex-1 rounded-full bg-slate-100 py-2.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-200 cursor-pointer"
                 >
                   Later
                 </button>
               </div>
             </div>
           </div>
-        </div>
+        </>
       )}
     </PwaContext.Provider>
   );

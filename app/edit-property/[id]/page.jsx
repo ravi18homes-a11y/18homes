@@ -78,7 +78,8 @@ const EditPropertyApp = ({ params }) => {
     isHighRise: false,
     floorNo: "",
     totalFloors: "",
-    price: "",
+    priceNumber: "",
+    priceUnit: "Lac",
     area: [{ size: "", unit: "sqft" }],
     bedrooms: "1",
     bathrooms: "1",
@@ -91,6 +92,16 @@ const EditPropertyApp = ({ params }) => {
     ownerEmail: "",
     listedBy: "owner",
     isSold: false,
+    ageOfProperty: "New Construction",
+    balconies: "0",
+    amenities: [],
+    distances: {
+      busStand: "",
+      metroStation: "",
+      atm: "",
+      school: "",
+      hospital: "",
+    },
   });
 
   const [submitSuccess, setSubmitSuccess] = useState(false);
@@ -103,6 +114,20 @@ const EditPropertyApp = ({ params }) => {
           const data = await res.json();
           const property = data.data || data; // handle different api response structures
 
+          const rawPrice = property.priceText || (property.priceValue ? String(property.priceValue) : "");
+          let priceNum = rawPrice;
+          let priceUnitVal = "Lac";
+          if (rawPrice) {
+            const match = String(rawPrice).match(/^([\d.]+)\s*(cr|crore|lakh|lac|k|thousand|l)?$/i);
+            if (match) {
+              priceNum = match[1];
+              const rawUnit = match[2]?.toLowerCase() || "";
+              if (rawUnit.includes("cr") || rawUnit.includes("crore")) priceUnitVal = "Cr";
+              else if (rawUnit.includes("lakh") || rawUnit.includes("lac") || rawUnit === "l") priceUnitVal = "Lac";
+              else if (rawUnit.includes("thousand") || rawUnit === "k") priceUnitVal = "Thousand";
+            }
+          }
+
           setSellForm({
             title: property.title || "",
             description: property.description || "",
@@ -113,7 +138,8 @@ const EditPropertyApp = ({ params }) => {
             isHighRise: property.isHighRise || false,
             floorNo: property.floorNo || "",
             totalFloors: property.totalFloors || "",
-            price: property.priceText || property.priceValue || property.price || "",
+            priceNumber: priceNum,
+            priceUnit: priceUnitVal,
             area: [{
               size: property.area?.size || (typeof property.area === 'number' ? property.area : ""),
               unit: property.area?.unit || "sqft"
@@ -129,6 +155,16 @@ const EditPropertyApp = ({ params }) => {
             ownerEmail: property.owner?.email || property.ownerEmail || "",
             listedBy: property.listedBy || "owner",
             isSold: property.isSold || false,
+            ageOfProperty: property.ageOfProperty || "New Construction",
+            balconies: (property.balconies || "0").toString(),
+            amenities: property.amenities || [],
+            distances: {
+              busStand: property.distances?.busStand || "",
+              metroStation: property.distances?.metroStation || "",
+              atm: property.distances?.atm || "",
+              school: property.distances?.school || "",
+              hospital: property.distances?.hospital || ""
+            },
           });
         } else {
           toast.error("Could not fetch property details.");
@@ -283,8 +319,8 @@ const EditPropertyApp = ({ params }) => {
           floorNo: (sellForm.propertyType === "flat" || sellForm.propertyType === "apartment" || sellForm.propertyType === "office" || sellForm.propertyType === "shop" || sellForm.propertyType === "commercial") ? sellForm.floorNo : undefined,
           totalFloors: (sellForm.propertyType === "flat" || sellForm.propertyType === "apartment" || sellForm.propertyType === "office" || sellForm.propertyType === "shop" || sellForm.propertyType === "commercial") ? sellForm.totalFloors : undefined,
 
-          priceText: sellForm.price,
-          priceValue: parsePrice(sellForm.price),
+          priceText: `${sellForm.priceNumber} ${sellForm.priceUnit}`,
+          priceValue: parsePrice(`${sellForm.priceNumber} ${sellForm.priceUnit}`),
 
           area: {
             size: sellForm.area[0]?.size || "",
@@ -302,6 +338,10 @@ const EditPropertyApp = ({ params }) => {
           images: [...sellForm.images, ...sellForm.videos],
           listedBy: sellForm.listedBy || "owner",
           isSold: sellForm.isSold,
+          ageOfProperty: sellForm.ageOfProperty,
+          balconies: Number(sellForm.balconies) || 0,
+          amenities: sellForm.amenities,
+          distances: sellForm.distances,
 
           // Allow passing owner info if supported by the put endpoint
           owner: {
@@ -682,19 +722,34 @@ const EditPropertyApp = ({ params }) => {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Price (₹) *
+                    Price *
                   </label>
-                  <input
-                    type="text"
-                    required
-                    value={sellForm.price}
-                    onChange={(e) => handleSellFormChange("price", e.target.value)}
-                    placeholder="e.g. 25 Lakh or 2.5 Cr"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                  />
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      step="any"
+                      required
+                      value={sellForm.priceNumber}
+                      onChange={(e) =>
+                        handleSellFormChange("priceNumber", e.target.value)
+                      }
+                      placeholder="e.g. 2.5 or 25"
+                      className="w-2/3 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                    />
+                    <select
+                      value={sellForm.priceUnit}
+                      onChange={(e) =>
+                        handleSellFormChange("priceUnit", e.target.value)
+                      }
+                      className="w-1/3 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 bg-white"
+                    >
+                      <option value="Thousand">Thousand</option>
+                      <option value="Lac">Lakh / Lac</option>
+                      <option value="Cr">Crore / Cr</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
@@ -759,6 +814,49 @@ const EditPropertyApp = ({ params }) => {
                     placeholder="e.g. 1450 sqft or 150 sq yards"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
                   />
+                </div>
+              </div>
+
+              {/* Age of Property & Balconies */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Age of Property *
+                  </label>
+                  <select
+                    required
+                    value={sellForm.ageOfProperty}
+                    onChange={(e) =>
+                      handleSellFormChange("ageOfProperty", e.target.value)
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  >
+                    <option value="Under Construction">Under Construction</option>
+                    <option value="New Construction">New Construction</option>
+                    <option value="1-5 Years">1-5 Years</option>
+                    <option value="5-10 Years">5-10 Years</option>
+                    <option value="More than 10 Years">More than 10 Years</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Balconies *
+                  </label>
+                  <select
+                    required
+                    value={sellForm.balconies}
+                    onChange={(e) =>
+                      handleSellFormChange("balconies", e.target.value)
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  >
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4+">4+</option>
+                  </select>
                 </div>
               </div>
 
@@ -864,6 +962,88 @@ const EditPropertyApp = ({ params }) => {
                   </div>
                 </div>
               </div> */}
+
+              {/* Amenities Section */}
+              <div className="border-t pt-6 mt-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                  Amenities (Select all that apply) (Optional)
+                </h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                  {[
+                    "Garden",
+                    "Reserve Parking",
+                    "Visitor Parking",
+                    "Lift",
+                    "Security",
+                    "Waste Disposal",
+                    "Parks",
+                    "24X7 Water",
+                    "Kids Area",
+                    "Bus Service",
+                    "Piped Gas",
+                    "ATM"
+                  ].map((amenity) => {
+                    const isChecked = sellForm.amenities.includes(amenity);
+                    return (
+                      <label
+                        key={amenity}
+                        className={`flex items-center gap-3 p-3 border rounded-xl cursor-pointer transition ${isChecked
+                            ? "bg-red-50 border-red-500 text-red-700 font-medium animate-pulse-subtle"
+                            : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
+                          }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={(e) => {
+                            const nextAmenities = e.target.checked
+                              ? [...sellForm.amenities, amenity]
+                              : sellForm.amenities.filter((a) => a !== amenity);
+                            handleSellFormChange("amenities", nextAmenities);
+                          }}
+                          className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500 cursor-pointer"
+                        />
+                        <span>{amenity}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Distances Section */}
+              <div className="border-t pt-6 mt-6">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                  Distances to Key Facilities (Optional)
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  {[
+                    { key: "busStand", label: "Bus Stand (e.g. 200 mtr)" },
+                    { key: "metroStation", label: "Metro Station (e.g. 500 mtr)" },
+                    { key: "atm", label: "ATM (e.g. Nearby)" },
+                    { key: "school", label: "School (e.g. 600 mtr)" },
+                    { key: "hospital", label: "Hospital (e.g. 2 KM)" }
+                  ].map((item) => (
+                    <div key={item.key}>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        {item.label}
+                      </label>
+                      <input
+                        type="text"
+                        value={sellForm.distances[item.key] || ""}
+                        onChange={(e) => {
+                          const nextDistances = {
+                            ...sellForm.distances,
+                            [item.key]: e.target.value
+                          };
+                          handleSellFormChange("distances", nextDistances);
+                        }}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 bg-white"
+                        placeholder="Distance details"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
 
               {/* Submit Buttons */}
               <div className="flex justify-end gap-3 pt-6">
