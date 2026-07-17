@@ -15,6 +15,8 @@ import {
   X,
   Loader2,
   Share2,
+  ChevronRight,
+  ChevronLeft,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import confetti from "canvas-confetti";
@@ -281,6 +283,7 @@ const BuyPage = () => {
               isBoosted: prop.isBoosted || false,
               listedBy: prop.listedBy || "owner",
               isSold: prop.isSold || false,
+              owner: prop.owner,
             };
           });
 
@@ -360,7 +363,16 @@ const BuyPage = () => {
       const matchesType =
         normalizedFilterType === "all" ||
         !normalizedFilterType ||
-        normalizedPropertyType === normalizedFilterType ||
+        (normalizedFilterType === "agriculture" && (
+          normalizedPropertyType === "agriculture" ||
+          (normalizedPropertyType.startsWith("commercial") && (
+            /land|acre|bigha|biswa|hectare/i.test(property.commercialType || "") ||
+            /land|acre|bigha|biswa|hectare/i.test(property.commercialTypeCustom || "") ||
+            /land|acre|bigha|biswa|hectare/i.test(property.title || "") ||
+            /land|acre|bigha|biswa|hectare/i.test(property.description || "")
+          ))
+        )) ||
+        (normalizedFilterType !== "agriculture" && normalizedPropertyType === normalizedFilterType) ||
         (normalizedFilterType === "commercial" && normalizedPropertyType.startsWith("commercial"));
 
       const matchesCommercialType =
@@ -380,7 +392,11 @@ const BuyPage = () => {
         normalizedPropertyPurpose === normalizedFilterPurpose;
       const matchesAreaUnit =
         !normalizedFilterAreaUnit ||
-        normalizedAreaUnit === normalizedFilterAreaUnit;
+        normalizedAreaUnit === normalizedFilterAreaUnit ||
+        (normalizedFilterType === "agriculture" && (
+          normalizeString(property.commercialTypeCustom).includes(normalizedFilterAreaUnit) ||
+          normalizeString(property.commercialType).includes(normalizedFilterAreaUnit)
+        ));
       const matchesShopSize =
         !normalizedFilterShopSize ||
         normalizedShopSize === normalizedFilterShopSize;
@@ -904,11 +920,15 @@ const BuyPage = () => {
                             }`}
                         />
                       </button>
+                      {property.owner?.role === "admin" && (
+                        <span className="absolute top-3 left-3 px-3 py-1 text-white text-sm font-bold rounded-full bg-green-600 shadow-md z-10">
+                          ✓ Verified
+                        </span>
+                      )}
                       {(property.featured || property.isBoosted) && (
-                        <span className={`absolute top-3 left-3 px-3 py-1 text-white text-sm font-bold rounded-full ${property.isBoosted
-                          ? "bg-[blue] shadow-md"
-                          : "bg-red-600"
-                          }`}>
+                        <span className={`absolute top-3 px-3 py-1 text-white text-sm font-bold rounded-full shadow-md z-10 ${
+                          property.owner?.role === "admin" ? "left-28" : "left-3"
+                        } ${property.isBoosted ? "bg-[blue]" : "bg-red-600"}`}>
                           {property.isBoosted ? "★ High Rated (Boosted)" : "Featured"}
                         </span>
                       )}
@@ -1031,7 +1051,7 @@ const BuyPage = () => {
                     onClick={() => handlePageChange(pagination.page - 1)}
                     className="px-4 py-2 border rounded-lg disabled:opacity-50 hover:bg-gray-100 transition-colors"
                   >
-                    Previous
+                    <ChevronLeft />
                   </button>
 
                   {/* Page number buttons */}
@@ -1076,7 +1096,7 @@ const BuyPage = () => {
                     onClick={() => handlePageChange(pagination.page + 1)}
                     className="px-4 py-2 border rounded-lg disabled:opacity-50 hover:bg-gray-100 transition-colors"
                   >
-                    Next
+                    <ChevronRight />
                   </button>
                 </div>
               </div>

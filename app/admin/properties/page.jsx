@@ -22,6 +22,9 @@ export default function AdminPropertiesPage() {
   const [fetchTrigger, setFetchTrigger] = useState(0);
   const [soldFilter, setSoldFilter] = useState("all");
   const [viewsSort, setViewsSort] = useState("none");
+  const [selectedBoostProp, setSelectedBoostProp] = useState(null);
+  const [selectedPlanKey, setSelectedPlanKey] = useState("7days");
+  const [isBoostingProp, setIsBoostingProp] = useState(false);
 
   const token =
     typeof window !== "undefined"
@@ -220,7 +223,98 @@ export default function AdminPropertiesPage() {
           onDelete={deleteProperty}
           onFlag={toggleFlag}
           onToggleSold={toggleSold}
+          onBoost={setSelectedBoostProp}
         />
+      )}
+
+      {selectedBoostProp && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 relative">
+            <h3 className="text-lg font-bold mb-4 text-gray-800 flex items-center gap-2">
+              <span>🚀</span> Boost Property (Admin Free)
+            </h3>
+            <p className="text-sm text-gray-600 mb-6">
+              Select a premium plan to boost the property <strong>"{selectedBoostProp.title}"</strong> for free.
+            </p>
+            <div className="space-y-3 mb-6">
+              {[
+                { key: "7days", name: "7 Days Boost", duration: 7 },
+                { key: "15days", name: "15 Days Boost", duration: 15 },
+                { key: "30days", name: "30 Days Boost", duration: 30 },
+              ].map((plan) => (
+                <label
+                  key={plan.key}
+                  className={`flex items-center justify-between p-3 border rounded-xl cursor-pointer transition ${
+                    selectedPlanKey === plan.key
+                      ? "border-blue-600 bg-blue-50/50"
+                      : "border-gray-200 hover:bg-gray-50"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      name="admin-boost-plan"
+                      checked={selectedPlanKey === plan.key}
+                      onChange={() => setSelectedPlanKey(plan.key)}
+                      className="text-blue-600 focus:ring-blue-500 w-4 h-4"
+                    />
+                    <div>
+                      <span className="font-semibold text-sm text-gray-800">{plan.name}</span>
+                      <span className="block text-xs text-gray-500">{plan.duration} days visibility</span>
+                    </div>
+                  </div>
+                  <span className="text-green-600 text-xs font-bold bg-green-50 px-2.5 py-1 rounded-full">
+                    FREE (Admin)
+                  </span>
+                </label>
+              ))}
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setSelectedBoostProp(null)}
+                className="px-4 py-2 border rounded-lg text-sm text-gray-600 hover:bg-gray-50 cursor-pointer"
+                disabled={isBoostingProp}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  setIsBoostingProp(true);
+                  try {
+                    const res = await fetch(`${BASE}/${selectedBoostProp._id}/boost/order`, {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                      },
+                      body: JSON.stringify({ planKey: selectedPlanKey }),
+                    });
+                    const json = res.ok ? await res.json() : null;
+                    if (json && json.success) {
+                      toast.success("Property boosted successfully!");
+                      setFetchTrigger((prev) => prev + 1);
+                      setSelectedBoostProp(null);
+                    } else {
+                      toast.error(json?.message || "Failed to boost property");
+                    }
+                  } catch (err) {
+                    console.error("Error boosting property:", err);
+                    toast.error("Error boosting property");
+                  } finally {
+                    setIsBoostingProp(false);
+                  }
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 cursor-pointer"
+                disabled={isBoostingProp}
+              >
+                {isBoostingProp ? "Boosting..." : "Apply Boost"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {pagination && (
@@ -249,6 +343,7 @@ function PropertyTable({
   onDelete,
   onFlag,
   onToggleSold,
+  onBoost,
 }) {
   const [openDropdownId, setOpenDropdownId] = useState(null);
 
@@ -395,6 +490,16 @@ function PropertyTable({
                             className="w-full text-left block px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 transition cursor-pointer"
                           >
                             {isFlagged ? "Make Visible" : "Hide Property"}
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              setOpenDropdownId(null);
+                              onBoost(p);
+                            }}
+                            className="w-full text-left block px-4 py-2 text-xs text-amber-600 hover:bg-slate-50 transition font-medium cursor-pointer"
+                          >
+                            🚀 Boost Property (Free)
                           </button>
 
                           <button

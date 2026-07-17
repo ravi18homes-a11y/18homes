@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import {
   Home,
@@ -17,11 +17,17 @@ import {
   Phone,
   Compass,
   LogIn,
-  LogOut
+  LogOut,
+  Bed,
+  Bath,
+  Square,
+  Share2
 } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 export default function BottomTaskbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
 
@@ -31,6 +37,7 @@ export default function BottomTaskbar() {
   const [loading, setLoading] = useState(false);
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [favorites, setFavorites] = useState([]);
 
   const databaseUrl = process.env.NEXT_PUBLIC_APP_DATABASE_URL || "http://localhost:5000";
 
@@ -49,7 +56,198 @@ export default function BottomTaskbar() {
     checkAuth();
     window.addEventListener("storage", checkAuth);
     return () => window.removeEventListener("storage", checkAuth);
+  }, [isMenuOpen]);
+
+  const [navData, setNavData] = useState(null);
+
+  // Fetch dynamic navbar links
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/navbar")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!cancelled && data) setNavData(data);
+      })
+      .catch(() => {
+        if (!cancelled) setNavData(null);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
+
+  // Fetch Saved Wishlist
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      const token = localStorage.getItem("authToken");
+      if (!token || !databaseUrl) {
+        setFavorites([]);
+        return;
+      }
+      try {
+        const res = await fetch(`${databaseUrl}/api/properties/my/saved`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const json = await res.json();
+          const savedList = json.data || json;
+          if (Array.isArray(savedList)) {
+            setFavorites(savedList.map((p) => p._id || p.id));
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching favorites:", err);
+      }
+    };
+    fetchFavorites();
+  }, [isLoggedIn, databaseUrl]);
+
+  const toggleFavorite = async (id, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      toast.error("Please login to add to wishlist");
+      setIsSearchOpen(false);
+      router.push("/login-signup");
+      return;
+    }
+
+    const isSaved = favorites.includes(id);
+    // Optimistic UI update
+    setFavorites((prev) =>
+      isSaved ? prev.filter((fav) => fav !== id) : [...prev, id]
+    );
+
+    try {
+      const res = await fetch(`${databaseUrl}/api/properties/${id}/save`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        // Rollback
+        setFavorites((prev) =>
+          isSaved ? [...prev, id] : prev.filter((fav) => fav !== id)
+        );
+        const data = await res.json();
+        toast.error(data.message || "Failed to update wishlist");
+      } else {
+        const data = await res.json();
+        toast.success(data.message || (isSaved ? "Removed from wishlist" : "Added to wishlist"));
+      }
+    } catch (err) {
+      // Rollback
+      setFavorites((prev) =>
+        isSaved ? [...prev, id] : prev.filter((fav) => fav !== id)
+      );
+      toast.error("Error updating wishlist");
+    }
+  };
+
+  const handleShare = async (propertyId, propertyTitle, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const shareUrl = `${origin}/buy/property-details?id=${propertyId}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: propertyTitle || "Property Details",
+          text: `Check out this property: ${propertyTitle}`,
+          url: shareUrl,
+        });
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          console.error("Error sharing:", err);
+        }
+      }
+    } else if (navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success("Link copied to clipboard!");
+      } catch (err) {
+        console.error("Failed to copy link:", err);
+      }
+    }
+  };
+
+  const handleAuthLinkClick = (href, e) => {
+    if (!isLoggedIn) {
+      e.preventDefault();
+      toast.error("Please login to access this page");
+      setIsMenuOpen(false);
+      router.push("/login-signup");
+    } else {
+      setIsMenuOpen(false);
+    }
+  };
+
+  const getFlatPages = () => {
+    if (!navData?.sitePages) return [];
+    const flat = [];
+    const traverse = (nodes, depth = 0) => {
+      for (const n of nodes) {
+        flat.push({ ...n, depth });
+        if (n.children?.length) traverse(n.children, depth + 1);
+      }
+    };
+    traverse(navData.sitePages);
+    return flat;
+  };
+
+  const getMediaThumbnail = (url) => {
+    const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800";
+    if (!url) return DEFAULT_IMAGE;
+    const lowerUrl = url.toLowerCase();
+    const videoExtensions = [".mp4", ".mov", ".avi", ".webm", ".mkv", ".3gp", ".ogg", ".ogv", ".wmv"];
+    const isVideo = videoExtensions.some(ext => lowerUrl.endsWith(ext) || lowerUrl.includes(ext + "?"));
+
+    if (isVideo) {
+      return url.replace(/\.(mp4|mov|avi|webm|mkv|3gp|ogg|ogv|wmv)(?=\?|$)/i, ".jpg");
+    }
+    return url;
+  };
+
+  const formatPrice = (price) => {
+    if (typeof price === "object" && price !== null && price.unit) {
+      return `${price.value} ${price.unit}`;
+    }
+    if (!price || price === 0) return "Price on Request";
+
+    if (typeof price === "string" && /[a-zA-Z]/.test(price)) {
+      if (!price.includes("₹")) {
+        return `₹ ${price}`;
+      }
+      return price;
+    }
+
+    const numPrice = Number(price);
+    if (isNaN(numPrice)) return price;
+    if (numPrice >= 10000000) return `₹${(numPrice / 10000000).toFixed(2)} Cr`;
+    return `₹${(numPrice / 100000).toFixed(2)} Lac`;
+  };
+
+  const formatArea = (area) => {
+    if (!area) return "";
+    if (typeof area === "object") {
+      const size = area.size || "";
+      const unit = area.unit || "sqft";
+      return `${size} ${unit}`;
+    }
+    return String(area);
+  };
+
+  const formatCardDate = (dateStr) => {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return "";
+    return d.toLocaleDateString("en-IN");
+  };
 
   // Debounced search logic
   useEffect(() => {
@@ -112,7 +310,7 @@ export default function BottomTaskbar() {
 
       {/* Main Taskbar Container (Visible only below sm screens) */}
       <div
-        className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-[999] flex items-center justify-around sm:hidden px-2 shadow-lg"
+        className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-[999] flex items-center justify-around sm:hidden shadow-lg"
         style={{
           paddingBottom: "calc(env(safe-area-inset-bottom) + 6px)",
           height: "calc(60px + env(safe-area-inset-bottom))",
@@ -124,7 +322,7 @@ export default function BottomTaskbar() {
           className={`flex flex-col items-center justify-center w-14 h-full transition-colors ${pathname === "/" ? "text-red-600 font-bold" : "text-gray-500"
             }`}
         >
-          <Home className="w-5 h-5 mb-1" />
+          <Home className="w-6 h-6 mb-1" />
           <span className="text-[10px] tracking-tight">Home</span>
         </Link>
 
@@ -137,7 +335,7 @@ export default function BottomTaskbar() {
           <span className="absolute -top-3.5 bg-green-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase leading-none shadow">
             Free
           </span>
-          <PlusCircle className="w-5 h-5 mb-1" />
+          <PlusCircle className="w-6 h-6 mb-1" />
           <span className="text-[10px] tracking-tight">Sell/Rent</span>
         </Link>
 
@@ -147,7 +345,7 @@ export default function BottomTaskbar() {
           className={`flex flex-col items-center justify-center w-14 h-full transition-colors ${isSearchOpen ? "text-red-600 font-bold" : "text-gray-500"
             }`}
         >
-          <Search className="w-5 h-5 mb-1" />
+          <Search className="w-6 h-6 mb-1" />
           <span className="text-[10px] tracking-tight">Search</span>
         </button>
 
@@ -157,7 +355,7 @@ export default function BottomTaskbar() {
           className={`flex flex-col items-center justify-center w-14 h-full transition-colors ${pathname === "/buy" ? "text-red-600 font-bold" : "text-gray-500"
             }`}
         >
-          <Building className="w-5 h-5 mb-1" />
+          <Building className="w-6 h-6 mb-1" />
           <span className="text-[10px] tracking-tight">Buy</span>
         </Link>
 
@@ -167,7 +365,7 @@ export default function BottomTaskbar() {
           className={`flex flex-col items-center justify-center w-14 h-full transition-colors ${isMenuOpen ? "text-red-600 font-bold" : "text-gray-500"
             }`}
         >
-          <Menu className="w-5 h-5 mb-1" />
+          <Menu className="w-6 h-6 mb-1" />
           <span className="text-[10px] tracking-tight">Menu</span>
         </button>
       </div>
@@ -225,53 +423,144 @@ export default function BottomTaskbar() {
             )}
 
             {!loading && suggestions.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-xs font-semibold text-gray-400 mb-2 px-1">
+              <div className="grid grid-cols-1 gap-6 pb-6">
+                <p className="text-xs font-semibold text-gray-400 px-1 -mb-2">
                   MATCHING PROPERTIES ({suggestions.length})
                 </p>
-                {suggestions.map((p) => (
-                  <Link
-                    key={p._id || p.id}
-                    href={`/buy/property-details?id=${p._id || p.id}`}
-                    onClick={() => {
-                      setIsSearchOpen(false);
-                      setSearchQuery("");
-                      setSuggestions([]);
-                    }}
-                    className="flex items-center gap-3 p-3 bg-white rounded-xl border border-gray-100 hover:border-gray-200 transition shadow-sm text-black"
-                  >
-                    <img
-                      src={p.images?.[0] || "https://placehold.co/100x100?text=Property"}
-                      className="w-12 h-12 object-cover rounded-lg flex-shrink-0"
-                      alt={p.title}
-                      onError={(e) => {
-                        e.target.src = "https://placehold.co/100x100?text=Property";
+                {suggestions.map((p) => {
+                  const validImages = Array.isArray(p.images)
+                    ? p.images.filter(
+                      (img) => img && !img.startsWith("blob:") && img.trim() !== "",
+                    )
+                    : [];
+                  const displayImage = validImages.length > 0
+                    ? getMediaThumbnail(validImages[0])
+                    : "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800";
+
+                  return (
+                    <Link
+                      key={p._id || p.id}
+                      href={`/buy/property-details?id=${p._id || p.id}`}
+                      onClick={() => {
+                        setIsSearchOpen(false);
+                        setSearchQuery("");
+                        setSuggestions([]);
                       }}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-bold text-gray-800 truncate">{p.title}</h4>
-                      <p className="text-xs text-gray-500 truncate flex items-center gap-1 mt-0.5">
-                        <MapPin className="w-3 h-3 text-gray-400 flex-shrink-0" />
-                        {p.address?.locality || p.address?.city || "No Location"}
-                      </p>
-                      <div className="flex items-center gap-1.5 mt-1.5">
-                        {p.bedrooms ? (
-                          <span className="text-[10px] bg-red-50 text-red-600 px-1.5 py-0.5 rounded font-bold">
-                            {p.bedrooms} BHK
-                          </span>
-                        ) : null}
-                        {p.propertyType && (
-                          <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-medium capitalize">
-                            {p.propertyType}
-                          </span>
+                      className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-shadow flex flex-col border border-gray-100/50 text-black"
+                    >
+                      {/* Top Image area */}
+                      <div className="relative h-48 w-full shrink-0">
+                        {p.isSold && (
+                          <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-10">
+                            <span className="bg-red-600 text-white font-extrabold text-sm px-4 py-2 rounded-lg shadow-lg tracking-wider uppercase border border-white">
+                              Sold Out
+                            </span>
+                          </div>
                         )}
+                        <img
+                          src={displayImage}
+                          alt={p.title}
+                          onError={(e) => {
+                            e.target.src = "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800";
+                          }}
+                          className="w-full h-full object-cover"
+                        />
+
+                        {/* Share & Wishlist Buttons */}
+                        <button
+                          onClick={(e) => handleShare(p._id || p.id, p.title, e)}
+                          className="absolute top-3 right-14 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 z-20"
+                          aria-label="Share property link"
+                        >
+                          <Share2 className="w-4 h-4 text-gray-600" />
+                        </button>
+
+                        <button
+                          onClick={(e) => toggleFavorite(p._id || p.id, e)}
+                          className="absolute top-3 right-3 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 z-20"
+                          aria-label="Toggle wishlist"
+                        >
+                          <Heart
+                            className={`w-4 h-4 ${favorites.includes(p._id || p.id)
+                              ? "fill-red-600 text-red-600"
+                              : "text-gray-600"
+                              }`}
+                          />
+                        </button>
+
+                        <span
+                          className={`absolute bottom-3 left-3 px-3 py-1 ${p.purpose === "rent" ? "bg-red-600" : "bg-green-600"
+                            } text-white text-xs font-bold rounded-full`}
+                        >
+                          {p.purpose === "rent" ? "For Rent" : "For Sale"}
+                        </span>
+                        <span className="absolute bottom-3 right-3 px-2 py-1 bg-black/60 text-white text-xs rounded-md font-semibold">
+                          {p.listedBy === "dealer" ? "Dealer" : "Owner"}
+                        </span>
                       </div>
-                    </div>
-                    <div className="text-right flex-shrink-0">
-                      <span className="text-xs font-black text-red-600 block">{p.priceText || p.priceValue || p.price}</span>
-                    </div>
-                  </Link>
-                ))}
+
+                      {/* Bottom Details area */}
+                      <div className="p-4 flex flex-col flex-1">
+                        <h3 className="text-base font-bold text-gray-800 mb-2 truncate">
+                          {p.title}
+                        </h3>
+
+                        <div className="flex items-center text-gray-500 mb-2">
+                          <MapPin className="w-4 h-4 mr-1 shrink-0 text-gray-400" />
+                          <span className="text-xs capitalize truncate">
+                            {p.address?.locality || p.address?.city || (typeof p.address === "string" ? p.address : "No Location")}
+                          </span>
+                        </div>
+
+                        {p.createdAt && (
+                          <div className="flex items-center text-gray-400 text-xs mb-1">
+                            <span>Created at : {formatCardDate(p.createdAt)}</span>
+                          </div>
+                        )}
+
+                        {p.updatedAt && (
+                          <div className="flex items-center text-gray-400 text-xs mb-2.5">
+                            <span>Updated at : {formatCardDate(p.updatedAt)}</span>
+                          </div>
+                        )}
+
+                        {/* BHK / Bath / Size Details */}
+                        <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-100">
+                          <div className="flex items-center gap-3 text-xs text-gray-500 flex-wrap">
+                            {p.bedrooms && Number(p.bedrooms) > 0 && (
+                              <div className="flex items-center gap-1">
+                                <Bed className="w-3.5 h-3.5" />
+                                <span>{p.bedrooms} BHK</span>
+                              </div>
+                            )}
+                            {p.bathrooms && Number(p.bathrooms) > 0 && (
+                              <div className="flex items-center gap-1">
+                                <Bath className="w-3.5 h-3.5" />
+                                <span>{p.bathrooms} Baths</span>
+                              </div>
+                            )}
+                            {p.area && (
+                              <div className="flex items-center gap-1">
+                                <Square className="w-3.5 h-3.5" />
+                                <span>{formatArea(p.area)}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Footer: Price & View Details Button */}
+                        <div className="flex items-center justify-between mt-auto">
+                          <div className="text-lg font-extrabold text-[#3a40c6]">
+                            {formatPrice(p.priceText || p.priceValue || p.price)}
+                          </div>
+                          <span className="px-4 py-2 bg-[#3a40c6] text-white rounded-lg font-bold text-[11px] shadow hover:bg-opacity-95 transition">
+                            View Details
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             )}
 
@@ -350,43 +639,61 @@ export default function BottomTaskbar() {
             </div>
 
             {/* Links */}
-            <div className="flex-1 space-y-1.5 overflow-y-auto">
-              {isLoggedIn ? (
-                <>
-                  <Link
-                    href="/edit-profile"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition text-gray-700 hover:text-red-600 font-semibold"
-                  >
-                    <User className="w-5 h-5 text-gray-400" />
-                    <span>Edit Profile</span>
-                  </Link>
-                  <Link
-                    href="/my-properties"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition text-gray-700 hover:text-red-600 font-semibold"
-                  >
-                    <Building className="w-5 h-5 text-gray-400" />
-                    <span>My Properties</span>
-                  </Link>
-                  <Link
-                    href="/wishlist"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition text-gray-700 hover:text-red-600 font-semibold"
-                  >
-                    <Heart className="w-5 h-5 text-gray-400" />
-                    <span>Wishlist</span>
-                  </Link>
-                </>
-              ) : null}
+            <div className="flex-1 space-y-1.5 overflow-y-auto pr-1">
+              {/* Main Navigation Pages */}
               <Link
-                href="/contact"
+                href="/"
                 onClick={() => setIsMenuOpen(false)}
                 className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition text-gray-700 hover:text-red-600 font-semibold"
               >
-                <Phone className="w-5 h-5 text-gray-400" />
-                <span>Contact Us</span>
+                <Home className="w-5 h-5 text-gray-400" />
+                <span>Home</span>
               </Link>
+
+              <Link
+                href="/buy"
+                onClick={() => setIsMenuOpen(false)}
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition text-gray-700 hover:text-red-600 font-semibold"
+              >
+                <Building className="w-5 h-5 text-gray-400" />
+                <span>Buy Properties</span>
+              </Link>
+
+              <Link
+                href="/sell"
+                onClick={() => setIsMenuOpen(false)}
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition text-gray-700 hover:text-red-600 font-semibold"
+              >
+                <PlusCircle className="w-5 h-5 text-gray-400" />
+                <span>Sell / Rent Property</span>
+              </Link>
+
+              {/* Authenticated Links (Always visible, handles guest redirect) */}
+              <Link
+                href="/edit-profile"
+                onClick={(e) => handleAuthLinkClick("/edit-profile", e)}
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition text-gray-700 hover:text-red-600 font-semibold"
+              >
+                <User className="w-5 h-5 text-gray-400" />
+                <span>Edit Profile</span>
+              </Link>
+              <Link
+                href="/my-properties"
+                onClick={(e) => handleAuthLinkClick("/my-properties", e)}
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition text-gray-700 hover:text-red-600 font-semibold"
+              >
+                <Building className="w-5 h-5 text-gray-400" />
+                <span>My Properties</span>
+              </Link>
+              <Link
+                href="/wishlist"
+                onClick={(e) => handleAuthLinkClick("/wishlist", e)}
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition text-gray-700 hover:text-red-600 font-semibold"
+              >
+                <Heart className="w-5 h-5 text-gray-400" />
+                <span>Wishlist</span>
+              </Link>
+              {/* standard footer contact pages */}
               <Link
                 href="/about"
                 onClick={() => setIsMenuOpen(false)}
@@ -395,6 +702,30 @@ export default function BottomTaskbar() {
                 <Compass className="w-5 h-5 text-gray-400" />
                 <span>About Us</span>
               </Link>
+              <Link
+                href="/contact"
+                onClick={() => setIsMenuOpen(false)}
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition text-gray-700 hover:text-red-600 font-semibold"
+              >
+                <Phone className="w-5 h-5 text-gray-400" />
+                <span>Contact Us</span>
+              </Link>
+              {/* Dynamic CMS Pages from Settings */}
+              {getFlatPages().map((page) => (
+                <Link
+                  key={page.id}
+                  href={page.href}
+                  onClick={() => setIsMenuOpen(false)}
+                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition text-gray-700 hover:text-red-600 font-semibold"
+                  style={{ paddingLeft: `${12 + page.depth * 12}px` }}
+                >
+                  <Compass className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                  <span className="truncate">{page.title}</span>
+                </Link>
+              ))}
+
+
+
             </div>
 
             {/* Bottom Section (Log In / Log Out) */}

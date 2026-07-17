@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
-import { FaWhatsapp, FaUser, FaEdit, FaCog, FaHome, FaHeart } from "react-icons/fa";
+import { FaWhatsapp, FaUser, FaEdit, FaCog, FaHome, FaHeart, FaBell, FaCheckCircle, FaExclamationTriangle, FaTrashAlt } from "react-icons/fa";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { IoMdClose } from "react-icons/io";
 import { MdLogin, MdPhone } from "react-icons/md";
@@ -83,6 +83,24 @@ function MobileNavBranch({ node, onPick }) {
   );
 }
 
+function formatTimeAgo(dateString) {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHr = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHr / 24);
+
+  if (diffSec < 60) return "just now";
+  if (diffMin < 60) return `${diffMin}m ago`;
+  if (diffHr < 24) return `${diffHr}h ago`;
+  if (diffDay === 1) return "yesterday";
+  if (diffDay < 30) return `${diffDay}d ago`;
+  
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
 const DEFAULT_LOGO = "https://res.cloudinary.com/dxlykgx6w/image/upload/v1783796029/icon-192_bkv7wb.png";
 
 export default function Navbar() {
@@ -96,6 +114,110 @@ export default function Navbar() {
   const [navbarLogo, setNavbarLogo] = useState(DEFAULT_LOGO);
   const [navbarLogoAlt, setNavbarLogoAlt] = useState("Logo");
   const profileMenuRef = useRef(null);
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifMenu, setShowNotifMenu] = useState(false);
+  const notifMenuRef = useRef(null);
+  const databaseUrl = process.env.NEXT_PUBLIC_APP_DATABASE_URL || "http://localhost:5000";
+
+  const fetchNotifications = async () => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      setNotifications([]);
+      return;
+    }
+    try {
+      const res = await fetch(`${databaseUrl}/api/notifications`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          setNotifications(data.data || []);
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching notifications:", err);
+    }
+  };
+
+  const markAsRead = async (id) => {
+    const token = localStorage.getItem("authToken");
+    if (!token) return;
+    try {
+      const res = await fetch(`${databaseUrl}/api/notifications/${id}/read`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.ok) {
+        setNotifications((prev) =>
+          prev.map((n) => (n._id === id ? { ...n, read: true } : n))
+        );
+      }
+    } catch (err) {
+      console.error("Error marking notification as read:", err);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    const token = localStorage.getItem("authToken");
+    if (!token) return;
+    try {
+      const res = await fetch(`${databaseUrl}/api/notifications/read-all`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.ok) {
+        setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      }
+    } catch (err) {
+      console.error("Error marking all as read:", err);
+    }
+  };
+
+  const deleteNotification = async (id, e) => {
+    e.stopPropagation();
+    const token = localStorage.getItem("authToken");
+    if (!token) return;
+    try {
+      const res = await fetch(`${databaseUrl}/api/notifications/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.ok) {
+        setNotifications((prev) => prev.filter((n) => n._id !== id));
+      }
+    } catch (err) {
+      console.error("Error deleting notification:", err);
+    }
+  };
+
+  const clearAllNotifications = async () => {
+    const token = localStorage.getItem("authToken");
+    if (!token) return;
+    try {
+      const res = await fetch(`${databaseUrl}/api/notifications`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.ok) {
+        setNotifications([]);
+      }
+    } catch (err) {
+      console.error("Error clearing all notifications:", err);
+    }
+  };
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   useEffect(() => {
     let cancelled = false;
@@ -186,6 +308,32 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Close notification menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        notifMenuRef.current &&
+        !notifMenuRef.current.contains(event.target)
+      ) {
+        setShowNotifMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Poll for notifications
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchNotifications();
+      const interval = setInterval(fetchNotifications, 30000); // Check every 30 seconds
+      return () => clearInterval(interval);
+    } else {
+      setNotifications([]);
+    }
+  }, [isLoggedIn]);
+
   return (
     <nav
       className={`
@@ -235,8 +383,142 @@ export default function Navbar() {
           </ul>
         </div>
 
-        <div className="flex gap-5">
-          <div className=" lg:flex items-center gap-4">
+          <div className="flex items-center gap-4">
+            {/* Notification Bell */}
+            {isLoggedIn && (
+              <div className="relative" ref={notifMenuRef}>
+                <button
+                  onClick={() => setShowNotifMenu(!showNotifMenu)}
+                  className="w-11 h-11 flex items-center justify-center rounded-full bg-slate-100 hover:bg-[#8c4bdc]/10 text-slate-600 hover:text-[#8c4bdc] transition relative cursor-pointer"
+                >
+                  <FaBell className="text-xl" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-white animate-pulse">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                {/* Backdrop overlay */}
+                <div
+                  className={`fixed inset-0 bg-black/40 backdrop-blur-xs z-[90] transition-opacity duration-300 ${
+                    showNotifMenu ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+                  }`}
+                  onClick={() => setShowNotifMenu(false)}
+                />
+
+                {/* Sliding Drawer Container */}
+                <div
+                  className={`fixed top-0 right-0 h-full w-full max-w-[420px] bg-white shadow-2xl z-[100] flex flex-col transform transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                    showNotifMenu ? "translate-x-0" : "translate-x-full"
+                  }`}
+                >
+                  {/* Drawer Header */}
+                  <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => setShowNotifMenu(false)}
+                        className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition cursor-pointer"
+                      >
+                        <IoMdClose className="text-2xl" />
+                      </button>
+                      <h3 className="font-bold text-slate-800 text-lg">Notifications</h3>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      {unreadCount > 0 && (
+                        <button
+                          onClick={markAllAsRead}
+                          className="text-xs text-[#8c4bdc] hover:underline font-semibold cursor-pointer"
+                        >
+                          Mark all read
+                        </button>
+                      )}
+                      {notifications.length > 0 && (
+                        <button
+                          onClick={clearAllNotifications}
+                          className="text-xs text-slate-400 hover:text-red-500 transition cursor-pointer flex items-center gap-1.5"
+                        >
+                          <FaTrashAlt className="text-[11px]" /> Clear all
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Scrollable list */}
+                  <div className="flex-1 overflow-y-auto divide-y divide-slate-100">
+                    {notifications.length === 0 ? (
+                      <div className="h-full flex flex-col items-center justify-center p-8 text-center">
+                        <span className="text-5xl mb-3">🔔</span>
+                        <p className="text-slate-600 font-semibold text-base">No notifications yet</p>
+                        <p className="text-slate-400 text-sm mt-1 max-w-[240px]">
+                          We'll notify you here when important updates occur.
+                        </p>
+                      </div>
+                    ) : (
+                      notifications.map((notif) => (
+                        <div
+                          key={notif._id}
+                          onClick={() => !notif.read && markAsRead(notif._id)}
+                          className={`p-5 flex gap-4 transition cursor-pointer text-left border-l-4 ${
+                            notif.read
+                              ? "bg-white hover:bg-slate-50 border-transparent"
+                              : "bg-purple-50/30 hover:bg-purple-50/50 border-[#8c4bdc]"
+                          }`}
+                        >
+                          {/* Icon column */}
+                          <div className="flex-shrink-0 mt-0.5">
+                            {notif.type === "payment_success" ? (
+                              <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center">
+                                <FaCheckCircle className="text-emerald-500 text-lg" />
+                              </div>
+                            ) : notif.type === "boost_expiring" ? (
+                              <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center">
+                                <FaExclamationTriangle className="text-amber-500 text-lg" />
+                              </div>
+                            ) : (
+                              <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center">
+                                <FaBell className="text-[#8c4bdc] text-base" />
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Content column */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <p className={`text-sm leading-snug ${notif.read ? "text-slate-700 font-medium" : "text-slate-900 font-bold"}`}>
+                                {notif.title}
+                              </p>
+                              {!notif.read && (
+                                <span className="w-2.5 h-2.5 rounded-full bg-[#8c4bdc] flex-shrink-0 mt-1.5 animate-pulse" />
+                              )}
+                            </div>
+                            <p className="text-xs text-slate-500 mt-1 leading-relaxed break-words">
+                              {notif.message}
+                            </p>
+                            <span className="text-[10px] text-slate-400 mt-2 block font-medium">
+                              {formatTimeAgo(notif.createdAt)}
+                            </span>
+                          </div>
+
+                          {/* Delete button */}
+                          <div className="flex-shrink-0 self-center">
+                            <button
+                              onClick={(e) => deleteNotification(notif._id, e)}
+                              className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition cursor-pointer"
+                              title="Delete"
+                            >
+                              <FaTrashAlt className="text-xs" />
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="relative" ref={profileMenuRef}>
               <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
@@ -371,7 +653,6 @@ export default function Navbar() {
             {open ? <IoMdClose /> : <GiHamburgerMenu />}
           </button> */}
         </div>
-      </div>
 
       {open && (
         <div
