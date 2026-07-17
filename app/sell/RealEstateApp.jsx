@@ -367,6 +367,14 @@ const RealEstateApp = () => {
               throw new Error(orderData.message || "Failed to create order");
             }
 
+            if (orderData.data && orderData.data.isFree) {
+              toast.dismiss("boost-toast");
+              toast.success("Property posted and boosted to Premium!");
+              resetForm();
+              router.push("/my-properties");
+              return;
+            }
+
             toast.dismiss("boost-toast");
 
             const options = {

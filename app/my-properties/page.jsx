@@ -91,6 +91,19 @@ export default function MyPropertiesPage() {
         throw new Error(orderData.message || "Failed to create order");
       }
 
+      if (orderData.data && orderData.data.isFree) {
+        toast.dismiss("boost-pay");
+        toast.success("Property boosted to Premium successfully!");
+        confetti({
+          particleCount: 150,
+          spread: 80,
+          origin: { y: 0.6 }
+        });
+        setOpenBoostModal(false);
+        fetchProperties();
+        return;
+      }
+
       toast.dismiss("boost-pay");
 
       const options = {

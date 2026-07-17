@@ -56,6 +56,7 @@ const DISTANCE_INFO = {
   "hospital": { label: "Hospital", icon: <HeartPulse className="w-10 h-10 text-[#0f3460] flex-shrink-0" /> },
 };
 import Link from "next/link";
+import EmiCalculator from "@/app/components/EmiCalculator";
 import { FaWhatsapp, FaFacebook, FaTwitter } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import confetti from "canvas-confetti";
@@ -495,12 +496,15 @@ const PropertyDetailsPage = () => {
           </button>
         </div>
 
+        {property.owner?.role === "admin" && (
+          <span className="absolute top-4 left-4 px-4 py-2 text-white font-bold rounded-full shadow-lg bg-green-600 z-10">
+            ✓ Verified
+          </span>
+        )}
         {(property.featured || property.isBoosted) && (
-          <span className={`absolute top-4 left-4 px-4 py-2 text-white font-bold rounded-full shadow-lg ${
-            property.isBoosted 
-              ? "bg-[blue]" 
-              : "bg-red-600"
-          }`}>
+          <span className={`absolute top-4 px-4 py-2 text-white font-bold rounded-full shadow-lg z-10 ${
+            property.owner?.role === "admin" ? "left-32" : "left-4"
+          } ${property.isBoosted ? "bg-[blue]" : "bg-red-600"}`}>
             {property.isBoosted ? "★ High Rated (Boosted)" : "Featured"}
           </span>
         )}
@@ -560,6 +564,11 @@ const PropertyDetailsPage = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
+                  {property.owner?.role === "admin" && (
+                    <span className="px-4 py-2 rounded-full bg-green-600 text-white font-bold whitespace-nowrap self-start shadow-sm border border-green-300">
+                      ✓ Verified
+                    </span>
+                  )}
                   {property.isBoosted && (
                     <span className="px-4 py-2 rounded-full bg-[blue] text-white font-bold whitespace-nowrap self-start shadow-sm border border-blue-300">
                       ★ High Rated (Boosted)
@@ -934,9 +943,16 @@ const PropertyDetailsPage = () => {
                           </span>
                         </div>
                         <div>
-                          <p className="font-semibold text-gray-800">
-                            {property.owner.name || "Seller"}
-                          </p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold text-gray-800">
+                              {property.owner.name || "Seller"}
+                            </p>
+                            {property.owner?.role === "admin" && (
+                              <span className="px-1.5 py-0.5 text-[10px] font-bold text-green-700 bg-green-100 rounded border border-green-200">
+                                Verified
+                              </span>
+                            )}
+                          </div>
                           <p className="text-sm text-gray-600">Property Owner</p>
                         </div>
                       </div>
@@ -1038,6 +1054,11 @@ const PropertyDetailsPage = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* EMI Calculator Section */}
+      <div className="max-w-7xl mx-auto px-4 pb-12">
+        <EmiCalculator propertyPrice={property?.priceValue || property?.price || property?.priceText} />
       </div>
 
       {/* Video Modal */}

@@ -9,6 +9,7 @@ import HomeBuyComp from "./components/HomeBuyComp";
 import HomeServices from "./components/HomeService";
 import InstrumentsSection from "./components/InstrumentsSection";
 import Testimonials from "./components/Testimonials";
+import EmiCalculator from "./components/EmiCalculator";
 import { getHomepageData } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
@@ -69,6 +70,7 @@ export default async function Home() {
         <InstrumentsSection data={data?.instruments} />
         <Testimonials data={data?.testimonials} />
         <ContactSection data={data?.contact} />
+        <EmiCalculator />
         <Footer />
       </div>
     </main>

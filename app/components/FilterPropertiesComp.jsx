@@ -237,6 +237,20 @@ const CATEGORY_CONFIG = [
           "https://res.cloudinary.com/dxlykgx6w/image/upload/v1777231951/images_5_uetcq9.jpg",
         query: { propertyType: "agriculture", areaUnit: "hectare" },
       },
+      {
+        key: "lease-land",
+        label: "Lease Land",
+        image:
+          "https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=800",
+        query: { propertyType: "commercial", commercialType: "lease land" },
+      },
+      {
+        key: "commercial-land",
+        label: "Commercial Land",
+        image:
+          "https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=800",
+        query: { propertyType: "commercial", commercialType: "commercial land" },
+      },
     ],
   },
 ];
@@ -290,6 +304,30 @@ export default function FilterPropertiesComp() {
       };
     }
 
+    if (selectedCategory === "agriculture") {
+      const cards = [...baseCategory.cards];
+
+      customCommercialTypes.forEach((typeVal) => {
+        const isLand = /land|acre|bigha|biswa|hectare/i.test(typeVal);
+        if (isLand) {
+          const key = `custom-land-${typeVal.toLowerCase().replace(/\s+/g, "-")}`;
+          if (!cards.some((c) => c.key === key)) {
+            cards.push({
+              key: key,
+              label: typeVal,
+              image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=800",
+              query: { propertyType: "commercial", commercialType: "other", commercialTypeCustom: typeVal },
+            });
+          }
+        }
+      });
+
+      return {
+        ...baseCategory,
+        cards: cards,
+      };
+    }
+
     return baseCategory;
   }, [selectedCategory, customCommercialTypes]);
 
@@ -326,6 +364,27 @@ export default function FilterPropertiesComp() {
           grouped[type] = grouped[type] || {};
           grouped[type].total = (grouped[type].total || 0) + 1;
 
+          // Helper: Check if a commercial property contains land-related keywords
+          const isLandWord = (val) => /land|acre|bigha|biswa|hectare/i.test(String(val || ""));
+          const isCommercialLand = type === "commercial" && (
+            isLandWord(property.commercialType) ||
+            isLandWord(property.commercialTypeCustom) ||
+            isLandWord(property.title) ||
+            isLandWord(property.description)
+          );
+
+          if (isCommercialLand) {
+            // Also count it under "agriculture" (Land)!
+            const landType = "agriculture";
+            grouped[landType] = grouped[landType] || {};
+            grouped[landType].total = (grouped[landType].total || 0) + 1;
+
+            const unit = (property.area?.unit || property.areaUnit || "").toLowerCase().trim();
+            if (unit) {
+              grouped[landType][unit] = (grouped[landType][unit] || 0) + 1;
+            }
+          }
+
           if (type === "commercial") {
             const commType = property.commercialType || "unknown";
             grouped[type][commType] = (grouped[type][commType] || 0) + 1;
@@ -338,6 +397,13 @@ export default function FilterPropertiesComp() {
                 grouped[type][`custom_${customKey}`] = (grouped[type][`custom_${customKey}`] || 0) + 1;
               }
             }
+          } else if (type === "agriculture") {
+            const unit = (property.area?.unit || property.areaUnit || "").toLowerCase().trim();
+            if (unit) {
+              grouped[type][unit] = (grouped[type][unit] || 0) + 1;
+            }
+            const bedrooms = String(property.bedrooms || 0);
+            grouped[type][bedrooms] = (grouped[type][bedrooms] || 0) + 1;
           } else {
             const bedrooms = String(property.bedrooms || 0);
             grouped[type][bedrooms] = (grouped[type][bedrooms] || 0) + 1;
@@ -379,6 +445,10 @@ export default function FilterPropertiesComp() {
         return typeCounts[card.query.commercialType] || 0;
       }
       return typeCounts.total || 0;
+    }
+
+    if (card.query.areaUnit) {
+      return typeCounts[card.query.areaUnit] || 0;
     }
 
     if (card.query.bedrooms) {

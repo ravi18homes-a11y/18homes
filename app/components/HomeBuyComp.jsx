@@ -125,6 +125,7 @@ export default function HomeBuyComp() {
             isBoosted: prop.isBoosted || false,
             listedBy: prop.listedBy || "owner",
             isSold: prop.isSold || false,
+            owner: prop.owner,
           };
         });
 
@@ -355,14 +356,18 @@ export default function HomeBuyComp() {
                       }`}
                   />
                 </button>
-                {(property.featured || property.isBoosted) && (
-                  <span className={`absolute top-3 left-3 px-3 py-1 text-white text-sm font-bold rounded-full ${property.isBoosted
-                    ? "bg-[blue] shadow-md"
-                    : "bg-red-600"
-                    }`}>
-                    {property.isBoosted ? "★ High Rated (Boosted)" : "Featured"}
-                  </span>
-                )}
+                 {property.owner?.role === "admin" && (
+                   <span className="absolute top-3 left-3 px-3 py-1 text-white text-sm font-bold rounded-full bg-green-600 shadow-md z-10">
+                     ✓ Verified
+                   </span>
+                 )}
+                 {(property.featured || property.isBoosted) && (
+                   <span className={`absolute top-3 px-3 py-1 text-white text-sm font-bold rounded-full shadow-md z-10 ${
+                     property.owner?.role === "admin" ? "left-28" : "left-3"
+                   } ${property.isBoosted ? "bg-[blue]" : "bg-red-600"}`}>
+                     {property.isBoosted ? "★ High Rated (Boosted)" : "Featured"}
+                   </span>
+                 )}
                 <span className={`absolute bottom-3 left-3 px-3 py-1 ${property.status === "For Rent" ? "bg-red-600" : "bg-green-600"} text-white text-sm rounded-full`}>
                   {property.status}
                 </span>
@@ -402,10 +407,10 @@ export default function HomeBuyComp() {
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <div className="text-2xl font-bold text-red-600">
+                  <div className="text-2xl font-bold text-[#3a40c6]">
                     {formatPrice(property.price)}
                   </div>
-                  <span className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm">
+                  <span className="px-4 py-2 bg-[#3a40c6] text-white rounded-lg text-sm">
                     View Details
                   </span>
                 </div>
