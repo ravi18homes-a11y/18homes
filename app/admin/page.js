@@ -52,7 +52,7 @@ export default function AdminDashboard() {
       try {
         const [usersRes, propertiesRes, contactsRes] = await Promise.all([
           safeFetch(`${BASE}/users`),
-          safeFetch(`${BASE}/properties/admin/all`),
+          safeFetch(`${BASE}/properties/admin/all?limit=10000`),
           safeFetch(`${BASE}/contacts`),
         ]);
 
@@ -72,6 +72,8 @@ export default function AdminDashboard() {
 
         const blockedUsers = users.filter((u) => u?.isBlocked === true).length;
 
+        const totalProperties = propertiesRes?.data?.pagination?.total ?? properties.length;
+
         const flaggedProperties = properties.filter(
           (p) => p?.isFlagged === true
         ).length;
@@ -80,9 +82,9 @@ export default function AdminDashboard() {
           users: users.length,
           blockedUsers,
           activeUsers: users.length - blockedUsers,
-          properties: properties.length,
+          properties: totalProperties,
           flaggedProperties,
-          activeProperties: properties.length - flaggedProperties,
+          activeProperties: totalProperties - flaggedProperties,
           contacts: contacts.length,
         });
       } catch (err) {
@@ -125,32 +127,32 @@ export default function AdminDashboard() {
     <div className="max-w-7xl mx-auto p-6 space-y-8">
       {/* ===== STATS ===== */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        
-         <Link href="/admin/users" >
+
+        <Link href="/admin/users" >
           <Stat title="Total Users" value={stats.users} icon={<Users />} />
-         </Link>
+        </Link>
         <Stat
           title="Blocked Users"
           value={stats.blockedUsers}
           danger
           icon={<AlertTriangle />}
         />
-       
+
         <Link href="/admin/properties" >
-           <Stat
-          title="Total Properties"
-          value={stats.properties}
-          icon={<Home />}
-        />
-         </Link>
-        
-         <Link href="/admin/contacts" >
+          <Stat
+            title="Total Properties"
+            value={stats.properties}
+            icon={<Home />}
+          />
+        </Link>
+
+        {/* <Link href="/admin/contacts" >
          <Stat
           title="Contacts"
           value={stats.contacts}
           icon={<MessageSquare />}
         />
-         </Link>
+         </Link> */}
       </div>
 
       {/* ===== CHARTS ===== */}
@@ -287,7 +289,7 @@ function BoostPlanManager({ BASE }) {
               </div>
               <p className="text-xs text-gray-500">Duration: {plan.durationDays} Days</p>
             </div>
-            
+
             <div className="mt-4 flex gap-2">
               <input
                 type="number"
@@ -321,9 +323,8 @@ function Stat({ title, value, icon, danger }) {
       <div>
         <p className="text-gray-500">{title}</p>
         <p
-          className={`text-3xl font-bold ${
-            danger ? "text-red-600" : "text-gray-900"
-          }`}
+          className={`text-3xl font-bold ${danger ? "text-red-600" : "text-gray-900"
+            }`}
         >
           {value}
         </p>

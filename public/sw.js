@@ -1,4 +1,4 @@
-const CACHE_NAME = "18homes-cache-v1";
+const CACHE_NAME = "18homes-cache-v2";
 const ASSETS_TO_CACHE = [
   "/",
   "/favicon.ico",
@@ -45,27 +45,54 @@ self.addEventListener("fetch", (event) => {
   if (url.pathname.startsWith("/api/")) return;
   if (url.pathname.startsWith("/_next/")) return; // Next.js assets are handled by Next.js client-side router
 
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(event.request).then((networkResponse) => {
-        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+  // Check if it's an HTML page/navigation request
+  const isHtmlPage = event.request.mode === "navigate" || 
+                     (event.request.headers.get("accept") && event.request.headers.get("accept").includes("text/html"));
+
+  if (isHtmlPage) {
+    // Network First strategy for HTML/page requests:
+    // Try to get fresh page from network, update cache if successful.
+    // Fall back to cache if offline.
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+          }
           return networkResponse;
+        })
+        .catch(() => {
+          return caches.match(event.request).then((cachedResponse) => {
+            if (cachedResponse) {
+              return cachedResponse;
+            }
+            return caches.match("/");
+          });
+        })
+    );
+  } else {
+    // Cache First strategy for static assets (icons, images, styles, etc.):
+    event.respondWith(
+      caches.match(event.request).then((cachedResponse) => {
+        if (cachedResponse) {
+          return cachedResponse;
         }
-        
-        // Cache dynamically fetched pages
-        const responseToCache = networkResponse.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache);
+        return fetch(event.request).then((networkResponse) => {
+          if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+            return networkResponse;
+          }
+          
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+          
+          return networkResponse;
         });
-        
-        return networkResponse;
-      }).catch(() => {
-        // Offline fallback
-        return caches.match("/");
-      });
-    })
-  );
+      })
+    );
+  }
 });

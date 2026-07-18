@@ -104,7 +104,7 @@ export default function ContactFirst() {
 
           <h2 className="contact-main-heading">
             <span className="pink-text">18homes</span>{" "}
-             Support
+            Support
           </h2>
 
           <div className="contact-grid">
@@ -163,10 +163,10 @@ export default function ContactFirst() {
                   <p className="info-title">Send us a message</p>
 
                   <p class="info-value">
-  <a href="mailto:18homes.website@gmail.com" class="call-to-action">
-     18homes.website@gmail.com
-  </a>
-</p>
+                    <a href="mailto:18homes.website@gmail.com" class="call-to-action">
+                      18homes.website@gmail.com
+                    </a>
+                  </p>
 
                 </div>
               </div>
@@ -187,7 +187,7 @@ export default function ContactFirst() {
               </div> */}
               <hr />
               {/* BOTTOM SOCIAL ICONS */}
-              <div className="bottom-row">
+              {/* <div className="bottom-row">
                 <div className="bottom-socials">
                   <div className="social-circle">
                     <div className="square"></div>
@@ -201,7 +201,7 @@ export default function ContactFirst() {
                     <div className="square"></div>
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
 
             {/* RIGHT FORM */}
@@ -312,23 +312,23 @@ export default function ContactFirst() {
             </form>
           </div>
         </div>
-         {showPopup && (
-                <div className="popup-overlay">
-                    <div className="popup-content">
-                        <div className="popup-icon">
-                            <FiCheckCircle size={60} color="green" />
-                        </div>
-                        <h2>Thank You!</h2>
-                        <p>Your message has been sent successfully. Our team will contact you soon.</p>
-                        <button
-                            className="popup-btn"
-                            onClick={() => setShowPopup(false)}
-                        >
-                            Close
-                        </button>
-                    </div>
-                </div>
-            )}
+        {showPopup && (
+          <div className="popup-overlay">
+            <div className="popup-content">
+              <div className="popup-icon">
+                <FiCheckCircle size={60} color="green" />
+              </div>
+              <h2>Thank You!</h2>
+              <p>Your message has been sent successfully. Our team will contact you soon.</p>
+              <button
+                className="popup-btn"
+                onClick={() => setShowPopup(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* ================= MAP SECTION ================= */}

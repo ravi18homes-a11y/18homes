@@ -97,7 +97,7 @@ function formatTimeAgo(dateString) {
   if (diffHr < 24) return `${diffHr}h ago`;
   if (diffDay === 1) return "yesterday";
   if (diffDay < 30) return `${diffDay}d ago`;
-  
+
   return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
@@ -383,257 +383,254 @@ export default function Navbar() {
           </ul>
         </div>
 
-          <div className="flex items-center gap-4">
-            {/* Notification Bell */}
-            {isLoggedIn && (
-              <div className="relative" ref={notifMenuRef}>
-                <button
-                  onClick={() => setShowNotifMenu(!showNotifMenu)}
-                  className="w-11 h-11 flex items-center justify-center rounded-full bg-slate-100 hover:bg-[#8c4bdc]/10 text-slate-600 hover:text-[#8c4bdc] transition relative cursor-pointer"
-                >
-                  <FaBell className="text-xl" />
-                  {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-white animate-pulse">
-                      {unreadCount > 9 ? "9+" : unreadCount}
-                    </span>
-                  )}
-                </button>
+        <div className="flex items-center gap-4">
+          {/* Notification Bell */}
+          {isLoggedIn && (
+            <div className="relative" ref={notifMenuRef}>
+              <button
+                onClick={() => setShowNotifMenu(!showNotifMenu)}
+                className="w-11 h-11 flex items-center justify-center rounded-full bg-[#fb45b8] hover:bg-[#8c4bdc]/10 text-[white] hover:text-[#8c4bdc] transition relative cursor-pointer"
+              >
+                <FaBell className="text-xl" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-white animate-pulse">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </button>
 
-                {/* Backdrop overlay */}
-                <div
-                  className={`fixed inset-0 bg-black/40 backdrop-blur-xs z-[90] transition-opacity duration-300 ${
-                    showNotifMenu ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+              {/* Backdrop overlay */}
+              <div
+                className={`fixed inset-0 bg-black/40 backdrop-blur-xs z-[90] transition-opacity duration-300 ${showNotifMenu ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
                   }`}
-                  onClick={() => setShowNotifMenu(false)}
-                />
+                onClick={() => setShowNotifMenu(false)}
+              />
 
-                {/* Sliding Drawer Container */}
-                <div
-                  className={`fixed top-0 right-0 h-full w-full max-w-[420px] bg-white shadow-2xl z-[100] flex flex-col transform transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-                    showNotifMenu ? "translate-x-0" : "translate-x-full"
+              {/* Sliding Drawer Container */}
+              <div
+                className={`fixed top-0 right-0 h-full w-full max-w-[420px] bg-white shadow-2xl z-[100] flex flex-col transform transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${showNotifMenu ? "translate-x-0" : "translate-x-full"
                   }`}
-                >
-                  {/* Drawer Header */}
-                  <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => setShowNotifMenu(false)}
-                        className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition cursor-pointer"
-                      >
-                        <IoMdClose className="text-2xl" />
-                      </button>
-                      <h3 className="font-bold text-slate-800 text-lg">Notifications</h3>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      {unreadCount > 0 && (
-                        <button
-                          onClick={markAllAsRead}
-                          className="text-xs text-[#8c4bdc] hover:underline font-semibold cursor-pointer"
-                        >
-                          Mark all read
-                        </button>
-                      )}
-                      {notifications.length > 0 && (
-                        <button
-                          onClick={clearAllNotifications}
-                          className="text-xs text-slate-400 hover:text-red-500 transition cursor-pointer flex items-center gap-1.5"
-                        >
-                          <FaTrashAlt className="text-[11px]" /> Clear all
-                        </button>
-                      )}
-                    </div>
+              >
+                {/* Drawer Header */}
+                <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setShowNotifMenu(false)}
+                      className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition cursor-pointer"
+                    >
+                      <IoMdClose className="text-2xl" />
+                    </button>
+                    <h3 className="font-bold text-slate-800 text-lg">Notifications</h3>
                   </div>
 
-                  {/* Scrollable list */}
-                  <div className="flex-1 overflow-y-auto divide-y divide-slate-100">
-                    {notifications.length === 0 ? (
-                      <div className="h-full flex flex-col items-center justify-center p-8 text-center">
-                        <span className="text-5xl mb-3">🔔</span>
-                        <p className="text-slate-600 font-semibold text-base">No notifications yet</p>
-                        <p className="text-slate-400 text-sm mt-1 max-w-[240px]">
-                          We'll notify you here when important updates occur.
-                        </p>
-                      </div>
-                    ) : (
-                      notifications.map((notif) => (
-                        <div
-                          key={notif._id}
-                          onClick={() => !notif.read && markAsRead(notif._id)}
-                          className={`p-5 flex gap-4 transition cursor-pointer text-left border-l-4 ${
-                            notif.read
-                              ? "bg-white hover:bg-slate-50 border-transparent"
-                              : "bg-purple-50/30 hover:bg-purple-50/50 border-[#8c4bdc]"
-                          }`}
-                        >
-                          {/* Icon column */}
-                          <div className="flex-shrink-0 mt-0.5">
-                            {notif.type === "payment_success" ? (
-                              <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center">
-                                <FaCheckCircle className="text-emerald-500 text-lg" />
-                              </div>
-                            ) : notif.type === "boost_expiring" ? (
-                              <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center">
-                                <FaExclamationTriangle className="text-amber-500 text-lg" />
-                              </div>
-                            ) : (
-                              <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center">
-                                <FaBell className="text-[#8c4bdc] text-base" />
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Content column */}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-2">
-                              <p className={`text-sm leading-snug ${notif.read ? "text-slate-700 font-medium" : "text-slate-900 font-bold"}`}>
-                                {notif.title}
-                              </p>
-                              {!notif.read && (
-                                <span className="w-2.5 h-2.5 rounded-full bg-[#8c4bdc] flex-shrink-0 mt-1.5 animate-pulse" />
-                              )}
-                            </div>
-                            <p className="text-xs text-slate-500 mt-1 leading-relaxed break-words">
-                              {notif.message}
-                            </p>
-                            <span className="text-[10px] text-slate-400 mt-2 block font-medium">
-                              {formatTimeAgo(notif.createdAt)}
-                            </span>
-                          </div>
-
-                          {/* Delete button */}
-                          <div className="flex-shrink-0 self-center">
-                            <button
-                              onClick={(e) => deleteNotification(notif._id, e)}
-                              className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition cursor-pointer"
-                              title="Delete"
-                            >
-                              <FaTrashAlt className="text-xs" />
-                            </button>
-                          </div>
-                        </div>
-                      ))
+                  <div className="flex items-center gap-3">
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={markAllAsRead}
+                        className="text-xs text-[#8c4bdc] hover:underline font-semibold cursor-pointer"
+                      >
+                        Mark all read
+                      </button>
+                    )}
+                    {notifications.length > 0 && (
+                      <button
+                        onClick={clearAllNotifications}
+                        className="text-xs text-slate-400 hover:text-red-500 transition cursor-pointer flex items-center gap-1.5"
+                      >
+                        <FaTrashAlt className="text-[11px]" /> Clear all
+                      </button>
                     )}
                   </div>
                 </div>
-              </div>
-            )}
 
-            <div className="relative" ref={profileMenuRef}>
-              <button
-                onClick={() => setShowProfileMenu(!showProfileMenu)}
-                className="w-14 h-14 p-[4px] rounded-full cursor-pointer border-2 border-[#8c4bdc] overflow-hidden hover:border-[#c04b7e] transition"
-              >
-                <Image
-                  src={user?.avatar || "https://res.cloudinary.com/dxlykgx6w/image/upload/v1766862633/business-man-avatar-profile_1133257-2431_dygzgs.avif"}
-                  alt="Profile"
-                  width={48}
-                  height={48}
-                  className="object-cover"
-                  onError={(e) => {
-                    e.target.src =
-                      "https://res.cloudinary.com/dxlykgx6w/image/upload/v1766862633/business-man-avatar-profile_1133257-2431_dygzgs.avif";
-                  }}
-                />
-              </button>
+                {/* Scrollable list */}
+                <div className="flex-1 overflow-y-auto divide-y divide-slate-100">
+                  {notifications.length === 0 ? (
+                    <div className="h-full flex flex-col items-center justify-center p-8 text-center">
+                      <span className="text-5xl mb-3">🔔</span>
+                      <p className="text-slate-600 font-semibold text-base">No notifications yet</p>
+                      <p className="text-slate-400 text-sm mt-1 max-w-[240px]">
+                        We'll notify you here when important updates occur.
+                      </p>
+                    </div>
+                  ) : (
+                    notifications.map((notif) => (
+                      <div
+                        key={notif._id}
+                        onClick={() => !notif.read && markAsRead(notif._id)}
+                        className={`p-5 flex gap-4 transition cursor-pointer text-left border-l-4 ${notif.read
+                            ? "bg-white hover:bg-slate-50 border-transparent"
+                            : "bg-purple-50/30 hover:bg-purple-50/50 border-[#8c4bdc]"
+                          }`}
+                      >
+                        {/* Icon column */}
+                        <div className="flex-shrink-0 mt-0.5">
+                          {notif.type === "payment_success" ? (
+                            <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center">
+                              <FaCheckCircle className="text-emerald-500 text-lg" />
+                            </div>
+                          ) : notif.type === "boost_expiring" ? (
+                            <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center">
+                              <FaExclamationTriangle className="text-amber-500 text-lg" />
+                            </div>
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center">
+                              <FaBell className="text-[#8c4bdc] text-base" />
+                            </div>
+                          )}
+                        </div>
 
-              {/* Dropdown Menu */}
-              {showProfileMenu && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
-                  {!isLoggedIn && (
-                    <Link
-                      href="/login-signup"
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
-                      onClick={() => setShowProfileMenu(false)}
-                    >
-                      <MdLogin className="text-[#8c4bdc] text-xl" />
-                      <span className="text-black">Login</span>
-                    </Link>
+                        {/* Content column */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <p className={`text-sm leading-snug ${notif.read ? "text-slate-700 font-medium" : "text-slate-900 font-bold"}`}>
+                              {notif.title}
+                            </p>
+                            {!notif.read && (
+                              <span className="w-2.5 h-2.5 rounded-full bg-[#8c4bdc] flex-shrink-0 mt-1.5 animate-pulse" />
+                            )}
+                          </div>
+                          <p className="text-xs text-slate-500 mt-1 leading-relaxed break-words">
+                            {notif.message}
+                          </p>
+                          <span className="text-[10px] text-slate-400 mt-2 block font-medium">
+                            {formatTimeAgo(notif.createdAt)}
+                          </span>
+                        </div>
+
+                        {/* Delete button */}
+                        <div className="flex-shrink-0 self-center">
+                          <button
+                            onClick={(e) => deleteNotification(notif._id, e)}
+                            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition cursor-pointer"
+                            title="Delete"
+                          >
+                            <FaTrashAlt className="text-xs" />
+                          </button>
+                        </div>
+                      </div>
+                    ))
                   )}
+                </div>
+              </div>
+            </div>
+          )}
 
+          <div className="relative" ref={profileMenuRef}>
+            <button
+              onClick={() => setShowProfileMenu(!showProfileMenu)}
+              className="w-14 h-14 p-[4px] rounded-full cursor-pointer border-2 border-[#8c4bdc] overflow-hidden hover:border-[#c04b7e] transition"
+            >
+              <Image
+                src={user?.avatar || "https://res.cloudinary.com/dxlykgx6w/image/upload/v1766862633/business-man-avatar-profile_1133257-2431_dygzgs.avif"}
+                alt="Profile"
+                width={48}
+                height={48}
+                className="object-cover"
+                onError={(e) => {
+                  e.target.src =
+                    "https://res.cloudinary.com/dxlykgx6w/image/upload/v1766862633/business-man-avatar-profile_1133257-2431_dygzgs.avif";
+                }}
+              />
+            </button>
+
+            {/* Dropdown Menu */}
+            {showProfileMenu && (
+              <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
+                {!isLoggedIn && (
                   <Link
-                    href="/contact"
+                    href="/login-signup"
                     className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
                     onClick={() => setShowProfileMenu(false)}
                   >
-                    <MdPhone className="text-[#8c4bdc] text-xl" />
-                    <span className="text-black">Book Now</span>
+                    <MdLogin className="text-[#8c4bdc] text-xl" />
+                    <span className="text-black">Login</span>
                   </Link>
+                )}
 
-                  {isLoggedIn && (
-                    <>
-                      <Link
-                        href="/edit-profile"
-                        className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
-                        onClick={() => setShowProfileMenu(false)}
-                      >
-                        <FaEdit className="text-[#8c4bdc] text-xl" />
-                        <span className="text-black">Edit Profile</span>
-                      </Link>
+                <Link
+                  href="/contact"
+                  className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
+                  onClick={() => setShowProfileMenu(false)}
+                >
+                  <MdPhone className="text-[#8c4bdc] text-xl" />
+                  <span className="text-black">Book Now</span>
+                </Link>
 
-                      <Link
-                        href="/my-properties"
-                        className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
-                        onClick={() => setShowProfileMenu(false)}
-                      >
-                        <FaHome className="text-[#8c4bdc] text-xl" />
-                        <span className="text-black">My Properties</span>
-                      </Link>
-
-                      <Link
-                        href="/wishlist"
-                        className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
-                        onClick={() => setShowProfileMenu(false)}
-                      >
-                        <FaHeart className="text-[#8c4bdc] text-xl" />
-                        <span className="text-black">Wishlist</span>
-                      </Link>
-
-                      {user?.role === "admin" && (
-                        <Link
-                          href="/admin"
-                          className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
-                          onClick={() => setShowProfileMenu(false)}
-                        >
-                          <RiAdminLine className="text-[#8c4bdc] text-xl" />
-                          <span className="text-black">Admin Dashbaord</span>
-                        </Link>
-                      )}
-                    </>
-                  )}
-
-                  {isLoggedIn && (
-                    <button
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition w-full text-left"
-                      onClick={() => {
-                        localStorage.removeItem("authToken");
-                        localStorage.removeItem("userData");
-                        setIsLoggedIn(false);
-                        setShowProfileMenu(false);
-                        window.location.href = "/";
-                      }}
+                {isLoggedIn && (
+                  <>
+                    <Link
+                      href="/edit-profile"
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
+                      onClick={() => setShowProfileMenu(false)}
                     >
-                      <FaUser className="text-[#8c4bdc] text-xl" />
-                      <span className="text-black">Logout</span>
-                    </button>
-                  )}
+                      <FaEdit className="text-[#8c4bdc] text-xl" />
+                      <span className="text-black">Edit Profile</span>
+                    </Link>
 
-                  {isInstallable && (
-                    <button
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition w-full text-left cursor-pointer font-medium"
-                      onClick={() => {
-                        installApp();
-                        setShowProfileMenu(false);
-                      }}
+                    <Link
+                      href="/my-properties"
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
+                      onClick={() => setShowProfileMenu(false)}
                     >
-                      <span className="text-[#8c4bdc] text-xl">📲</span>
-                      <span className="text-black">Install App</span>
-                    </button>
-                  )}
+                      <FaHome className="text-[#8c4bdc] text-xl" />
+                      <span className="text-black">My Properties</span>
+                    </Link>
 
-                  <div className="border-t border-gray-200 my-2"></div>
+                    <Link
+                      href="/wishlist"
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
+                      onClick={() => setShowProfileMenu(false)}
+                    >
+                      <FaHeart className="text-[#8c4bdc] text-xl" />
+                      <span className="text-black">Wishlist</span>
+                    </Link>
 
-                  {/* <Link
+                    {user?.role === "admin" && (
+                      <Link
+                        href="/admin"
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
+                        onClick={() => setShowProfileMenu(false)}
+                      >
+                        <RiAdminLine className="text-[#8c4bdc] text-xl" />
+                        <span className="text-black">Admin Dashbaord</span>
+                      </Link>
+                    )}
+                  </>
+                )}
+
+                {isLoggedIn && (
+                  <button
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition w-full text-left"
+                    onClick={() => {
+                      localStorage.removeItem("authToken");
+                      localStorage.removeItem("userData");
+                      setIsLoggedIn(false);
+                      setShowProfileMenu(false);
+                      window.location.href = "/";
+                    }}
+                  >
+                    <FaUser className="text-[#8c4bdc] text-xl" />
+                    <span className="text-black">Logout</span>
+                  </button>
+                )}
+
+                {isInstallable && (
+                  <button
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition w-full text-left cursor-pointer font-medium"
+                    onClick={() => {
+                      installApp();
+                      setShowProfileMenu(false);
+                    }}
+                  >
+                    <span className="text-[#8c4bdc] text-xl">📲</span>
+                    <span className="text-black">Install App</span>
+                  </button>
+                )}
+
+                <div className="border-t border-gray-200 my-2"></div>
+
+                {/* <Link
                     href="/setting"
                     className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
                     onClick={() => setShowProfileMenu(false)}
@@ -641,18 +638,18 @@ export default function Navbar() {
                     <FaCog className="text-[#8c4bdc] text-xl" />
                     <span className="text-black">Setting</span>
                   </Link> */}
-                </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
+        </div>
 
-          {/* <button
+        {/* <button
             className="hamburger-icon lg:hidden text-black text-4xl"
             onClick={() => setOpen(!open)}
           >
             {open ? <IoMdClose /> : <GiHamburgerMenu />}
           </button> */}
-        </div>
+      </div>
 
       {open && (
         <div

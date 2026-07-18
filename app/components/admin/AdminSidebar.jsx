@@ -1,5 +1,5 @@
 "use client";
-
+import React, { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -24,6 +24,17 @@ export default function AdminSidebar({
   const pathname = usePathname();
   const router = useRouter();
 
+  useEffect(() => {
+    if (isMobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMobileOpen]);
+
   const logout = () => {
     if (typeof window !== "undefined") localStorage.removeItem("authToken");
     router.push("/login-signup");
@@ -41,7 +52,7 @@ export default function AdminSidebar({
 
       {/* ================= SIDEBAR ================= */}
       <aside
-        className={`fixed left-0 top-0 h-screen z-50 bg-green-700 text-white flex flex-col transition-all duration-300 ${isCollapsed ? "md:w-20" : "md:w-64"
+        className={`fixed left-0 top-0 h-full z-50 bg-green-700 text-white flex flex-col transition-all duration-300 ${isCollapsed ? "md:w-20" : "md:w-64"
           } w-64 ${isMobileOpen ? "translate-x-0" : "-translate-x-full"
           } md:translate-x-0`}
       >
@@ -106,36 +117,28 @@ export default function AdminSidebar({
             isCollapsed={isCollapsed}
           />
 
-          {/* <NavItem
-            href="/admin/contacts"
-            active={pathname.startsWith("/admin/contacts")}
-            icon={<MessageSquare size={18} />}
-            label="Contacts"
-            isCollapsed={isCollapsed}
-          /> */}
+          {/* Logout & Collapse Buttons directly below Pages NavItem */}
+          <div className="pt-4 border-t border-green-600/50 space-y-2 mt-4">
+            <button
+              onClick={logout}
+              className={`w-full flex items-center gap-3 bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-white transition-colors ${isCollapsed ? "md:justify-center" : ""
+                }`}
+            >
+              <LogOut size={18} />
+              <span className={isCollapsed ? "md:hidden" : "md:block"}>
+                Logout
+              </span>
+            </button>
+
+            {/* Collapse toggle for desktop */}
+            <button
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="hidden md:flex w-full items-center justify-center bg-green-800 hover:bg-green-600 p-2 rounded text-white transition-colors"
+            >
+              {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+            </button>
+          </div>
         </nav>
-
-        {/* LOGOUT & COLLAPSE */}
-        <div className="p-4 space-y-2">
-          <button
-            onClick={logout}
-            className={`w-full flex items-center gap-3 bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-white transition-colors ${isCollapsed ? "md:justify-center" : ""
-              }`}
-          >
-            <LogOut size={18} />
-            <span className={isCollapsed ? "md:hidden" : "md:block"}>
-              Logout
-            </span>
-          </button>
-
-          {/* Collapse toggle for desktop */}
-          <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="hidden md:flex w-full items-center justify-center bg-green-800 hover:bg-green-600 p-2 rounded text-white transition-colors"
-          >
-            {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-          </button>
-        </div>
       </aside>
     </>
   );
@@ -148,8 +151,8 @@ function NavItem({ href, active, icon, label, isCollapsed }) {
     <Link
       href={href}
       className={`flex items-center gap-3 px-4 py-2 rounded transition ${active
-          ? "bg-white text-green-700 font-semibold"
-          : "hover:bg-green-600 text-white"
+        ? "bg-white text-green-700 font-semibold"
+        : "hover:bg-green-600 text-white"
         } ${isCollapsed ? "md:justify-center" : ""}`}
     >
       {icon}

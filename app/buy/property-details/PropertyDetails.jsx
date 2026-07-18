@@ -129,6 +129,7 @@ const PropertyDetailsPage = () => {
   const [showImageModal, setShowImageModal] = useState(false);
   const [modalImageIndex, setModalImageIndex] = useState(0);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [activePopover, setActivePopover] = useState(null);
 
   const databaseUrl = process.env.NEXT_PUBLIC_APP_DATABASE_URL || "";
 
@@ -382,6 +383,7 @@ const PropertyDetailsPage = () => {
     try {
       const parsedUser = JSON.parse(userDataStr);
       
+      // 1. Send dynamic email notification
       await fetch('/api/send-view-details-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -393,6 +395,24 @@ const PropertyDetailsPage = () => {
           }
         })
       });
+
+      // 2. Increment contact click count in Express backend
+      try {
+        const clickRes = await fetch(`${databaseUrl}/api/properties/${id}/contact-click`, {
+          method: 'POST'
+        });
+        if (clickRes.ok) {
+          const clickData = await clickRes.json();
+          if (clickData.success && clickData.data) {
+            setProperty(prev => ({
+              ...prev,
+              contactClickCount: clickData.data.contactClickCount
+            }));
+          }
+        }
+      } catch (clickErr) {
+        console.error("Error incrementing contact click count:", clickErr);
+      }
       
       setShowDetails(true);
     } catch (error) {
@@ -496,18 +516,122 @@ const PropertyDetailsPage = () => {
           </button>
         </div>
 
-        {property.owner?.role === "admin" && (
-          <span className="absolute top-4 left-4 px-4 py-2 text-white font-bold rounded-full shadow-lg bg-green-600 z-10">
-            ✓ Verified
-          </span>
-        )}
-        {(property.featured || property.isBoosted) && (
-          <span className={`absolute top-4 px-4 py-2 text-white font-bold rounded-full shadow-lg z-10 ${
-            property.owner?.role === "admin" ? "left-32" : "left-4"
-          } ${property.isBoosted ? "bg-[blue]" : "bg-red-600"}`}>
-            {property.isBoosted ? "★ High Rated (Boosted)" : "Featured"}
-          </span>
-        )}
+        {(() => {
+          const propId = property.id || property._id;
+          return (
+            <>
+              {/* Verified Badge Icon */}
+              {property.owner?.role === "admin" && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setActivePopover(
+                      activePopover?.id === propId && activePopover?.type === "verified"
+                        ? null
+                        : { id: propId, type: "verified" }
+                    );
+                  }}
+                  className="absolute top-4 left-4 w-8 h-8 rounded-full flex items-center justify-center bg-green-600 text-white font-extrabold shadow-md z-20 hover:scale-105 hover:bg-green-700 transition-all text-base cursor-pointer"
+                  title="Verified Property"
+                >
+                  ✓
+                </button>
+              )}
+
+              {/* Featured/Boosted Badge Icon */}
+              {(property.featured || property.isBoosted) && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setActivePopover(
+                      activePopover?.id === propId && activePopover?.type === "star"
+                        ? null
+                        : { id: propId, type: "star" }
+                    );
+                  }}
+                  className={`absolute top-4 w-8 h-8 rounded-full flex items-center justify-center text-white font-extrabold shadow-md z-20 hover:scale-105 transition-all text-base cursor-pointer ${
+                    property.owner?.role === "admin" ? "left-14" : "left-4"
+                  } ${property.isBoosted ? "bg-blue-600 hover:bg-blue-700" : "bg-red-600 hover:bg-red-700"}`}
+                  title={property.isBoosted ? "High Rated (Boosted)" : "Featured Property"}
+                >
+                  ★
+                </button>
+              )}
+
+              {/* Verified Popover */}
+              {activePopover?.id === propId && activePopover?.type === "verified" && (
+                <div
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                  className="absolute top-14 left-4 bg-white text-gray-800 rounded-xl shadow-2xl border border-gray-100 z-30 p-3 w-60 pointer-events-auto transition-all animate-in fade-in zoom-in-95 duration-150"
+                >
+                  <div className="flex justify-between items-center mb-1.5 pb-1 border-b border-gray-100">
+                    <span className="font-bold text-green-600 text-xs flex items-center gap-1">
+                      ✓ Verified Property
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setActivePopover(null);
+                      }}
+                      className="text-gray-400 hover:text-gray-600 p-0.5 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <p className="text-[10px] leading-relaxed text-[#7a18cf] font-normal">
+                    This is a verified listing by a trusted user. The 18homes team has verified the property details and ownership to ensure authenticity.
+                  </p>
+                </div>
+              )}
+
+              {/* Star Popover */}
+              {activePopover?.id === propId && activePopover?.type === "star" && (
+                <div
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                  className={`absolute top-14 ${
+                    property.owner?.role === "admin" ? "left-14" : "left-4"
+                  } bg-white text-gray-800 rounded-xl shadow-2xl border border-gray-100 z-30 p-3 w-60 pointer-events-auto transition-all animate-in fade-in zoom-in-95 duration-150`}
+                >
+                  <div className="flex justify-between items-center mb-1.5 pb-1 border-b border-gray-100">
+                    <span className={`font-bold text-xs flex items-center gap-1 ${
+                      property.isBoosted ? "text-blue-600" : "text-red-600"
+                    }`}>
+                      ★ {property.isBoosted ? "Boosted Property" : "Featured"}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setActivePopover(null);
+                      }}
+                      className="text-gray-400 hover:text-gray-600 p-0.5 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <p className="text-[10px] leading-relaxed text-[#7a18cf] font-normal">
+                    {property.isBoosted
+                      ? "This property is boosted for higher visibility. It is highly rated and recommended by 18homes."
+                      : "This property is featured on 18homes for premium reach and stands out for its high value."}
+                  </p>
+                </div>
+              )}
+            </>
+          );
+        })()}
 
         {/* Slide Navigation Arrows */}
         {images.length > 1 && (
@@ -934,6 +1058,12 @@ const PropertyDetailsPage = () => {
 
               {showDetails ? (
                 <>
+                  {property.contactClickCount > 0 && (
+                    <div className="mb-4 text-xs font-semibold text-red-600 bg-red-50 px-3 py-1.5 rounded-full border border-red-100 flex items-center gap-1.5 justify-center">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse"></span>
+                      <span>{property.contactClickCount} {property.contactClickCount === 1 ? 'person has' : 'people have'} already contacted the seller</span>
+                    </div>
+                  )}
                   {property.owner ? (
                     <>
                       <div className="flex items-center gap-4 mb-6">
@@ -1028,6 +1158,12 @@ const PropertyDetailsPage = () => {
                   <p className="text-gray-600 text-center text-sm mb-6 px-4">
                     Login to view the seller's phone number and email address directly.
                   </p>
+                  {property.contactClickCount > 0 && (
+                    <div className="mb-4 text-xs font-semibold text-red-600 bg-red-50 px-3 py-1.5 rounded-full border border-red-100 flex items-center gap-1.5 justify-center">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse"></span>
+                      <span>{property.contactClickCount} {property.contactClickCount === 1 ? 'person has' : 'people have'} already contacted</span>
+                    </div>
+                  )}
                   <button 
                     onClick={handleViewDetails}
                     disabled={isLoadingDetails}
