@@ -58,6 +58,18 @@ export default function BottomTaskbar() {
     return () => window.removeEventListener("storage", checkAuth);
   }, [isMenuOpen]);
 
+  // Scroll Lock when Mobile Drawer Menu is Open
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMenuOpen]);
+
   const [navData, setNavData] = useState(null);
 
   // Fetch dynamic navbar links

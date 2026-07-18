@@ -66,6 +66,7 @@ const BuyPage = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState(INITIAL_FILTERS);
   const [favorites, setFavorites] = useState([]);
+  const [activePopover, setActivePopover] = useState(null);
 
   useEffect(() => {
     const fetchFavorites = async () => {
@@ -920,17 +921,111 @@ const BuyPage = () => {
                             }`}
                         />
                       </button>
+                      {/* Verified Badge Icon */}
                       {property.owner?.role === "admin" && (
-                        <span className="absolute top-3 left-3 px-3 py-1 text-white text-sm font-bold rounded-full bg-green-600 shadow-md z-10">
-                          ✓ Verified
-                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setActivePopover(
+                              activePopover?.id === property.id && activePopover?.type === "verified"
+                                ? null
+                                : { id: property.id, type: "verified" }
+                            );
+                          }}
+                          className="absolute top-3 left-3 w-8 h-8 rounded-full flex items-center justify-center bg-green-600 text-white font-extrabold shadow-md z-20 hover:scale-105 hover:bg-green-700 transition-all text-base"
+                          title="Verified Property"
+                        >
+                          ✓
+                        </button>
                       )}
+
+                      {/* Featured/Boosted Badge Icon */}
                       {(property.featured || property.isBoosted) && (
-                        <span className={`absolute top-3 px-3 py-1 text-white text-sm font-bold rounded-full shadow-md z-10 ${
-                          property.owner?.role === "admin" ? "left-28" : "left-3"
-                        } ${property.isBoosted ? "bg-[blue]" : "bg-red-600"}`}>
-                          {property.isBoosted ? "★ High Rated (Boosted)" : "Featured"}
-                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setActivePopover(
+                              activePopover?.id === property.id && activePopover?.type === "star"
+                                ? null
+                                : { id: property.id, type: "star" }
+                            );
+                          }}
+                          className={`absolute top-3 w-8 h-8 rounded-full flex items-center justify-center text-white font-extrabold shadow-md z-20 hover:scale-105 transition-all text-base ${property.owner?.role === "admin" ? "left-12" : "left-3"
+                            } ${property.isBoosted ? "bg-blue-600 hover:bg-blue-700" : "bg-red-600 hover:bg-red-700"}`}
+                          title={property.isBoosted ? "High Rated (Boosted)" : "Featured Property"}
+                        >
+                          ★
+                        </button>
+                      )}
+
+                      {/* Verified Popover */}
+                      {activePopover?.id === property.id && activePopover?.type === "verified" && (
+                        <div
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
+                          className="absolute top-12 left-3 bg-white text-gray-800 rounded-xl shadow-2xl border border-gray-100 z-30 p-3 w-60 pointer-events-auto transition-all animate-in fade-in zoom-in-95 duration-150"
+                        >
+                          <div className="flex justify-between items-center mb-1.5 pb-1 border-b border-gray-100">
+                            <span className="font-bold text-green-600 text-xs flex items-center gap-1">
+                              ✓ Verified Property
+                            </span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setActivePopover(null);
+                              }}
+                              className="text-gray-400 hover:text-gray-600 p-0.5 rounded-full hover:bg-gray-100 transition-colors"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                          <p className="text-[10px] leading-relaxed text-[#7a18cf] font-normal">
+                            This is a verified listing by a trusted user. The 18homes team has verified the property details and ownership to ensure authenticity.
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Star Popover */}
+                      {activePopover?.id === property.id && activePopover?.type === "star" && (
+                        <div
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
+                          className={`absolute top-12 ${property.owner?.role === "admin" ? "left-12" : "left-3"
+                            } bg-white text-gray-800 rounded-xl shadow-2xl border border-gray-100 z-30 p-3 w-60 pointer-events-auto transition-all animate-in fade-in zoom-in-95 duration-150`}
+                        >
+                          <div className="flex justify-between items-center mb-1.5 pb-1 border-b border-gray-100">
+                            <span className={`font-bold text-xs flex items-center gap-1 ${property.isBoosted ? "text-blue-600" : "text-red-600"
+                              }`}>
+                              ★ {property.isBoosted ? "Boosted Property" : "Featured"}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setActivePopover(null);
+                              }}
+                              className="text-gray-400 hover:text-gray-600 p-0.5 rounded-full hover:bg-gray-100 transition-colors"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                          <p className="text-[10px] leading-relaxed text-[#7a18cf] font-normal">
+                            {property.isBoosted
+                              ? "This property is boosted for higher visibility. It is highly rated and recommended by 18homes."
+                              : "This property is featured on 18homes for premium reach and stands out for its high value."}
+                          </p>
+                        </div>
                       )}
                       <span
                         className={`absolute bottom-3 left-3 px-3 py-1 ${property.status === "For Sale" ? "bg-green-600" : "bg-red-600"} text-white text-sm rounded-full`}

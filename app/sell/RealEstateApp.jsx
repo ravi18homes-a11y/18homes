@@ -15,6 +15,8 @@ import {
   Plus,
   Camera,
   Loader2,
+  ExternalLink,
+  Play,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -52,6 +54,7 @@ const RealEstateApp = () => {
   const [favorites, setFavorites] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeVideoUrl, setActiveVideoUrl] = useState(null);
 
   const [token, setToken] = useState("");
   const router = useRouter();
@@ -516,16 +519,25 @@ const RealEstateApp = () => {
                   <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
                     {/* Display Images */}
                     {sellForm.images.map((img, index) => (
-                      <div key={`img-${index}`} className="relative group">
+                      <div key={`img-${index}`} className="relative group overflow-hidden rounded-lg">
                         <img
                           src={img}
                           alt={`Property ${index + 1}`}
                           className="w-full h-24 object-cover rounded-lg border-2 border-gray-200"
                         />
+                        <a
+                          href={img}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="absolute inset-0 bg-black bg-opacity-40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg text-white text-[10px] font-semibold p-1 text-center"
+                        >
+                          <ExternalLink className="w-4 h-4 mb-0.5" />
+                          <span>Open in new tab</span>
+                        </a>
                         <button
                           type="button"
                           onClick={() => removeImage(index)}
-                          className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 hover:bg-red-700 shadow-lg"
+                          className="absolute -top-1 -right-1 bg-red-600 text-white rounded-full p-1 hover:bg-red-700 shadow-lg z-10"
                         >
                           <X className="w-4 h-4" />
                         </button>
@@ -572,22 +584,43 @@ const RealEstateApp = () => {
                   <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
                     {/* Display Videos */}
                     {sellForm.videos.map((video, index) => (
-                      <div key={`vid-${index}`} className="relative group">
+                      <div key={`vid-${index}`} className="relative group overflow-hidden rounded-lg">
                         <video
                           src={video}
                           muted
                           preload="metadata"
                           className="w-full h-24 object-cover rounded-lg border-2 border-gray-200"
                         />
-                        <div className="absolute inset-0 bg-black bg-opacity-40 rounded-lg flex items-center justify-center pointer-events-none">
-                          <span className="text-white text-xs font-bold bg-red-600 px-2 py-1 rounded">
+                        {/* Default Badge */}
+                        <div className="absolute inset-0 bg-black bg-opacity-30 rounded-lg flex items-center justify-center group-hover:hidden pointer-events-none transition-all">
+                          <span className="text-white text-[10px] font-bold bg-red-600 px-2 py-0.5 rounded">
                             VIDEO
                           </span>
+                        </div>
+                        {/* Hover Actions */}
+                        <div className="absolute inset-0 bg-black bg-opacity-65 hidden group-hover:flex flex-col items-center justify-center gap-1.5 rounded-lg transition-all p-1">
+                          <button
+                            type="button"
+                            onClick={() => setActiveVideoUrl(video)}
+                            className="flex items-center gap-1 text-white bg-red-600 hover:bg-red-700 text-[10px] font-semibold px-2 py-1 rounded transition-colors w-full justify-center"
+                          >
+                            <Play className="w-3 h-3 fill-current" />
+                            <span>Play Video</span>
+                          </button>
+                          <a
+                            href={video}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-white bg-gray-800 hover:bg-gray-700 text-[9px] font-semibold px-2 py-1 rounded border border-gray-600 transition-colors w-full justify-center"
+                          >
+                            <ExternalLink className="w-2.5 h-2.5" />
+                            <span>Open in new tab</span>
+                          </a>
                         </div>
                         <button
                           type="button"
                           onClick={() => removeVideo(index)}
-                          className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 hover:bg-red-700 shadow-lg"
+                          className="absolute -top-1 -right-1 bg-red-600 text-white rounded-full p-1 hover:bg-red-700 shadow-lg z-10"
                         >
                           <X className="w-4 h-4" />
                         </button>
@@ -1214,6 +1247,27 @@ const RealEstateApp = () => {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Video Modal Player */}
+      {activeVideoUrl && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 z-[9999] flex items-center justify-center p-4">
+          <div className="relative bg-black rounded-lg max-w-3xl w-full aspect-video shadow-2xl overflow-hidden">
+            <video
+              src={activeVideoUrl}
+              controls
+              autoPlay
+              className="w-full h-full object-contain"
+            />
+            <button
+              type="button"
+              onClick={() => setActiveVideoUrl(null)}
+              className="absolute top-4 right-4 bg-red-600 hover:bg-red-700 text-white rounded-full p-2 transition-colors z-50 shadow-lg"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
         </div>
       )}
