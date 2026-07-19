@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
-import { FaWhatsapp, FaUser, FaEdit, FaCog, FaHome, FaHeart, FaBell, FaCheckCircle, FaExclamationTriangle, FaTrashAlt } from "react-icons/fa";
+import { FaWhatsapp, FaUser, FaEdit, FaCog, FaHome, FaHeart, FaBell, FaCheckCircle, FaExclamationTriangle, FaTrashAlt, FaHistory } from "react-icons/fa";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { IoMdClose } from "react-icons/io";
 import { MdLogin, MdPhone } from "react-icons/md";
@@ -555,6 +555,15 @@ export default function Navbar() {
                 >
                   <MdPhone className="text-[#8c4bdc] text-xl" />
                   <span className="text-black">Book Now</span>
+                </Link>
+
+                <Link
+                  href="/recent-history"
+                  className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
+                  onClick={() => setShowProfileMenu(false)}
+                >
+                  <FaHistory className="text-[#8c4bdc] text-xl" />
+                  <span className="text-black">Recent History</span>
                 </Link>
 
                 {isLoggedIn && (
