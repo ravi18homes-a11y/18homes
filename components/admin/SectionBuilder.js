@@ -225,6 +225,24 @@ function SectionConfig({ section, onUpdate }) {
               disabled={isUploading}
               className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3"
             />
+            
+            <label className="flex items-start gap-3 cursor-pointer mt-1">
+              <input
+                type="checkbox"
+                checked={data.showOverlay ?? true}
+                onChange={(event) => {
+                  onUpdate({ ...section, data: { ...data, showOverlay: event.target.checked } });
+                }}
+                className="mt-1 h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-500 cursor-pointer"
+              />
+              <div className="space-y-0.5">
+                <span className="text-sm font-semibold text-slate-900">Show Dark Overlay on Background Image</span>
+                <p className="text-xs text-slate-500">
+                  Enable a dark overlay to make text readable. Disable this if this page is a blog banner or a normal visual block.
+                </p>
+              </div>
+            </label>
+
             {uploadMessage && (
               <p className={`text-sm ${uploadMessage.includes('failed') || uploadMessage.includes('error') ? 'text-red-500' : 'text-green-600'}`}>
                 {uploadMessage}
@@ -239,7 +257,9 @@ function SectionConfig({ section, onUpdate }) {
                   backgroundPosition: "center",
                 }}
               >
-                <div className="absolute inset-0 bg-black/45 z-0" />
+                {(data.showOverlay ?? true) && (
+                  <div className="absolute inset-0 bg-black/45 z-0" />
+                )}
                 <div className="relative z-10 text-white space-y-1 w-full">
                   <p className="text-xs font-semibold uppercase tracking-wider opacity-75">Preview (Background Image)</p>
                   <p className="text-lg font-bold truncate">{data.title || "No title yet"}</p>
