@@ -247,7 +247,7 @@ const BuyPage = () => {
             return {
               id: prop._id || prop.id,
               title: prop.title || "No Title",
-              location: ` ${prop.address.city ? prop.address.city + ", " : ""} ${ownerInfo}`,
+              location: ` ${prop.address.city ? prop.address.city : `NCR Reason (Not Disclosed)`}`,
               price: prop.priceText || prop.priceValue || prop.price || "",
               bedrooms: prop.bedrooms || 0,
               bathrooms: prop.bathrooms || 0,

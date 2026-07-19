@@ -267,6 +267,55 @@ const PropertyDetailsPage = () => {
               location: formatAddress(data.data.address || data.data.location),
             };
             setProperty(transformedProperty);
+
+            // Save to recent history
+            const token = localStorage.getItem("authToken");
+            if (token && databaseUrl) {
+              // Logged in: Save to backend database
+              fetch(`${databaseUrl}/api/properties/${transformedProperty._id || transformedProperty.id}/history`, {
+                method: "POST",
+                headers: { Authorization: `Bearer ${token}` }
+              }).catch((err) => console.error("Error saving view to backend history:", err));
+            } else {
+              // Guest: Save to localStorage recent history
+              try {
+                const historyJson = localStorage.getItem("recentProperties");
+                let history = [];
+                if (historyJson) {
+                  history = JSON.parse(historyJson);
+                }
+                if (!Array.isArray(history)) {
+                  history = [];
+                }
+                const propId = transformedProperty._id || transformedProperty.id;
+                // Remove duplicate if it already exists
+                history = history.filter((item) => (item._id || item.id) !== propId);
+                
+                // Add to start of array
+                history.unshift({
+                  _id: propId,
+                  id: propId,
+                  title: transformedProperty.title,
+                  location: transformedProperty.location,
+                  price: transformedProperty.price,
+                  priceText: transformedProperty.priceText,
+                  priceValue: transformedProperty.priceValue,
+                  bedrooms: transformedProperty.bedrooms,
+                  bathrooms: transformedProperty.bathrooms,
+                  area: transformedProperty.area,
+                  image: transformedProperty.images?.[0] || transformedProperty.image || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200",
+                  type: transformedProperty.type,
+                  status: transformedProperty.status,
+                  visitedAt: new Date().toISOString()
+                });
+                
+                // Keep only the 20 most recent
+                localStorage.setItem("recentProperties", JSON.stringify(history.slice(0, 20)));
+              } catch (err) {
+                console.error("Error saving recent history to localStorage:", err);
+              }
+            }
+
             return;
           }
         }
