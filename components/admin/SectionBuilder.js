@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import RichTextEditor from "./RichTextEditor";
 
 const sectionTemplates = {
   hero: {
@@ -148,6 +149,13 @@ function SectionConfig({ section, onUpdate }) {
     onUpdate({ ...section, data: { ...data, items: next } });
   };
 
+  const handleFaqValueUpdate = (index, field, value) => {
+    const next = (data.items || []).map((item, idx) =>
+      idx === index ? { ...item, [field]: value } : item,
+    );
+    onUpdate({ ...section, data: { ...data, items: next } });
+  };
+
   return (
     <div className="space-y-4 rounded-3xl bg-slate-50 p-5 shadow-inner">
       {type === "hero" && (
@@ -160,6 +168,24 @@ function SectionConfig({ section, onUpdate }) {
             onChange={handleChange("title")}
             className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3"
           />
+          <div className="mt-2">
+            <label className="block text-xs font-semibold text-slate-600 mb-1">
+              Headline SEO Tag
+            </label>
+            <select
+              value={data.headingTag || "h1"}
+              onChange={handleChange("headingTag")}
+              className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none"
+            >
+              <option value="h1">H1 (Recommended for top section)</option>
+              <option value="h2">H2 (Sub-heading)</option>
+              <option value="h3">H3 (Section Title)</option>
+              <option value="h4">H4</option>
+              <option value="h5">H5</option>
+              <option value="h6">H6</option>
+              <option value="div">div (No SEO weight)</option>
+            </select>
+          </div>
           <label className="block text-sm font-medium text-slate-700">
             Subheadline
           </label>
@@ -235,6 +261,24 @@ function SectionConfig({ section, onUpdate }) {
             onChange={handleChange("heading")}
             className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3"
           />
+          <div className="mt-2">
+            <label className="block text-xs font-semibold text-slate-600 mb-1">
+              Heading SEO Tag
+            </label>
+            <select
+              value={data.headingTag || "h2"}
+              onChange={handleChange("headingTag")}
+              className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none"
+            >
+              <option value="h1">H1</option>
+              <option value="h2">H2 (Default)</option>
+              <option value="h3">H3</option>
+              <option value="h4">H4</option>
+              <option value="h5">H5</option>
+              <option value="h6">H6</option>
+              <option value="div">div (No SEO weight)</option>
+            </select>
+          </div>
           
           {/* Content Type Selector */}
           <div className="space-y-2 mt-4">
@@ -268,18 +312,12 @@ function SectionConfig({ section, onUpdate }) {
           {(data.contentType || "text") === "text" ? (
             <div className="space-y-2 mt-4">
               <label className="block text-sm font-medium text-slate-700">
-                Body copy
+                Body copy (Rich Text Editor)
               </label>
-              <textarea
+              <RichTextEditor
                 value={data.body || ""}
-                onChange={handleChange("body")}
-                className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3"
-                rows={4}
-                placeholder="Write your text block here. New lines and spaces will be preserved exactly as typed on the webpage."
+                onChange={(html) => onUpdate({ ...section, data: { ...data, body: html } })}
               />
-              <p className="text-xs text-slate-500 mt-1">
-                💡 Formatting like paragraph breaks and line breaks will be preserved exactly as you write.
-              </p>
             </div>
           ) : (
             <div className="space-y-4 mt-4 rounded-2xl border border-slate-200/60 p-4 bg-white">
@@ -401,6 +439,24 @@ function SectionConfig({ section, onUpdate }) {
             className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3"
             rows={3}
           />
+          <div className="mt-2">
+            <label className="block text-xs font-semibold text-slate-600 mb-1">
+              Caption SEO Tag
+            </label>
+            <select
+              value={data.headingTag || "h2"}
+              onChange={handleChange("headingTag")}
+              className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none"
+            >
+              <option value="h1">H1</option>
+              <option value="h2">H2 (Default)</option>
+              <option value="h3">H3</option>
+              <option value="h4">H4</option>
+              <option value="h5">H5</option>
+              <option value="h6">H6</option>
+              <option value="div">div (No SEO weight)</option>
+            </select>
+          </div>
         </>
       )}
 
@@ -414,6 +470,24 @@ function SectionConfig({ section, onUpdate }) {
             onChange={handleChange("heading")}
             className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3"
           />
+          <div className="mt-2">
+            <label className="block text-xs font-semibold text-slate-600 mb-1">
+              Heading SEO Tag
+            </label>
+            <select
+              value={data.headingTag || "h2"}
+              onChange={handleChange("headingTag")}
+              className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none"
+            >
+              <option value="h1">H1</option>
+              <option value="h2">H2 (Default)</option>
+              <option value="h3">H3</option>
+              <option value="h4">H4</option>
+              <option value="h5">H5</option>
+              <option value="h6">H6</option>
+              <option value="div">div (No SEO weight)</option>
+            </select>
+          </div>
           <label className="block text-sm font-medium text-slate-700">
             Features (one per line)
           </label>
@@ -448,6 +522,24 @@ function SectionConfig({ section, onUpdate }) {
             onChange={handleChange("ctaText")}
             className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3"
           />
+          <div className="mt-2">
+            <label className="block text-xs font-semibold text-slate-600 mb-1">
+              CTA Text SEO Tag
+            </label>
+            <select
+              value={data.headingTag || "h2"}
+              onChange={handleChange("headingTag")}
+              className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none"
+            >
+              <option value="h1">H1</option>
+              <option value="h2">H2 (Default)</option>
+              <option value="h3">H3</option>
+              <option value="h4">H4</option>
+              <option value="h5">H5</option>
+              <option value="h6">H6</option>
+              <option value="div">div (No SEO weight)</option>
+            </select>
+          </div>
           <label className="block text-sm font-medium text-slate-700">
             Button label
           </label>
@@ -469,32 +561,79 @@ function SectionConfig({ section, onUpdate }) {
 
       {type === "faq" && (
         <>
+          <div className="mb-4">
+            <label className="block text-xs font-semibold text-slate-600 mb-1">
+              FAQ Heading SEO Tag
+            </label>
+            <select
+              value={data.headingTag || "h2"}
+              onChange={handleChange("headingTag")}
+              className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none"
+            >
+              <option value="h1">H1</option>
+              <option value="h2">H2 (Default)</option>
+              <option value="h3">H3</option>
+              <option value="h4">H4</option>
+              <option value="h5">H5</option>
+              <option value="h6">H6</option>
+              <option value="div">div (No SEO weight)</option>
+            </select>
+          </div>
           <div className="space-y-4">
-            {data.items.map((item, index) => (
+            {(data.items || []).map((item, index) => (
               <div
                 key={index}
-                className="rounded-3xl border border-slate-200 bg-white p-4"
+                className="rounded-3xl border border-slate-200 bg-white p-4 relative"
               >
+                <div className="absolute top-4 right-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = (data.items || []).filter((_, idx) => idx !== index);
+                      onUpdate({ ...section, data: { ...data, items: next } });
+                    }}
+                    className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-full transition cursor-pointer"
+                    title="Delete FAQ item"
+                  >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
                 <label className="block text-sm font-medium text-slate-700">
                   Question
                 </label>
                 <input
                   value={item.question}
                   onChange={handleFaqUpdate(index, "question")}
-                  className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3"
+                  className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 pr-10"
                 />
-                <label className="mt-3 block text-sm font-medium text-slate-700">
-                  Answer
+                <label className="mt-3 block text-sm font-medium text-slate-700 mb-2">
+                  Answer (Rich Text)
                 </label>
-                <textarea
-                  value={item.answer}
-                  onChange={handleFaqUpdate(index, "answer")}
-                  className="w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3"
-                  rows={3}
+                <RichTextEditor
+                  value={item.answer || ""}
+                  onChange={(html) => handleFaqValueUpdate(index, "answer", html)}
                 />
               </div>
             ))}
           </div>
+          <button
+            type="button"
+            onClick={() => {
+              const currentItems = data.items || [];
+              onUpdate({
+                ...section,
+                data: {
+                  ...data,
+                  items: [...currentItems, { question: "", answer: "" }],
+                },
+              });
+            }}
+            className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-800 bg-slate-200 hover:bg-slate-300 rounded-full px-4 py-2 transition cursor-pointer"
+          >
+            <span>➕</span> Add FAQ Item
+          </button>
         </>
       )}
 
