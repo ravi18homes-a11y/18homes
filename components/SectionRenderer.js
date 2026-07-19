@@ -26,7 +26,7 @@ export default function SectionRenderer({ sections = [] }) {
         switch (type) {
           case "hero": {
             const hasHeading = Boolean(data.title);
-            const HeadingTag = getHeadingTag(hasHeading);
+            const HeadingTag = data.headingTag || getHeadingTag(hasHeading);
             return (
               <section
                 key={id}
@@ -69,7 +69,7 @@ export default function SectionRenderer({ sections = [] }) {
           }
           case "text": {
             const hasHeading = Boolean(data.heading);
-            const HeadingTag = getHeadingTag(hasHeading);
+            const HeadingTag = data.headingTag || getHeadingTag(hasHeading);
             return (
               <section
                 key={id}
@@ -108,16 +108,17 @@ export default function SectionRenderer({ sections = [] }) {
                     </ol>
                   )
                 ) : (
-                  <p className="leading-8 opacity-90" style={{ whiteSpace: "pre-wrap" }}>
-                    {data.body}
-                  </p>
+                  <div
+                    className="rich-text-content leading-8 opacity-90"
+                    dangerouslySetInnerHTML={{ __html: data.body || "" }}
+                  />
                 )}
               </section>
             );
           }
           case "image": {
             const hasHeading = Boolean(data.caption);
-            const HeadingTag = getHeadingTag(hasHeading);
+            const HeadingTag = data.headingTag || getHeadingTag(hasHeading);
             return (
               <section
                 key={id}
@@ -145,7 +146,7 @@ export default function SectionRenderer({ sections = [] }) {
           }
           case "features": {
             const hasHeading = Boolean(data.heading);
-            const HeadingTag = getHeadingTag(hasHeading);
+            const HeadingTag = data.headingTag || getHeadingTag(hasHeading);
             return (
               <section
                 key={id}
@@ -179,7 +180,7 @@ export default function SectionRenderer({ sections = [] }) {
           }
           case "cta": {
             const hasHeading = Boolean(data.ctaText);
-            const HeadingTag = getHeadingTag(hasHeading);
+            const HeadingTag = data.headingTag || getHeadingTag(hasHeading);
             return (
               <section
                 key={id}
@@ -206,7 +207,7 @@ export default function SectionRenderer({ sections = [] }) {
             );
           }
           case "faq": {
-            const HeadingTag = getHeadingTag(true);
+            const HeadingTag = data.headingTag || getHeadingTag(true);
             return (
               <section
                 key={id}
@@ -227,7 +228,10 @@ export default function SectionRenderer({ sections = [] }) {
                       }}
                     >
                       <p className="font-semibold">{item.question}</p>
-                      <p className="opacity-80 mt-2">{item.answer}</p>
+                      <div
+                        className="rich-text-content opacity-80 mt-2"
+                        dangerouslySetInnerHTML={{ __html: item.answer || "" }}
+                      />
                     </div>
                   ))}
                 </div>

@@ -65,6 +65,7 @@ export default function AdminSidebar({
               width={40}
               height={40}
               priority
+              className="rounded-[10px] sm:rounded-[16px] sm:w-[80px] sm:h-[80px]"
             />
             <span
               className={`text-lg font-bold transition-opacity duration-200 ${isCollapsed ? "md:hidden" : "md:block"
