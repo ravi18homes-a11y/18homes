@@ -128,7 +128,7 @@ export default function HomepageEditor() {
           testimonials: {
             title: testimonials.title || "",
             description: testimonials.description || "",
-            items: testimonialItems.slice(0, 4),
+            items: testimonialItems,
             bgColor: testimonials.bgColor || "",
             textColor: testimonials.textColor || "",
           },
@@ -1283,11 +1283,47 @@ export default function HomepageEditor() {
             </div>
 
             <div className="space-y-4">
-              <span className="block text-sm font-semibold text-slate-700">Customer Feedbacks (4 total)</span>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b pb-2">
+                <span className="block text-sm font-semibold text-slate-700">
+                  Customer Feedbacks ({data.testimonials?.items?.length || 0} total)
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const currentItems = data.testimonials?.items || [];
+                    const newItems = [...currentItems, { text: "", name: "", role: "", img: "" }];
+                    updateField(["testimonials", "items"], newItems);
+                    toast.success("New testimonial card added!");
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-700 cursor-pointer active:scale-95 transition"
+                >
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                  Add Testimonial
+                </button>
+              </div>
               <div className="grid gap-6 md:grid-cols-2">
                 {(data.testimonials?.items || []).map((t, idx) => (
                   <div key={idx} className="p-4 border border-slate-100 rounded-3xl bg-slate-50/50 space-y-3">
-                    <span className="font-semibold text-xs text-slate-500 uppercase">Feedback Card {idx + 1}</span>
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold text-xs text-slate-500 uppercase">Feedback Card {idx + 1}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const currentItems = data.testimonials?.items || [];
+                          const newItems = currentItems.filter((_, i) => i !== idx);
+                          updateField(["testimonials", "items"], newItems);
+                          toast.success("Testimonial card removed.");
+                        }}
+                        className="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 hover:bg-rose-100 transition cursor-pointer active:scale-95"
+                      >
+                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Remove
+                      </button>
+                    </div>
                     <div className="grid gap-3 grid-cols-2">
                       <label className="block space-y-1 text-sm text-slate-700">
                         <span className="font-medium">Customer Name</span>

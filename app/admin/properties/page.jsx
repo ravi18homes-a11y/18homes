@@ -21,10 +21,12 @@ export default function AdminPropertiesPage() {
   const [loading, setLoading] = useState(true);
   const [fetchTrigger, setFetchTrigger] = useState(0);
   const [soldFilter, setSoldFilter] = useState("all");
+  const [boostFilter, setBoostFilter] = useState("all");
   const [viewsSort, setViewsSort] = useState("none");
   const [selectedBoostProp, setSelectedBoostProp] = useState(null);
   const [selectedPlanKey, setSelectedPlanKey] = useState("7days");
   const [isBoostingProp, setIsBoostingProp] = useState(false);
+  const [totalRevenue, setTotalRevenue] = useState(0);
 
   const token =
     typeof window !== "undefined"
@@ -39,7 +41,7 @@ export default function AdminPropertiesPage() {
         const res = await fetch(
           `${BASE}/admin/all?page=${page}&limit=10&search=${encodeURIComponent(
             search
-          )}`,
+          )}&isSold=${soldFilter}&boostStatus=${boostFilter}`,
           {
             headers: { Authorization: `Bearer ${token}` },
             cache: "no-store",
@@ -50,9 +52,11 @@ export default function AdminPropertiesPage() {
           if (json?.success) {
             setProperties(json?.data?.properties || []);
             setPagination(json?.data?.pagination);
+            setTotalRevenue(json?.data?.totalRevenue || 0);
           } else {
             setProperties([]);
             setPagination(null);
+            setTotalRevenue(0);
           }
         }
       } catch (err) {
@@ -67,7 +71,7 @@ export default function AdminPropertiesPage() {
     return () => {
       active = false;
     };
-  }, [page, search, token, fetchTrigger]);
+  }, [page, search, token, fetchTrigger, soldFilter, boostFilter]);
 
   /* ================= FLAG / UNFLAG ================= */
   const toggleFlag = async (id, isFlagged) => {
@@ -141,12 +145,7 @@ export default function AdminPropertiesPage() {
     }
   };
 
-  const filteredProperties = properties
-    .filter((p) => {
-      if (soldFilter === "sold") return p?.isSold === true;
-      if (soldFilter === "available") return p?.isSold !== true;
-      return true;
-    })
+  const sortedProperties = [...properties]
     .sort((a, b) => {
       if (viewsSort === "most") {
         return (b?.views ?? 0) - (a?.views ?? 0);
@@ -159,13 +158,31 @@ export default function AdminPropertiesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex gap-6 items-center"><h1 className="text-2xl font-bold">Property Management</h1>
-      <Link className=" bg-[green] text-white px-6 py-1" href="/sell">Sell</Link></div>
+      {/* Premium Statistics and Header Card */}
+      <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center justify-between bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 p-6 rounded-2xl text-white shadow-xl">
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-200 bg-clip-text text-transparent">Property Management</h1>
+          <p className="text-slate-400 text-sm mt-1 font-medium">Manage listings, view status, and track boost promotions.</p>
+        </div>
+        <div className="flex flex-wrap gap-4 items-center w-full lg:w-auto">
+          <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-xl p-3 flex flex-col min-w-[120px] shadow-lg flex-1 lg:flex-none">
+            <span className="text-[10px] uppercase tracking-wider text-slate-300 font-semibold">Total Match</span>
+            <span className="text-2xl font-extrabold text-white mt-0.5">{pagination?.total || 0}</span>
+          </div>
+          <div className="bg-emerald-500/20 backdrop-blur-md border border-emerald-500/30 rounded-xl p-3 flex flex-col min-w-[160px] shadow-lg flex-1 lg:flex-none">
+            <span className="text-[10px] uppercase tracking-wider text-emerald-300 font-semibold">Paid Boost Revenue</span>
+            <span className="text-2xl font-extrabold text-emerald-400 mt-0.5">₹{totalRevenue.toLocaleString("en-IN")}</span>
+          </div>
+          <Link className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-6 py-2.5 rounded-xl transition shadow-lg shadow-indigo-600/35 text-sm hover:scale-[1.02] active:scale-[0.98] duration-200 text-center flex-1 lg:flex-none" href="/sell">
+            + Sell Property
+          </Link>
+        </div>
+      </div>
 
       <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
         <input
           placeholder="Search title / city / locality"
-          className="border px-4 py-2 rounded w-full md:w-1/3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="border px-4 py-2 rounded-xl w-full md:w-1/3 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
           value={search}
           onChange={(e) => {
             setLoading(true);
@@ -180,12 +197,36 @@ export default function AdminPropertiesPage() {
             <span className="text-sm font-semibold text-gray-700">Status:</span>
             <select
               value={soldFilter}
-              onChange={(e) => setSoldFilter(e.target.value)}
-              className="border px-3 py-2 rounded bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) => {
+                setLoading(true);
+                setPage(1);
+                setSoldFilter(e.target.value);
+              }}
+              className="border px-3 py-2 rounded-xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
             >
               <option value="all">All Statuses</option>
               <option value="available">Available (Not Sold)</option>
               <option value="sold">Sold Out</option>
+            </select>
+          </div>
+
+          {/* Boost Filter */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-gray-700">Boost:</span>
+            <select
+              value={boostFilter}
+              onChange={(e) => {
+                setLoading(true);
+                setPage(1);
+                setBoostFilter(e.target.value);
+              }}
+              className="border px-3 py-2 rounded-xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+            >
+              <option value="all">All Boost Status</option>
+              <option value="boosted">Any Boosted</option>
+              <option value="paid">Paid Boosted (User)</option>
+              <option value="admin">Free Boosted (Admin)</option>
+              <option value="expired">Expired Boosted</option>
             </select>
           </div>
 
@@ -195,7 +236,7 @@ export default function AdminPropertiesPage() {
             <select
               value={viewsSort}
               onChange={(e) => setViewsSort(e.target.value)}
-              className="border px-3 py-2 rounded bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border px-3 py-2 rounded-xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
             >
               <option value="none">Default Order</option>
               <option value="most">Most Viewed first</option>
@@ -209,7 +250,7 @@ export default function AdminPropertiesPage() {
         <div className="p-10 text-center">Loading properties…</div>
       ) : (
         <PropertyTable
-          properties={filteredProperties}
+          properties={sortedProperties}
           page={page}
           limit={10}
           onView={async (id) => {
@@ -405,15 +446,38 @@ function PropertyTable({
                 {/* BOOSTED */}
                 <td className="p-3">
                   {p?.isBoosted ? (
-                    <div className="flex flex-col">
+                    <div className="flex flex-col gap-1">
                       <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gradient-to-r from-amber-500 to-yellow-500 text-white shadow-sm inline-block w-max">
                         ★ Premium Boosted
                       </span>
+                      <span className={`px-2 py-0.5 rounded text-[9px] font-semibold w-max ${
+                        p?.boostType === "admin"
+                          ? "bg-slate-100 text-slate-700"
+                          : "bg-emerald-100 text-emerald-800"
+                      }`}>
+                        {p?.boostType === "admin" ? "Free (Admin)" : `Paid (₹${p?.boostRevenue || 0})`}
+                      </span>
                       {p?.boostExpiresAt && (
-                        <span className="text-[10px] text-gray-500 mt-1">
+                        <span className="text-[10px] text-gray-500">
                           Exp: {new Date(p.boostExpiresAt).toLocaleDateString()}
                         </span>
                       )}
+                    </div>
+                  ) : p?.boostExpiresAt ? (
+                    <div className="flex flex-col gap-1 opacity-75">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-500 border border-gray-200 inline-block w-max">
+                        ⏳ Boost Expired
+                      </span>
+                      <span className={`px-2 py-0.5 rounded text-[9px] font-semibold w-max ${
+                        p?.boostType === "admin"
+                          ? "bg-slate-100 text-slate-600"
+                          : "bg-emerald-50 text-emerald-700 border border-emerald-100"
+                      }`}>
+                        {p?.boostType === "admin" ? "Free (Admin)" : `Paid (₹${p?.boostRevenue || 0})`}
+                      </span>
+                      <span className="text-[10px] text-gray-400">
+                        Exp: {new Date(p.boostExpiresAt).toLocaleDateString()}
+                      </span>
                     </div>
                   ) : (
                     <span className="text-gray-400 text-xs">—</span>
@@ -523,7 +587,7 @@ function PropertyTable({
           {!properties.length && (
             <tr>
               <td
-                colSpan="8"
+                colSpan="9"
                 className="p-6 text-center text-gray-500"
               >
                 No properties found

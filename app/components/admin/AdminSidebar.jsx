@@ -57,7 +57,7 @@ export default function AdminSidebar({
           } md:translate-x-0`}
       >
         {/* LOGO */}
-        <div className="flex items-center justify-between p-5 border-b border-green-600">
+        <div className="flex items-center justify-between sm:justify-center p-5 border-b border-green-600">
           <Link href="/" className="flex items-center gap-3">
             <Image
               src="https://res.cloudinary.com/dxlykgx6w/image/upload/v1783796029/icon-192_bkv7wb.png"
@@ -67,12 +67,7 @@ export default function AdminSidebar({
               priority
               className="rounded-[10px] sm:rounded-[16px] sm:w-[80px] sm:h-[80px]"
             />
-            <span
-              className={`text-lg font-bold transition-opacity duration-200 ${isCollapsed ? "md:hidden" : "md:block"
-                }`}
-            >
-              18Homes
-            </span>
+
           </Link>
 
           {/* Close button for mobile */}

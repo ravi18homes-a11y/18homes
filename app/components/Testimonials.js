@@ -84,13 +84,19 @@ export default function Testimonials({ data }) {
                 </p>
 
                 <div className="flex items-center gap-4 mt-2">
-                  <Image
-                    src={t.img}
-                    width={65}
-                    height={65}
-                    alt={t.name}
-                    className="rounded-full"
-                  />
+                  {t.img ? (
+                    <Image
+                      src={t.img}
+                      width={65}
+                      height={65}
+                      alt={t.name || "Customer avatar"}
+                      className="rounded-full object-cover w-[65px] h-[65px]"
+                    />
+                  ) : (
+                    <div className="w-[65px] h-[65px] rounded-full bg-white/10 flex items-center justify-center text-white/50 text-xl font-bold border border-white/10">
+                      {t.name ? t.name[0].toUpperCase() : "?"}
+                    </div>
+                  )}
 
                   <div>
                     <h3 className="text-[20px] font-semibold flex items-center gap-2">

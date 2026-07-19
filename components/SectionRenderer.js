@@ -30,7 +30,7 @@ export default function SectionRenderer({ sections = [] }) {
             return (
               <section
                 key={id}
-                className="relative rounded-3xl overflow-hidden shadow-sm"
+                className="relative rounded-3xl h-auto min-h-[220px] sm:min-h-auto sm:h-[500px] overflow-hidden shadow-sm"
                 style={{
                   backgroundColor: data.backgroundColor || "#0f172a",
                   backgroundImage: data.bgImage ? `url(${data.bgImage})` : "none",
@@ -38,7 +38,7 @@ export default function SectionRenderer({ sections = [] }) {
                   backgroundPosition: "center",
                 }}
               >
-                {data.bgImage && (
+                {data.bgImage && (data.showOverlay ?? true) && (
                   <div className="absolute inset-0 bg-black/45 z-0 pointer-events-none" />
                 )}
                 <div
@@ -48,9 +48,11 @@ export default function SectionRenderer({ sections = [] }) {
                   {data.title && (
                     <HeadingTag className="text-4xl font-semibold mb-4">{data.title}</HeadingTag>
                   )}
-                  <p className="mx-auto max-w-2xl text-lg opacity-90">
-                    {data.subtitle}
-                  </p>
+                  {data.subtitle && (
+                    <p className="mx-auto max-w-2xl text-lg opacity-90">
+                      {data.subtitle}
+                    </p>
+                  )}
                   {data.buttonText && (
                     <a
                       href={data.buttonUrl || "#"}
