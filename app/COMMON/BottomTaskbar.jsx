@@ -24,6 +24,7 @@ import {
   Share2,
   ChevronDown,
   Layers,
+  BookOpen,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 
@@ -40,6 +41,7 @@ export default function BottomTaskbar() {
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isServicesExpanded, setIsServicesExpanded] = useState(true);
+  const [isBlogsExpanded, setIsBlogsExpanded] = useState(true);
   const [favorites, setFavorites] = useState([]);
 
   const databaseUrl = process.env.NEXT_PUBLIC_APP_DATABASE_URL || "http://localhost:5000";
@@ -726,6 +728,55 @@ export default function BottomTaskbar() {
                         className="block py-1.5 px-3 text-xs text-slate-500 hover:text-[#8c4bdc]"
                       >
                         View All Services &rarr;
+                      </Link>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Dynamic Blogs Dropdown Section */}
+              <div className="space-y-1 my-1">
+                <div className="flex items-center justify-between bg-emerald-50/50 rounded-xl pr-2">
+                  <Link
+                    href="/blog"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex-1 flex items-center gap-3 p-3 text-slate-800 hover:text-emerald-600 font-bold"
+                  >
+                    <BookOpen className="w-5 h-5 text-emerald-600" />
+                    <span>Our Blogs</span>
+                  </Link>
+                  <button
+                    onClick={() => setIsBlogsExpanded(!isBlogsExpanded)}
+                    className="p-2 text-slate-500 hover:text-slate-800 transition cursor-pointer"
+                    aria-label="Toggle Blogs Menu"
+                  >
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform duration-200 ${
+                        isBlogsExpanded ? "rotate-180 text-emerald-600" : ""
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {isBlogsExpanded && (
+                  <div className="ml-4 pl-3 border-l-2 border-emerald-200 space-y-1 py-1">
+                    {(navData?.blogItems || []).map((blog) => (
+                      <Link
+                        key={blog.id}
+                        href={blog.href || "/blog"}
+                        onClick={() => setIsMenuOpen(false)}
+                        className="block py-2 px-3 text-sm text-slate-700 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg font-medium transition"
+                      >
+                        {blog.title}
+                      </Link>
+                    ))}
+                    {(navData?.blogItems || []).length === 0 && (
+                      <Link
+                        href="/blog"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="block py-1.5 px-3 text-xs text-slate-500 hover:text-emerald-600"
+                      >
+                        View All Blogs &rarr;
                       </Link>
                     )}
                   </div>

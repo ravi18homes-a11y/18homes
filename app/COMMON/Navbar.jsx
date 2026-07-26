@@ -364,6 +364,7 @@ export default function Navbar() {
               { key: "buy", label: "Buy", href: "/buy", children: [] },
               { key: "sell", label: "Sell", href: "/sell", children: [] },
               { key: "service", label: "Service", href: "/service", children: [] },
+              { key: "blog", label: "Blog", href: "/blog", children: [] },
               { key: "contact", label: "Contact", href: "/contact", children: [] },
             ]).map((m) => (
               <NavItem

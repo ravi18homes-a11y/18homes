@@ -1,26 +1,35 @@
 import { getNavbarTree } from "../../../lib/store";
 import dbConnect from "@/lib/mongodb";
 import Service from "@/models/Service";
+import Blog from "@/models/Blog";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   let serviceChildren = [];
+  let blogChildren = [];
 
   try {
     await dbConnect();
-    const services = await Service.find({ isActive: true })
-      .sort({ order: 1, createdAt: 1 })
-      .lean({ virtuals: true });
+    const [services, blogs] = await Promise.all([
+      Service.find({ isActive: true }).sort({ order: 1, createdAt: 1 }).lean({ virtuals: true }),
+      Blog.find({ isActive: true }).sort({ order: 1, createdAt: -1 }).lean({ virtuals: true }),
+    ]);
 
     serviceChildren = services.map((s) => ({
       id: String(s.id || s._id),
       title: s.title,
-      href: s.link && s.link.trim() ? s.link.trim() : "/service/house",
+      href: s.link && s.link.trim() ? s.link.trim() : `/service/${s.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+    }));
+
+    blogChildren = blogs.map((b) => ({
+      id: String(b.id || b._id),
+      title: b.title,
+      href: b.link && b.link.trim() ? b.link.trim() : `/blog/${b.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
     }));
   } catch (err) {
-    console.error("Error fetching navbar services:", err);
+    console.error("Error fetching navbar items:", err);
   }
 
   const fixed = [
@@ -28,6 +37,7 @@ export async function GET() {
     { key: "buy", label: "Buy", href: "/buy" },
     { key: "sell", label: "Sell", href: "/sell" },
     { key: "service", label: "Service", href: "/service", childrenOverride: serviceChildren },
+    { key: "blog", label: "Blog", href: "/blog", childrenOverride: blogChildren },
     { key: "contact", label: "Contact", href: "/contact" },
   ];
 
@@ -44,6 +54,7 @@ export async function GET() {
     JSON.stringify({
       menus,
       serviceItems: serviceChildren,
+      blogItems: blogChildren,
       sitePages: tree.pages || [],
     }),
     { status: 200, headers: { "Content-Type": "application/json" } }
