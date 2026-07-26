@@ -363,6 +363,7 @@ export default function Navbar() {
               { key: "home", label: "Home", href: "/", children: [] },
               { key: "buy", label: "Buy", href: "/buy", children: [] },
               { key: "sell", label: "Sell", href: "/sell", children: [] },
+              { key: "service", label: "Service", href: "/service", children: [] },
               { key: "contact", label: "Contact", href: "/contact", children: [] },
             ]).map((m) => (
               <NavItem
@@ -677,6 +678,7 @@ export default function Navbar() {
             { key: "home", label: "Home", href: "/", children: [] },
             { key: "buy", label: "Buy", href: "/buy", children: [] },
             { key: "sell", label: "Sell", href: "/sell", children: [] },
+            { key: "service", label: "Service", href: "/service", children: [] },
             { key: "contact", label: "Contact", href: "/contact", children: [] },
           ]).map((m) => (
             <div key={m.key} className="space-y-2">

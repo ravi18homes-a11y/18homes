@@ -21,7 +21,9 @@ import {
   Bed,
   Bath,
   Square,
-  Share2
+  Share2,
+  ChevronDown,
+  Layers,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 
@@ -37,6 +39,7 @@ export default function BottomTaskbar() {
   const [loading, setLoading] = useState(false);
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isServicesExpanded, setIsServicesExpanded] = useState(true);
   const [favorites, setFavorites] = useState([]);
 
   const databaseUrl = process.env.NEXT_PUBLIC_APP_DATABASE_URL || "http://localhost:5000";
@@ -679,6 +682,55 @@ export default function BottomTaskbar() {
                 <PlusCircle className="w-5 h-5 text-gray-400" />
                 <span>Sell / Rent Property</span>
               </Link>
+
+              {/* Dynamic Services Dropdown Section */}
+              <div className="space-y-1 my-1">
+                <div className="flex items-center justify-between bg-purple-50/50 rounded-xl pr-2">
+                  <Link
+                    href="/service"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex-1 flex items-center gap-3 p-3 text-slate-800 hover:text-[#8c4bdc] font-bold"
+                  >
+                    <Layers className="w-5 h-5 text-[#8c4bdc]" />
+                    <span>Our Services</span>
+                  </Link>
+                  <button
+                    onClick={() => setIsServicesExpanded(!isServicesExpanded)}
+                    className="p-2 text-slate-500 hover:text-slate-800 transition cursor-pointer"
+                    aria-label="Toggle Services Menu"
+                  >
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform duration-200 ${
+                        isServicesExpanded ? "rotate-180 text-[#8c4bdc]" : ""
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {isServicesExpanded && (
+                  <div className="ml-4 pl-3 border-l-2 border-purple-200 space-y-1 py-1">
+                    {(navData?.serviceItems || []).map((service) => (
+                      <Link
+                        key={service.id}
+                        href={service.href || "/service/house"}
+                        onClick={() => setIsMenuOpen(false)}
+                        className="block py-2 px-3 text-sm text-slate-700 hover:text-[#8c4bdc] hover:bg-purple-50 rounded-lg font-medium transition"
+                      >
+                        {service.title}
+                      </Link>
+                    ))}
+                    {(navData?.serviceItems || []).length === 0 && (
+                      <Link
+                        href="/service"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="block py-1.5 px-3 text-xs text-slate-500 hover:text-[#8c4bdc]"
+                      >
+                        View All Services &rarr;
+                      </Link>
+                    )}
+                  </div>
+                )}
+              </div>
 
               {/* Authenticated Links (Always visible, handles guest redirect) */}
               <Link

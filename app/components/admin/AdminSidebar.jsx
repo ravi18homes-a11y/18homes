@@ -9,6 +9,7 @@ import {
   Home,
   MessageSquare,
   FileText,
+  Layers,
   LogOut,
   ChevronLeft,
   ChevronRight,
@@ -102,6 +103,14 @@ export default function AdminSidebar({
             active={pathname.startsWith("/admin/properties")}
             icon={<Home size={18} />}
             label="Properties"
+            isCollapsed={isCollapsed}
+          />
+
+          <NavItem
+            href="/admin/services"
+            active={pathname.startsWith("/admin/services")}
+            icon={<Layers size={18} />}
+            label="Services"
             isCollapsed={isCollapsed}
           />
 

@@ -3,8 +3,7 @@
 import PageEditor from "@/components/admin/PageEditor";
 import Head from "next/head";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState, Suspense } from "react";
 import { toast } from "react-hot-toast";
 
@@ -58,6 +57,7 @@ function NewPageContent() {
             onSave={handleSave}
             saving={saving}
             initialData={{
+              mainMenu: searchParams.get("mainMenu") || "pages",
               parentId: searchParams.get("parentId") || undefined,
             }}
           />

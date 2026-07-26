@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Users, Home, MessageSquare, AlertTriangle, Loader2 } from "lucide-react";
+import { Users, Home, MessageSquare, AlertTriangle, Loader2, Layers } from "lucide-react";
 import { toast } from "react-hot-toast";
 
 import {
@@ -50,10 +50,11 @@ export default function AdminDashboard() {
 
     (async () => {
       try {
-        const [usersRes, propertiesRes, contactsRes] = await Promise.all([
+        const [usersRes, propertiesRes, contactsRes, servicesRes] = await Promise.all([
           safeFetch(`${BASE}/users`),
           safeFetch(`${BASE}/properties/admin/all?limit=10000`),
           safeFetch(`${BASE}/contacts`),
+          fetch("/api/services?all=true").then((r) => (r.ok ? r.json() : null)),
         ]);
 
         if (!alive) return;
@@ -86,6 +87,7 @@ export default function AdminDashboard() {
           flaggedProperties,
           activeProperties: totalProperties - flaggedProperties,
           contacts: contacts.length,
+          services: servicesRes?.services?.length ?? 0,
         });
       } catch (err) {
         console.error(err);
@@ -146,13 +148,13 @@ export default function AdminDashboard() {
           />
         </Link>
 
-        {/* <Link href="/admin/contacts" >
-         <Stat
-          title="Contacts"
-          value={stats.contacts}
-          icon={<MessageSquare />}
-        />
-         </Link> */}
+        <Link href="/admin/services" >
+          <Stat
+            title="Services Management"
+            value={stats.services}
+            icon={<Layers />}
+          />
+        </Link>
       </div>
 
       {/* ===== CHARTS ===== */}

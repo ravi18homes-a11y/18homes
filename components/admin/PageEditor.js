@@ -30,8 +30,14 @@ export default function PageEditor({
   onSave,
   saving = false,
   mode = "create",
+  seoOnly = false,
 }) {
   const isEdit = mode === "edit" || Boolean(initialData?.id);
+  const isSystemPage =
+    seoOnly ||
+    ["service", "blog", "city"].includes(
+      initialData?.slugSegment || initialData?.slug,
+    );
 
   const [title, setTitle] = useState(initialData?.title || "");
   const [mainMenu, setMainMenu] = useState(initialData?.mainMenu || "pages");
@@ -44,7 +50,7 @@ export default function PageEditor({
   const [slugError, setSlugError] = useState("");
   const [sections, setSections] = useState(initialData?.sections || []);
   const [seo, setSeo] = useState(initialData?.seo || defaultSeo);
-  const [activeTab, setActiveTab] = useState("general");
+  const [activeTab, setActiveTab] = useState(isSystemPage ? "seo" : "general");
   const [status, setStatus] = useState(initialData?.status || "draft");
   const [showInNavbar, setShowInNavbar] = useState(initialData?.showInNavbar ?? true);
   const [isSlugManual, setIsSlugManual] = useState(
@@ -174,12 +180,21 @@ export default function PageEditor({
 
   return (
     <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
+      {isSystemPage && (
+        <div className="mb-6 rounded-2xl border border-purple-200 bg-purple-50 p-4 text-purple-900 text-sm font-medium">
+          ✨ Built-in System Page ({computedSlug ? `/${computedSlug}` : "System"}): Content layout is rendered dynamically by frontend code. You can edit SEO & Search Engine Metadata below.
+        </div>
+      )}
+
       <div className="mb-6 flex flex-wrap gap-3">
-        {[
-          { key: "general", label: "General" },
-          { key: "sections", label: "Sections" },
-          { key: "seo", label: "SEO" },
-        ].map((tab) => (
+        {(isSystemPage
+          ? [{ key: "seo", label: "SEO & Meta Settings" }]
+          : [
+              { key: "general", label: "General" },
+              { key: "sections", label: "Sections" },
+              { key: "seo", label: "SEO" },
+            ]
+        ).map((tab) => (
           <button
             key={tab.key}
             type="button"
