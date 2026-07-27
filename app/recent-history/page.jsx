@@ -7,14 +7,14 @@ import Navbar from "../COMMON/Navbar";
 import Footer from "../COMMON/Footer";
 import { toast } from "react-hot-toast";
 
-const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800";
+const DEFAULT_IMAGE = "https://res.cloudinary.com/domwj0m7s/image/upload/v1785084052/ChatGPT_Image_Jul_26_2026_10_10_07_PM_uuqc8u.png";
 
 const getMediaThumbnail = (url) => {
   if (!url) return DEFAULT_IMAGE;
   const lowerUrl = url.toLowerCase();
   const videoExtensions = [".mp4", ".mov", ".avi", ".webm", ".mkv", ".3gp", ".ogg", ".ogv", ".wmv"];
   const isVideo = videoExtensions.some(ext => lowerUrl.endsWith(ext) || lowerUrl.includes(ext + "?"));
-  
+
   if (isVideo) {
     return url.replace(/\.(mp4|mov|avi|webm|mkv|3gp|ogg|ogv|wmv)(?=\?|$)/i, ".jpg");
   }
@@ -35,12 +35,12 @@ export default function RecentHistoryPage() {
   const filteredProperties = properties.filter((property) => {
     if (timeFilter === "all") return true;
     if (!property.visitedAt) return false;
-    
+
     const visitDate = new Date(property.visitedAt);
     const now = new Date();
     const diffTime = now.getTime() - visitDate.getTime();
     const diffDays = diffTime / (1000 * 60 * 60 * 24);
-    
+
     if (timeFilter === "week") {
       return diffDays <= 7;
     }
@@ -238,31 +238,28 @@ export default function RecentHistoryPage() {
                 <div className="flex bg-gray-100 p-1 rounded-xl border border-gray-200">
                   <button
                     onClick={() => setTimeFilter("all")}
-                    className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
-                      timeFilter === "all"
+                    className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${timeFilter === "all"
                         ? "bg-white text-gray-900 shadow-sm"
                         : "text-gray-600 hover:text-gray-900"
-                    }`}
+                      }`}
                   >
                     All Time
                   </button>
                   <button
                     onClick={() => setTimeFilter("week")}
-                    className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
-                      timeFilter === "week"
+                    className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${timeFilter === "week"
                         ? "bg-white text-gray-900 shadow-sm"
                         : "text-gray-600 hover:text-gray-900"
-                    }`}
+                      }`}
                   >
                     Last Week
                   </button>
                   <button
                     onClick={() => setTimeFilter("month")}
-                    className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${
-                      timeFilter === "month"
+                    className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all ${timeFilter === "month"
                         ? "bg-white text-gray-900 shadow-sm"
                         : "text-gray-600 hover:text-gray-900"
-                    }`}
+                      }`}
                   >
                     Last Month
                   </button>
@@ -351,7 +348,7 @@ export default function RecentHistoryPage() {
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
-                        
+
                         {property.visitedAt && (
                           <div className="absolute bottom-4 left-4 bg-black/75 backdrop-blur-sm px-2.5 py-1 rounded text-[10px] font-medium text-white flex items-center gap-1">
                             <Eye className="w-3.5 h-3.5" />
@@ -432,11 +429,10 @@ export default function RecentHistoryPage() {
                         <button
                           key={item}
                           onClick={() => setCurrentPage(item)}
-                          className={`w-10 h-10 flex items-center justify-center border rounded-lg text-sm font-semibold transition-all cursor-pointer active:scale-95 ${
-                            currentPage === item
+                          className={`w-10 h-10 flex items-center justify-center border rounded-lg text-sm font-semibold transition-all cursor-pointer active:scale-95 ${currentPage === item
                               ? "bg-red-600 text-white border-red-600 shadow-sm"
                               : "border-gray-200 text-gray-700 bg-white hover:bg-gray-50"
-                          }`}
+                            }`}
                         >
                           {item}
                         </button>

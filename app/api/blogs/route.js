@@ -38,6 +38,24 @@ export async function POST(request) {
       );
     }
 
+    const cleanSlug = title
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+
+    const targetLink = (link || `/blog/${cleanSlug}`).trim();
+
+    const existingBlog = await Blog.findOne({
+      $or: [{ title: title.trim() }, { link: targetLink }],
+    });
+    if (existingBlog) {
+      return NextResponse.json(
+        { success: false, error: "A blog post with this title or link already exists." },
+        { status: 400 }
+      );
+    }
+
     // Auto calculate order if not provided
     let finalOrder = typeof order === "number" ? order : parseInt(order || "0", 10);
     if (isNaN(finalOrder) || finalOrder === 0) {
@@ -49,7 +67,7 @@ export async function POST(request) {
       title: title.trim(),
       description: (description || "").trim(),
       image: (image || "").trim(),
-      link: (link || "").trim(),
+      link: targetLink,
       order: finalOrder,
       isActive: isActive !== false,
     });

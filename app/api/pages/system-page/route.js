@@ -7,7 +7,6 @@ export const dynamic = "force-dynamic";
 const SYSTEM_PAGES = {
   service: { title: "Service Page", mainMenu: "service", slugSegment: "service", slug: "service" },
   blog: { title: "Blog Page", mainMenu: "pages", slugSegment: "blog", slug: "blog" },
-  city: { title: "City Page", mainMenu: "city", slugSegment: "city", slug: "city" },
 };
 
 export async function GET(req) {

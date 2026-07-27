@@ -25,6 +25,7 @@ import {
   ChevronDown,
   Layers,
   BookOpen,
+  Building2,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 
@@ -42,6 +43,7 @@ export default function BottomTaskbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isServicesExpanded, setIsServicesExpanded] = useState(true);
   const [isBlogsExpanded, setIsBlogsExpanded] = useState(true);
+  const [isCitiesExpanded, setIsCitiesExpanded] = useState(true);
   const [favorites, setFavorites] = useState([]);
 
   const databaseUrl = process.env.NEXT_PUBLIC_APP_DATABASE_URL || "http://localhost:5000";
@@ -218,7 +220,7 @@ export default function BottomTaskbar() {
   };
 
   const getMediaThumbnail = (url) => {
-    const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800";
+    const DEFAULT_IMAGE = "https://res.cloudinary.com/domwj0m7s/image/upload/v1785084052/ChatGPT_Image_Jul_26_2026_10_10_07_PM_uuqc8u.png";
     if (!url) return DEFAULT_IMAGE;
     const lowerUrl = url.toLowerCase();
     const videoExtensions = [".mp4", ".mov", ".avi", ".webm", ".mkv", ".3gp", ".ogg", ".ogv", ".wmv"];
@@ -452,7 +454,7 @@ export default function BottomTaskbar() {
                     : [];
                   const displayImage = validImages.length > 0
                     ? getMediaThumbnail(validImages[0])
-                    : "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800";
+                    : "https://res.cloudinary.com/domwj0m7s/image/upload/v1785084052/ChatGPT_Image_Jul_26_2026_10_10_07_PM_uuqc8u.png";
 
                   return (
                     <Link
@@ -478,7 +480,7 @@ export default function BottomTaskbar() {
                           src={displayImage}
                           alt={p.title}
                           onError={(e) => {
-                            e.target.src = "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800";
+                            e.target.src = "https://res.cloudinary.com/domwj0m7s/image/upload/v1785084052/ChatGPT_Image_Jul_26_2026_10_10_07_PM_uuqc8u.png";
                           }}
                           className="w-full h-full object-cover"
                         />
@@ -702,9 +704,8 @@ export default function BottomTaskbar() {
                     aria-label="Toggle Services Menu"
                   >
                     <ChevronDown
-                      className={`w-4 h-4 transition-transform duration-200 ${
-                        isServicesExpanded ? "rotate-180 text-[#8c4bdc]" : ""
-                      }`}
+                      className={`w-4 h-4 transition-transform duration-200 ${isServicesExpanded ? "rotate-180 text-[#8c4bdc]" : ""
+                        }`}
                     />
                   </button>
                 </div>
@@ -751,9 +752,8 @@ export default function BottomTaskbar() {
                     aria-label="Toggle Blogs Menu"
                   >
                     <ChevronDown
-                      className={`w-4 h-4 transition-transform duration-200 ${
-                        isBlogsExpanded ? "rotate-180 text-emerald-600" : ""
-                      }`}
+                      className={`w-4 h-4 transition-transform duration-200 ${isBlogsExpanded ? "rotate-180 text-emerald-600" : ""
+                        }`}
                     />
                   </button>
                 </div>
@@ -777,6 +777,54 @@ export default function BottomTaskbar() {
                         className="block py-1.5 px-3 text-xs text-slate-500 hover:text-emerald-600"
                       >
                         View All Blogs &rarr;
+                      </Link>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Dynamic Cities Dropdown Section */}
+              <div className="space-y-1 my-1">
+                <div className="flex items-center justify-between bg-blue-50/50 rounded-xl pr-2">
+                  <Link
+                    href="/city"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex-1 flex items-center gap-3 p-3 text-slate-800 hover:text-blue-600 font-bold"
+                  >
+                    <Building2 className="w-5 h-5 text-blue-600" />
+                    <span>Our Cities</span>
+                  </Link>
+                  <button
+                    onClick={() => setIsCitiesExpanded(!isCitiesExpanded)}
+                    className="p-2 text-slate-500 hover:text-slate-800 transition cursor-pointer"
+                    aria-label="Toggle Cities Menu"
+                  >
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform duration-200 ${isCitiesExpanded ? "rotate-180 text-blue-600" : ""
+                        }`}
+                    />
+                  </button>
+                </div>
+
+                {isCitiesExpanded && (
+                  <div className="ml-4 pl-3 border-l-2 border-blue-200 space-y-1 py-1">
+                    {(navData?.cityItems || []).map((city) => (
+                      <Link
+                        key={city.id}
+                        href={city.href || "/city"}
+                        onClick={() => setIsMenuOpen(false)}
+                        className="block py-2 px-3 text-sm text-slate-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg font-medium transition"
+                      >
+                        {city.title}
+                      </Link>
+                    ))}
+                    {(navData?.cityItems || []).length === 0 && (
+                      <Link
+                        href="/city"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="block py-1.5 px-3 text-xs text-slate-500 hover:text-blue-600"
+                      >
+                        View All Cities &rarr;
                       </Link>
                     )}
                   </div>

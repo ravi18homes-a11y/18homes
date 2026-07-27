@@ -45,13 +45,13 @@ export default function Testimonials({ data }) {
     <section className="w-full py-18 bg-gradient-to-b from-[#316c3f] via-[#0d0128] to-[#461d34]" style={customBgStyle}>
       {/* Heading */}
       <div className="text-center mb-12 px-4">
-        <h2 className="text-[40px] font-semibold mb-4" style={customTextStyle}>
+        <h2 className="text-[40px] text-white font-semibold mb-4" style={customTextStyle}>
           {title}
         </h2>
 
         <div className="w-[140px] h-[3px] bg-gradient-to-r from-[#bc67ff] to-[#4da6ff] mx-auto mb-6"></div>
 
-        <p className="max-w-[500px] mx-auto text-[18px] leading-relaxed" style={customTextStyle}>
+        <p className="max-w-[500px] mx-auto text-[18px] text-white leading-relaxed" style={customTextStyle}>
           {description}
         </p>
       </div>

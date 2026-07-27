@@ -9,7 +9,6 @@ import { MoreVertical, Plus, Edit, Trash2, Globe, Shield, Sparkles, Loader2 } fr
 const SYSTEM_PAGES_CONFIG = [
   { key: "service", title: "Service Page", slug: "service", href: "/service", mainMenu: "service", desc: "Main services showcase page (/service)" },
   { key: "blog", title: "Blog Page", slug: "blog", href: "/blog", mainMenu: "pages", desc: "Main blog listing page (/blog)" },
-  { key: "city", title: "City Page", slug: "city", href: "/city", mainMenu: "city", desc: "Main city properties page (/city)" },
 ];
 
 function buildTree(pages) {
@@ -82,7 +81,7 @@ export default function PagesTreeList() {
         try {
           const body = await res.json();
           msg = body.error || msg;
-        } catch {}
+        } catch { }
         toast.error(msg);
       } else {
         toast.success("Page deleted successfully!");
@@ -101,7 +100,7 @@ export default function PagesTreeList() {
       const res = await fetch(`/api/pages/system-page?slug=${sysConfig.slug}`);
       const json = await res.json();
       if (json.page?.id) {
-        router.push(`/admin/pages/edit/${json.page.id}?seoOnly=true`);
+        router.push(`/admin/pages/edit/${json.page.id}`);
       } else {
         toast.error("Failed to open SEO editor for system page.");
       }
@@ -132,7 +131,7 @@ export default function PagesTreeList() {
   };
 
   const sitePages = useMemo(
-    () => pages.filter((p) => p.mainMenu === "pages"),
+    () => pages.filter((p) => p.mainMenu === "pages" || p.mainMenu === "city"),
     [pages]
   );
   const siteTree = useMemo(() => buildTree(sitePages), [sitePages]);
@@ -197,10 +196,10 @@ export default function PagesTreeList() {
               <table className="w-full divide-y divide-slate-100 text-left">
                 <thead className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider font-semibold">
                   <tr>
-                    <th className="px-6 py-3.5">Page Title</th>
-                    <th className="px-6 py-3.5">Route Path</th>
-                    <th className="px-6 py-3.5">Type / Description</th>
-                    <th className="px-6 py-3.5 text-right">Actions</th>
+                    <th className="px-6 whitespace-nowrap py-3.5">Page Title</th>
+                    <th className="px-6 whitespace-nowrap py-3.5">Route Path</th>
+                    <th className="px-6 whitespace-nowrap py-3.5">Type / Description</th>
+                    <th className="px-6 whitespace-nowrap py-3.5 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-sm bg-white">
@@ -217,22 +216,22 @@ export default function PagesTreeList() {
                     return (
                       <React.Fragment key={sys.key}>
                         <tr className="hover:bg-purple-50/30 transition">
-                          <td className="px-6 py-4 font-bold text-slate-900 flex items-center gap-2">
+                          <td className="px-6 whitespace-nowrap  py-4 font-bold text-slate-900 flex items-center gap-2">
                             <Sparkles size={16} className="text-purple-600 flex-shrink-0" />
                             <span>{sys.title}</span>
                           </td>
-                          <td className="px-6 py-4 font-mono text-xs text-slate-600">
+                          <td className="px-6 whitespace-nowrap py-4 font-mono text-xs text-slate-600">
                             <span className="bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
                               {sys.href}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-xs text-slate-500">
+                          <td className="px-6 whitespace-nowrap py-4 text-xs text-slate-500">
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700 font-semibold text-[11px] mb-1">
                               Built-in System Page
                             </span>
                             <p>{sys.desc}</p>
                           </td>
-                          <td className="px-6 py-4 text-right">
+                          <td className="px-6 whitespace-nowrap  py-4 text-right">
                             <div className="flex items-center justify-end gap-2">
                               {/* Edit SEO Button */}
                               <button
@@ -262,23 +261,22 @@ export default function PagesTreeList() {
                         {/* Render Child Pages under System Page */}
                         {childPages.map((child) => (
                           <tr key={child.id || child._id} className="bg-slate-50/50 hover:bg-slate-100/50 transition">
-                            <td className="px-6 py-3 pl-12 font-medium text-slate-800 flex items-center gap-2 text-xs">
+                            <td className="px-6 whitespace-nowrap py-3 pl-12 font-medium text-slate-800 flex items-center gap-2 text-xs">
                               <span className="text-slate-400">↳</span>
                               <span>{child.title}</span>
                             </td>
-                            <td className="px-6 py-3 font-mono text-xs text-slate-600">
+                            <td className="px-6 whitespace-nowrap py-3 font-mono text-xs text-slate-600">
                               <span className="bg-white px-2 py-0.5 rounded border border-slate-200">
                                 /{child.slug}
                               </span>
                             </td>
-                            <td className="px-6 py-3 text-xs text-slate-500">
-                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                                child.status === "published" ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-600"
-                              }`}>
+                            <td className="px-6 whitespace-nowrap py-3 text-xs text-slate-500">
+                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${child.status === "published" ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-600"
+                                }`}>
                                 {child.status || "draft"}
                               </span>
                             </td>
-                            <td className="px-6 py-3 text-right">
+                            <td className="px-6 py-3 whitespace-nowrap  text-right">
                               <div className="flex items-center justify-end gap-2">
                                 <Link
                                   href={`/admin/pages/edit/${child.id || child._id}`}
@@ -333,38 +331,37 @@ export default function PagesTreeList() {
                 <table className="min-w-full divide-y divide-slate-200 text-left">
                   <thead className="bg-slate-50 text-slate-500 text-xs uppercase font-semibold">
                     <tr>
-                      <th className="px-6 py-3">Title</th>
-                      <th className="px-6 py-3">Path</th>
-                      <th className="px-6 py-3">Status</th>
-                      <th className="px-6 py-3">Navbar</th>
+                      <th className="px-6 whitespace-nowrap py-3">Title</th>
+                      <th className="px-6 whitespace-nowrap py-3">Path</th>
+                      <th className="px-6 whitespace-nowrap py-3">Status</th>
+                      <th className="px-6 whitespace-nowrap py-3">Navbar</th>
                       <th className="px-6 py-3 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200 bg-white text-sm">
                     {flatten(siteTree).map(({ item, depth }) => (
                       <tr key={item.id} className="hover:bg-slate-50 transition">
-                        <td className="px-6 py-4 font-medium text-slate-900">
+                        <td className="px-6 py-4 whitespace-nowrap font-medium text-slate-900">
                           <div className="flex items-center gap-2">
                             <span style={{ width: depth * 16 }} />
                             <span className="text-slate-300">{depth > 0 ? "↳" : ""}</span>
                             <span>{item.title}</span>
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-sm text-slate-600">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
                           <code className="rounded-xl bg-slate-100 px-2 py-1 text-xs">/{item.slug}</code>
                         </td>
-                        <td className="px-6 py-4 text-sm">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
                           <span
-                            className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                              item.status === "published"
-                                ? "bg-emerald-50 text-emerald-700"
-                                : "bg-slate-100 text-slate-600"
-                            }`}
+                            className={`rounded-full px-3 py-1 text-xs font-semibold ${item.status === "published"
+                              ? "bg-emerald-50 text-emerald-700"
+                              : "bg-slate-100 text-slate-600"
+                              }`}
                           >
                             {item.status || "draft"}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-sm">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
                           {item.showInNavbar !== false ? (
                             <span className="rounded-full bg-indigo-50 text-indigo-700 px-3 py-1 text-xs font-semibold">
                               Visible
@@ -375,7 +372,7 @@ export default function PagesTreeList() {
                             </span>
                           )}
                         </td>
-                        <td className="px-6 py-4 text-right text-sm font-medium relative">
+                        <td className="px-6 whitespace-nowrap py-4 text-right text-sm font-medium relative">
                           <div className="flex items-center justify-end gap-2">
                             <Link
                               href={`/admin/pages/edit/${item.id}`}
@@ -384,7 +381,7 @@ export default function PagesTreeList() {
                               Edit
                             </Link>
                             <Link
-                              href={`/admin/pages/new?parentId=${item.id}`}
+                              href={`/admin/pages/new?mainMenu=${item.mainMenu || "pages"}&parentId=${item.id}`}
                               className="px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-medium"
                             >
                               + Child

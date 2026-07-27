@@ -141,7 +141,7 @@ export default function PwaProvider({ children }) {
     setShowInstallPopup(false);
   };
 
-  const DEFAULT_LOGO = "https://res.cloudinary.com/dxlykgx6w/image/upload/v1783796029/icon-192_bkv7wb.png";
+  const DEFAULT_LOGO = "https://res.cloudinary.com/domwj0m7s/image/upload/v1785082683/18homes_logo-removebg-preview_doiisr.png";
 
   return (
     <PwaContext.Provider
@@ -167,7 +167,7 @@ export default function PwaProvider({ children }) {
       {showInstallPopup && (
         <>
           {/* Backdrop overlay */}
-          <div 
+          <div
             className="fixed inset-0 bg-black/30 z-[9998] backdrop-blur-xs transition-opacity duration-300"
             onClick={() => setShowInstallPopup(false)}
           />

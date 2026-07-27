@@ -22,7 +22,7 @@ export default function Footer() {
       .catch((err) => console.error("Error fetching footer data:", err));
   }, []);
 
-  const logo = data?.logo || "https://res.cloudinary.com/dxlykgx6w/image/upload/v1783796029/icon-192_bkv7wb.png";
+  const logo = data?.logo || "https://res.cloudinary.com/domwj0m7s/image/upload/v1785082683/18homes_logo-removebg-preview_doiisr.png";
   const address = data?.address || "Kanak Farm House ,\nGovindPuram , Ghaziabad, (U.P.)\n201013";
   const email = data?.email || "18homes.website@gmail.com";
   const phone = data?.phone || "+91 7827602246";
@@ -58,10 +58,10 @@ export default function Footer() {
         </div>
 
         {/* QUICK LINK + SERVICES */}
-        <div className="grid md:grid-cols-3">
+        <div className="grid sm:gap-0 gap-6 md:grid-cols-3">
           {/* QUICK LINK */}
           <div className="lg:ml-[50px]">
-            <h3 className="text-lg font-semibold mb-6 tracking-wide">
+            <h3 className="text-lg font-semibold mb-3 sm:mb-6 tracking-wide">
               QUICK LINK
             </h3>
             <ul className="space-y-3 text-[16px] font-normal">
@@ -85,7 +85,7 @@ export default function Footer() {
 
           {/* OUR SERVICE */}
           <div>
-            <h3 className="text-lg font-semibold mb-6 tracking-wide">
+            <h3 className="text-lg font-semibold mb-3 sm:mb-6 tracking-wide">
               OUR SERVICE
             </h3>
             <ul className="space-y-3 text-[16px] font-normal">
@@ -105,9 +105,9 @@ export default function Footer() {
               })}
             </ul>
           </div>
-          
+
           <div>
-            <h3 className="text-lg font-semibold mb-6 tracking-wide">OFFICE</h3>
+            <h3 className="text-lg font-semibold mb-3 sm:mb-6 tracking-wide">OFFICE</h3>
 
             <p className="text-[16px] leading-7 mb-6 font-normal whitespace-pre-line">
               {address}

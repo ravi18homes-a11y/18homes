@@ -10,6 +10,17 @@ import PwaProvider from "@/components/PwaProvider";
 export const metadata = {
   title: "18 Homes - Best Property for Sale and Rent in NCR",
   description: "Leading Real Estate Company in NCR, Offering Prime Residential and Commercial Properties NCR Region.",
+  icons: {
+    icon: [
+      { url: "https://res.cloudinary.com/domwj0m7s/image/upload/v1785082545/18homes_logo_duhekk.jpg" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    shortcut: ["https://res.cloudinary.com/domwj0m7s/image/upload/v1785082545/18homes_logo_duhekk.jpg"],
+    apple: [
+      { url: "https://res.cloudinary.com/domwj0m7s/image/upload/v1785082545/18homes_logo_duhekk.jpg", sizes: "180x180", type: "image/jpeg" },
+    ],
+  },
+  manifest: "/manifest.webmanifest",
   verification: {
     google: "Pi6mrgXhctcaPWM_tvE-bzsUaTocDT7FWlYtjOXf0W0",
   },
@@ -26,6 +37,10 @@ const poppins = Poppins({
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" href="https://res.cloudinary.com/domwj0m7s/image/upload/v1785082545/18homes_logo_duhekk.jpg" />
+        <link rel="apple-touch-icon" href="https://res.cloudinary.com/domwj0m7s/image/upload/v1785082545/18homes_logo_duhekk.jpg" />
+      </head>
       <body className={poppins.className}>
         {/* Early PWA Install Prompt Capture */}
         <script

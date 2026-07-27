@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
-import { FaWhatsapp, FaUser, FaEdit, FaCog, FaHome, FaHeart, FaBell, FaCheckCircle, FaExclamationTriangle, FaTrashAlt, FaHistory } from "react-icons/fa";
+import { FaWhatsapp, FaUser, FaEdit, FaCog, FaHome, FaHeart, FaBell, FaCheckCircle, FaExclamationTriangle, FaTrashAlt, FaHistory, FaChevronDown } from "react-icons/fa";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { IoMdClose } from "react-icons/io";
 import { MdLogin, MdPhone } from "react-icons/md";
@@ -57,9 +57,7 @@ function NavItem({ href, label, items }) {
         <Link href={href} className="hover:text-[#8c4bdc] transition-colors">
           {label}
         </Link>
-        <span className="text-xs text-slate-500" aria-hidden>
-          ▾
-        </span>
+        <FaChevronDown className="text-[11px] hover:rotate-180 transition-transform duration-300" />
       </span>
       <DropdownPanel nodes={items} />
     </li>
@@ -101,7 +99,7 @@ function formatTimeAgo(dateString) {
   return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
-const DEFAULT_LOGO = "https://res.cloudinary.com/dxlykgx6w/image/upload/v1783796029/icon-192_bkv7wb.png";
+const DEFAULT_LOGO = "https://res.cloudinary.com/domwj0m7s/image/upload/v1785082683/18homes_logo-removebg-preview_doiisr.png";
 
 export default function Navbar() {
   const { isInstallable, installApp } = usePwa();
@@ -365,6 +363,7 @@ export default function Navbar() {
               { key: "sell", label: "Sell", href: "/sell", children: [] },
               { key: "service", label: "Service", href: "/service", children: [] },
               { key: "blog", label: "Blog", href: "/blog", children: [] },
+              { key: "city", label: "City", href: "/city", children: [] },
               { key: "contact", label: "Contact", href: "/contact", children: [] },
             ]).map((m) => (
               <NavItem
@@ -461,8 +460,8 @@ export default function Navbar() {
                         key={notif._id}
                         onClick={() => !notif.read && markAsRead(notif._id)}
                         className={`p-5 flex gap-4 transition cursor-pointer text-left border-l-4 ${notif.read
-                            ? "bg-white hover:bg-slate-50 border-transparent"
-                            : "bg-purple-50/30 hover:bg-purple-50/50 border-[#8c4bdc]"
+                          ? "bg-white hover:bg-slate-50 border-transparent"
+                          : "bg-purple-50/30 hover:bg-purple-50/50 border-[#8c4bdc]"
                           }`}
                       >
                         {/* Icon column */}
