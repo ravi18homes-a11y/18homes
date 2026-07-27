@@ -10,6 +10,7 @@ import {
   MessageSquare,
   FileText,
   Layers,
+  BookOpen,
   LogOut,
   ChevronLeft,
   ChevronRight,
@@ -111,6 +112,14 @@ export default function AdminSidebar({
             active={pathname.startsWith("/admin/services")}
             icon={<Layers size={18} />}
             label="Services"
+            isCollapsed={isCollapsed}
+          />
+
+          <NavItem
+            href="/admin/blogs"
+            active={pathname.startsWith("/admin/blogs")}
+            icon={<BookOpen size={18} />}
+            label="Blogs"
             isCollapsed={isCollapsed}
           />
 
