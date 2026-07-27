@@ -12,7 +12,7 @@ const SeoSchema = new mongoose.Schema(
     openGraphImage: { type: String, default: "" },
     schemaMarkup: { type: String, default: "" },
   },
-  { _id: false },
+  { _id: false }
 );
 
 const SectionSchema = new mongoose.Schema(
@@ -21,7 +21,7 @@ const SectionSchema = new mongoose.Schema(
     type: { type: String, required: true },
     data: { type: mongoose.Schema.Types.Mixed, default: {} },
   },
-  { _id: false },
+  { _id: false }
 );
 
 const PageSchema = new mongoose.Schema(
@@ -29,8 +29,8 @@ const PageSchema = new mongoose.Schema(
     title: { type: String, required: true, trim: true },
     mainMenu: {
       type: String,
-      enum: ["home", "buy", "sell", "contact", "pages"],
       required: true,
+      default: "pages",
     },
     parentId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -44,7 +44,7 @@ const PageSchema = new mongoose.Schema(
     seo: { type: SeoSchema, default: () => ({}) },
     showInNavbar: { type: Boolean, default: true },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 PageSchema.set("toJSON", {
@@ -60,5 +60,8 @@ PageSchema.set("toJSON", {
 PageSchema.index({ mainMenu: 1, parentId: 1, slugSegment: 1 });
 PageSchema.index({ slug: 1 }, { unique: true });
 
-export default mongoose.models.Page || mongoose.model("Page", PageSchema);
+if (mongoose.models.Page) {
+  delete mongoose.models.Page;
+}
 
+export default mongoose.model("Page", PageSchema);

@@ -1,104 +1,94 @@
 "use client";
 import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function HomeServices({ data }) {
   const subtitle = data?.subtitle || "Service";
   const title = data?.title || "Our Services";
-  const services = data?.items || [
-    {
-      title: "1 BHK Flat on Rent",
-      desc: "Secure and verified 1 BHK flats in prime locations. Affordable price, modern interior, and comfortable living with ready-to-move-in option.",
-      img: "https://res.cloudinary.com/dxlykgx6w/image/upload/v1764928068/3d-rendering-luxury-modern-bedroom-suite-hotel-with-tv-cabinet_105762-2280_ozfq80.avif",
-    },
-    {
-      title: "2 BHK Family Apartment",
-      desc: "Excellent 2 BHK options for families, featuring large rooms, ample natural light, and 24/7 security. Superb location near schools, markets, and metro.",
-      img: "https://res.cloudinary.com/dxlykgx6w/image/upload/v1764928068/3d-rendering-luxury-modern-bedroom-suite-hotel-with-tv-cabinet_105762-2280_ozfq80.avif",
-    },
-    {
-      title: "3 BHK Luxury Flat",
-      desc: "Premium 3 BHK apartments for large families, featuring high-class interior, spacious layout, and modern amenities. Perfect for a better and comfortable lifestyle.",
-      img: "https://res.cloudinary.com/dxlykgx6w/image/upload/v1764928067/cozy-living-room-with-coral-sofa_23-2152001401_mtbfyd.avif",
-    },
-    {
-      title: "Flat Buying Assistance",
-      desc: "Service to buy your preferred flat in Delhi-NCR with verified properties, transparent deals, and easy documentation. See first, then trust.",
-      img: "https://res.cloudinary.com/dxlykgx6w/image/upload/v1764928067/3d-rendering-modern-dining-room-living-room-with-luxury-decor-green-sofa_105762-2140_eu0udp.avif",
-    },
-    {
-      title: "PG / Room on Rent",
-      desc: "Furnished PG and rooms for students and bachelors. Ready-to-move-in facilities with Free WiFi, housekeeping, and pocket-friendly rent.",
-      img: "https://res.cloudinary.com/dxlykgx6w/image/upload/v1764928068/3d-rendering-modern-dining-room-living-room-with-luxury-decor-yellow-lamp_105762-2232_iu2qqe.avif",
-    },
-    {
-      title: "Zero Brokerage Rental Service",
-      desc: "Connect directly with verified owners and rent your flat without any extra charges. Fast booking, easy paperwork, and 100% assistance.",
-      img: "https://res.cloudinary.com/dxlykgx6w/image/upload/v1764928067/comfortable-living-room-with-gray-sofa_305343-17365_zlfzp5.avif",
-    },
-  ];
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const customLeft = {
-    2: "left-[40%]",  // 3rd card
-    3: "left-[60%]"   // 4th card
-  };
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/services")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((resData) => {
+        if (!cancelled) {
+          if (resData?.services && resData.services.length > 0) {
+            setServices(
+              resData.services.map((s) => ({
+                id: s.id || s._id,
+                title: s.title,
+                desc: s.description,
+                img: s.image || "https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=800",
+                link: s.link || "/service/house",
+              }))
+            );
+          } else {
+            setServices([]);
+          }
+        }
+      })
+      .catch((err) => console.error("Error fetching homepage services:", err))
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const customBgStyle = data?.bgColor ? { backgroundColor: data.bgColor } : {};
   const customTextStyle = data?.textColor ? { color: data.textColor } : {};
 
+  if (!loading && (!services || services.length === 0)) return null;
+
   return (
-    <section className="w-full py-16" style={customBgStyle}>
+    <section className="w-full py-16 bg-slate-50" style={customBgStyle}>
       <div className="text-center mb-16">
-        <h3 className="text-[32px] italic" style={customTextStyle}>{subtitle}</h3>
-        <h2 className="text-[42px] font-extrabold" style={customTextStyle}>{title}</h2>
+        <h3 className="text-[32px] italic text-[#8c4bdc]" style={customTextStyle}>
+          {subtitle}
+        </h3>
+        <h2 className="text-[42px] font-extrabold text-slate-900" style={customTextStyle}>
+          {title}
+        </h2>
       </div>
 
-      <div className="max-w-[1300px] mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-15">
-        {services.map((service, index) => (
-          <div
-            key={index}
-            className={`relative ${index % 2 === 0 ? "md:mt-18" : "md:mt-0"}`}
-          >
-            {/* IMAGE */}
-            <div className="w-full h-[300px] md:h-[330px] relative rounded-md overflow-hidden">
-              <Image
-                src={service.img}
-                alt={service.title}
-                fill
-                className="object-cover"
-              />
-            </div>
-
-            <div
-              className={`
-                absolute 
-                ${customLeft[index]
-                  ? customLeft[index]
-                  : index % 2 !== 0
-                    ? "lg:left-60"
-                    : "lg:left-[60%]"
-                }
-                ${index % 2 !== 0 ? "md:-bottom-10" : "md:-bottom-24"}
-                md:-translate-x-1/2
-                left-1/2 -translate-x-1/2  
-                bottom-[-60px]              
-                bg-white w-[90%] md:w-[80%]
-                rounded-md p-6
-                transition-all duration-300
-                hover:-translate-y-2
-              `}
+      <div className="max-w-[1300px] mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {services.map((service, index) => {
+          const linkTarget = service.link || "/service/house";
+          return (
+            <Link
+              key={service.id || index}
+              href={linkTarget}
+              className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 flex flex-col"
             >
-              <h3 className="text-[20px] font-semibold mb-2 text-black">
-                {service.title}
-              </h3>
-              <p className="text-[16px] text-gray-600 leading-relaxed">
-                {service.desc}
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
+              <div className="w-full h-52 relative overflow-hidden bg-slate-100">
+                <Image
+                  src={service.img}
+                  alt={service.title}
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+              </div>
 
-      <div className="h-[150px]"></div>
+              <div className="p-6 flex-1 flex flex-col justify-between space-y-3">
+                <h3 className="text-xl font-bold text-slate-800 group-hover:text-[#8c4bdc] transition-colors">
+                  {service.title}
+                </h3>
+                <p className="text-slate-600 text-sm leading-relaxed line-clamp-3">
+                  {service.desc}
+                </p>
+                <div className="pt-2 text-[#8c4bdc] font-semibold text-sm flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                  Explore Service &rarr;
+                </div>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
     </section>
   );
 }

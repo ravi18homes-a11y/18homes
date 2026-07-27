@@ -1,12 +1,4 @@
 import { NextResponse } from 'next/server';
-import { v2 as cloudinary } from 'cloudinary';
-
-// Configure cloudinary with user's credentials
-cloudinary.config({
-  cloud_name: "domwj0m7s",
-  api_key: "833515693898685",
-  api_secret: "zS7ZGzL1UIwWtY49KhYQ3dKtXok",
-});
 
 export async function POST(request) {
   try {
@@ -17,26 +9,27 @@ export async function POST(request) {
       return NextResponse.json({ error: 'No file received.' }, { status: 400 });
     }
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+    const cloudFormData = new FormData();
+    cloudFormData.append('file', file);
+    cloudFormData.append('upload_preset', '18homes_unsigned');
+    cloudFormData.append('folder', '18homes/services');
 
-    // Upload to Cloudinary using a stream
-    const result = await new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        { folder: '18homes' },
-        (error, result) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(result);
-          }
-        }
-      );
-
-      uploadStream.end(buffer);
+    const res = await fetch('https://api.cloudinary.com/v1_1/domwj0m7s/image/upload', {
+      method: 'POST',
+      body: cloudFormData,
     });
 
-    return NextResponse.json({ url: result.secure_url });
+    const data = await res.json();
+
+    if (!res.ok || !data.secure_url) {
+      console.error('Cloudinary upload error details:', data);
+      return NextResponse.json(
+        { error: data.error?.message || 'Failed to upload image to Cloudinary.' },
+        { status: res.status || 500 }
+      );
+    }
+
+    return NextResponse.json({ url: data.secure_url });
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json({ error: 'Failed to upload image.' }, { status: 500 });

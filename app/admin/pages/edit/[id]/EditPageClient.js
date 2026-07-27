@@ -1,12 +1,15 @@
 "use client";
 
 import PageEditor from "@/components/admin/PageEditor";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 
 export default function EditPageClient({ id }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const seoOnly = searchParams.get("seoOnly") === "true";
+
   const [page, setPage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -69,6 +72,7 @@ export default function EditPageClient({ id }) {
         onSave={handleSave}
         saving={saving}
         mode="edit"
+        seoOnly={seoOnly}
       />
     </div>
   );
