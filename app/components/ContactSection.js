@@ -1,15 +1,16 @@
-
 "use client";
+
 import Image from "next/image";
-import "./contactpop.css"
+import "./contactpop.css";
 import { useState } from "react";
-import { FiCheckCircle } from "react-icons/fi";
-import { IoIosArrowDown } from "react-icons/io";
+import { FiCheckCircle, FiSend, FiPhoneCall, FiMail, FiMapPin, FiShield, FiUser, FiSmartphone } from "react-icons/fi";
 import { toast } from "react-hot-toast";
 
 export default function ContactSection({ data }) {
   const title = data?.title || "Please tell us your requirements";
-  const image = data?.image || "https://res.cloudinary.com/dxlykgx6w/image/upload/v1765125152/WhatsApp_Image_2025-12-07_at_9.01.16_PM_fuflru.jpg";
+  const image =
+    data?.image ||
+    "https://res.cloudinary.com/dxlykgx6w/image/upload/v1765125152/WhatsApp_Image_2025-12-07_at_9.01.16_PM_fuflru.jpg";
 
   const [form, setForm] = useState({
     name: "",
@@ -66,8 +67,8 @@ export default function ContactSection({ data }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-      const data = await res.json();
-      if (data.success) {
+      const resData = await res.json();
+      if (resData.success) {
         toast.success("Thank you! Message sent successfully.");
         setForm({
           name: "",
@@ -78,6 +79,8 @@ export default function ContactSection({ data }) {
         });
         setChecked(false);
         setShowPopup(true); // ✅ Show popup on success
+      } else {
+        toast.error(resData.error || "Failed to submit form.");
       }
     } catch (err) {
       console.error("Form submission error:", err);
@@ -91,165 +94,247 @@ export default function ContactSection({ data }) {
   const customTextStyle = data?.textColor ? { color: data.textColor } : {};
 
   return (
-    <section className="w-full max-w-[1720px] mx-auto">
-      <div className="grid grid-cols-1 lg:grid-cols-2">
+    <section id="contact-form-section" className="w-full max-w-[1720px] mx-auto scroll-mt-24 py-8 px-4 sm:px-6">
+      <div
+        className="rounded-3xl overflow-hidden shadow-xl bg-white border border-slate-100 relative grid grid-cols-1 lg:grid-cols-12"
+        style={customBgStyle}
+      >
+        {/* LEFT FORM SECTION (CLEAN BLUE & WHITE THEME) */}
+        <div className="lg:col-span-7 p-6 sm:p-10 md:p-12 flex flex-col justify-center relative z-10 space-y-6 bg-white">
+          {/* BADGE */}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-xs sm:text-sm font-semibold w-fit">
+            <FiShield className="text-blue-600" />
+            <span>Quick Inquiry · 24/7 Verified Support</span>
+          </div>
 
-        {/* LEFT SECTION */}
-       <div className="px-8 md:px-20 py-8 flex flex-col justify-center" style={{ backgroundColor: "#1D1D1D", ...customBgStyle }}>
-          <h2 className="text-[48px] font-light mb-2" style={{ color: "white", ...customTextStyle }}>{title}</h2>
-          <div className="w-[120px] h-[4px] bg-[#28E7F7] mb-6"></div>
+          {/* HEADING */}
+          <div className="space-y-2">
+            <h2
+              className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight"
+              style={customTextStyle}
+            >
+              {title}
+            </h2>
+            <div className="w-24 h-1.5 bg-blue-600 rounded-full" />
+          </div>
 
-          <form className="space-y-4" onSubmit={handleSubmit}>
-            <input
-              type="text"
-              name="name"
-              value={form?.name}
-              onChange={(e) => {
-                // Allow alphabets and spaces, but not only spaces
-                let val = e.target.value.replace(/[^A-Za-z ]/g, "");
-                // Prevent leading/trailing multiple spaces
-                val = val.replace(/\s{2,}/g, " ");
-                // Prevent only spaces
-                if (val.length > 0 && val.trim() === "") return;
-                setForm((prev) => ({ ...prev, name: val }));
-              }}
-              placeholder="Enter Name*"
-              required
-              autoComplete="off"
-              className="w-full border-2 text-amber-50 border-white bg-transparent px-5 py-3 rounded-md text-lg outline-none "
-            />
+          <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+            Fill in your details below and our property specialist will reach out to you within minutes.
+          </p>
 
-            <input
-              type="email"
-              name="email"
-              value={form?.email}
-              onChange={handleChange}
-              required
-              autoComplete="off"
-              placeholder="Enter your email"
-              className="w-full border-2 border-white text-amber-50 bg-transparent px-5 py-3 rounded-md text-lg outline-none "
-            />
-
-            <input
-              type="text"
-              name="phone"
-              value={form?.phone}
-              onChange={(e) => {
-                // Only allow digits
-                setMessage("");
-                const val = e.target.value.replace(/[^0-9]/g, "");
-                setForm((prev) => ({ ...prev, phone: val }));
-              }}
-              maxLength={10}
-              required
-              autoComplete="off"
-              placeholder="Enter mobile number*"
-              className="w-full border-2 border-white text-amber-50 bg-transparent px-5 py-3 rounded-md text-lg outline-none "
-            />
-
+          {/* FORM */}
+          <form className="space-y-4 pt-2" onSubmit={handleSubmit}>
+            {/* NAME */}
             <div className="relative">
-              <select
-                name="website"
-                value={form?.website}
-                onChange={handleChange}
-                className="w-full border-2 border-white text-amber-50 bg-transparent px-5 py-3 rounded-md text-lg outline-none appearance-none "
-              >
-                <option value="" disabled className="text-[gray]">
-                  Select Room or Flat 1BHK/2BHK/3BHK*
-                </option>
-                <option value="1RK Flat" className="text-black">
-                  1RK Flat
-                </option>
-                <option value="1BHK Flat" className="text-black">
-                  1BHK Flat
-                </option>
-                <option value="2BHK Flat" className="text-black">
-                  2BHK Flat
-                </option>
-              </select>
-
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xl">
-                <IoIosArrowDown />
-              </span>
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-600 text-lg">
+                <FiUser />
+              </div>
+              <input
+                type="text"
+                name="name"
+                value={form?.name}
+                onChange={(e) => {
+                  let val = e.target.value.replace(/[^A-Za-z ]/g, "");
+                  val = val.replace(/\s{2,}/g, " ");
+                  if (val.length > 0 && val.trim() === "") return;
+                  setForm((prev) => ({ ...prev, name: val }));
+                }}
+                placeholder="Enter Your Full Name *"
+                required
+                autoComplete="off"
+                className="w-full bg-slate-50/80 border border-blue-600 focus:border-blue-600 focus:bg-white focus:ring-4 focus:ring-blue-100 text-slate-900 placeholder-slate-400 pl-12 pr-5 py-3.5 rounded-xl text-sm sm:text-base outline-none transition duration-200"
+              />
             </div>
 
-            <textarea
-              placeholder="Write your message"
-              id="discussion"
-              name="discussion"
-              value={form?.discussion}
-              onChange={handleChange}
-              rows="4"
-              className="w-full border-2 text-amber-50 border-white bg-transparent px-5 py-4 rounded-md text-lg outline-none resize-none "
-            />
-            <div>
-              <label className="flex items-center text-amber-50" style={{ fontSize: "14px" }}>
+            {/* EMAIL & PHONE GRID */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* EMAIL */}
+              <div className="relative">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-600 text-lg">
+                  <FiMail />
+                </div>
                 <input
-                  className="!w-[20px] text-amber-50"
+                  type="email"
+                  name="email"
+                  value={form?.email}
+                  onChange={handleChange}
+                  required
+                  autoComplete="off"
+                  placeholder="Your Email Address *"
+                  className="w-full bg-slate-50/80 border border-blue-600 focus:border-blue-600 focus:bg-white focus:ring-4 focus:ring-blue-100 text-slate-900 placeholder-slate-400 pl-12 pr-5 py-3.5 rounded-xl text-sm sm:text-base outline-none transition duration-200"
+                />
+              </div>
+
+              {/* PHONE */}
+              <div className="relative">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-600 text-lg">
+                  <FiSmartphone />
+                </div>
+                <input
+                  type="text"
+                  name="phone"
+                  value={form?.phone}
+                  onChange={(e) => {
+                    setMessage("");
+                    const val = e.target.value.replace(/[^0-9]/g, "");
+                    setForm((prev) => ({ ...prev, phone: val }));
+                  }}
+                  maxLength={10}
+                  required
+                  autoComplete="off"
+                  placeholder="10-Digit Phone Number *"
+                  className="w-full bg-slate-50/80 border border-blue-600 focus:border-blue-600 focus:bg-white focus:ring-4 focus:ring-blue-100 text-slate-900 placeholder-slate-400 pl-12 pr-5 py-3.5 rounded-xl text-sm sm:text-base outline-none transition duration-200"
+                />
+              </div>
+            </div>
+
+            {/* MESSAGE TEXTAREA */}
+            <div>
+              <textarea
+                placeholder="Tell us what you are looking for (e.g. 2BHK flat in Govindpuram)..."
+                id="discussion"
+                name="discussion"
+                value={form?.discussion}
+                onChange={handleChange}
+                rows="4"
+                className="w-full bg-slate-50/80 border border-blue-600 focus:border-blue-600 focus:bg-white focus:ring-4 focus:ring-blue-100 text-slate-900 placeholder-slate-400 p-4 rounded-xl text-sm sm:text-base outline-none transition duration-200 resize-none"
+              />
+            </div>
+
+            {/* PRIVACY POLICY CHECKBOX */}
+            <div className="pt-1">
+              <label className="flex items-center gap-3 text-slate-600 text-xs sm:text-sm cursor-pointer select-none">
+                <input
                   type="checkbox"
                   checked={checked}
                   onChange={(e) => setChecked(e.target.checked)}
-                  style={{ marginRight: "8px" }}
+                  className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-slate-300 cursor-pointer"
                 />
-                I accept the {" "}
-                <a href="/" target="_blank" rel="noopener noreferrer">
-                  privacy policy
-                </a>
-                .
+                <span>
+                  I agree to the{" "}
+                  <a
+                    href="/privacy-policy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline font-medium hover:text-blue-700 transition"
+                  >
+                    Privacy Policy
+                  </a>{" "}
+                  and consent to be contacted.
+                </span>
               </label>
             </div>
+
+            {/* MESSAGE ERROR/SUCCESS FEEDBACK */}
             {message && (
               <div
-                style={{
-                  marginTop: 8,
-                  color: message.includes("Thank") ? "green" : "red",
-                }}
+                className={`text-xs font-semibold p-3 rounded-xl border ${message.includes("Thank")
+                  ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                  : "bg-rose-50 border-rose-200 text-rose-700"
+                  }`}
               >
                 {message}
               </div>
             )}
+
+            {/* SUBMIT BUTTON */}
             <button
               type="submit"
-              className="bg-[#28E7F7] text-black px-10 py-2.5 rounded-full text-xl font-semibold hover:opacity-90 transition w-fit"
+              disabled={loading}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-base sm:text-lg px-8 py-3.5 rounded-xl shadow-lg hover:shadow-blue-500/25 transition duration-300 transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 cursor-pointer"
             >
-              {loading ? "Sending..." : "SUBMIT"}
+              {loading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Sending Message...</span>
+                </>
+              ) : (
+                <>
+                  <span>SUBMIT INQUIRY</span>
+                  <FiSend className="text-lg" />
+                </>
+              )}
             </button>
           </form>
         </div>
 
-        {/* RIGHT IMAGE SECTION */}
-        <div className="bg-[#14253e] relative overflow-hidden min-h-[300px] sm:min-h-[420px] lg:min-h-0">
-
-          {/* <div className="absolute top-0 left-0 w-full h-[5px] z-30"></div> */}
-
-          <div className="absolute inset-0 origin-top-left ">
+        {/* RIGHT SIDEBAR / VISUAL IMAGE & BRAND CONTACT INFO */}
+        <div className="lg:col-span-5 bg-gradient-to-b from-[#0a2342] via-[#12345e] to-[#0a2342] p-6 sm:p-10 flex flex-col justify-between relative overflow-hidden border-t lg:border-t-0 lg:border-l border-slate-800 text-white">
+          {/* IMAGE BOX */}
+          <div className="relative w-full h-64 sm:h-80 lg:h-72 rounded-2xl overflow-hidden border border-white/20 shadow-xl group">
             <Image
               src={image}
-              alt="Contact Image"
+              alt="Contact 18 Homes"
               fill
-              className="object-contain"
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0a2342] via-[#0a2342]/20 to-transparent" />
+            <div className="absolute bottom-4 left-4 right-4 text-white">
+              <p className="text-xs uppercase tracking-wider font-semibold text-blue-300">18 Homes Real Estate</p>
+              <h3 className="text-lg font-bold">Your Trusted Property Partner in NCR</h3>
+            </div>
           </div>
 
-          <div className="absolute inset-0 z-20"></div>
+          {/* CONTACT QUICK INFO CARDS */}
+          <div className="space-y-3 mt-6">
+            <div className="flex items-center gap-4 p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 hover:bg-white/15 transition">
+              <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-300 text-lg flex-shrink-0">
+                <FiPhoneCall />
+              </div>
+              <div>
+                <p className="text-blue-200 text-xs font-medium">Direct Call / WhatsApp</p>
+                <a href="tel:+917827602246" className="text-white font-bold text-sm hover:text-blue-300 transition">
+                  +91 7827602246
+                </a>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 hover:bg-white/15 transition">
+              <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-300 text-lg flex-shrink-0">
+                <FiMail />
+              </div>
+              <div>
+                <p className="text-blue-200 text-xs font-medium">Email Support</p>
+                <a href="mailto:18homes.website@gmail.com" className="text-white font-bold text-sm hover:text-blue-300 transition">
+                  18homes.website@gmail.com
+                </a>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 hover:bg-white/15 transition">
+              <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-300 text-lg flex-shrink-0">
+                <FiMapPin />
+              </div>
+              <div>
+                <p className="text-blue-200 text-xs font-medium">Head Office Location</p>
+                <p className="text-slate-100 font-semibold text-xs leading-snug">
+                  Kanak Farm House, GovindPuram, Ghaziabad (U.P.)
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
-{showPopup && (
-                <div className="popup-overlay">
-                    <div className="popup-content">
-                        <div className="popup-icon">
-                            <FiCheckCircle size={60} color="green" />
-                        </div>
-                        <h2>Thank You!</h2>
-                        <p>Your message has been sent successfully. Our team will contact you soon.</p>
-                        <button
-                            className="popup-btn"
-                            onClick={() => setShowPopup(false)}
-                        >
-                            Close
-                        </button>
-                    </div>
-                </div>
-            )}
+
+        {/* SUCCESS POPUP MODAL */}
+        {showPopup && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center space-y-4 shadow-2xl relative border border-slate-100">
+              <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-3xl">
+                <FiCheckCircle />
+              </div>
+              <h3 className="text-2xl font-extrabold text-slate-900">Thank You!</h3>
+              <p className="text-slate-600 text-sm leading-relaxed">
+                Your message has been received successfully. Our real estate specialist will contact you shortly.
+              </p>
+              <button
+                onClick={() => setShowPopup(false)}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

@@ -6,7 +6,7 @@ import { toast } from "react-hot-toast";
 import confetti from "canvas-confetti";
 
 const DEFAULT_IMAGE =
-  "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800";
+  "https://res.cloudinary.com/domwj0m7s/image/upload/v1785084052/ChatGPT_Image_Jul_26_2026_10_10_07_PM_uuqc8u.png";
 
 const getMediaThumbnail = (url) => {
   if (!url) return DEFAULT_IMAGE;

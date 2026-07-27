@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "react-hot-toast";
 import SectionBuilder from "./SectionBuilder";
 import SeoPanel from "./SeoPanel";
 
@@ -50,7 +51,7 @@ export default function PageEditor({
   const [slugError, setSlugError] = useState("");
   const [sections, setSections] = useState(initialData?.sections || []);
   const [seo, setSeo] = useState(initialData?.seo || defaultSeo);
-  const [activeTab, setActiveTab] = useState(isSystemPage ? "seo" : "general");
+  const [activeTab, setActiveTab] = useState(seoOnly ? "seo" : "general");
   const [status, setStatus] = useState(initialData?.status || "draft");
   const [showInNavbar, setShowInNavbar] = useState(initialData?.showInNavbar ?? true);
   const [isSlugManual, setIsSlugManual] = useState(
@@ -113,7 +114,7 @@ export default function PageEditor({
     const segment = createSlug(effectiveSlugSegment || "");
     if (!segment) return "";
     if (parent) return `${parent.slug}/${segment}`;
-    if (mainMenu === "home" || mainMenu === "pages") return segment;
+    if (mainMenu === "home" || mainMenu === "pages" || mainMenu === "city") return segment;
     return `${mainMenu}/${segment}`;
   }, [effectiveSlugSegment, parent, mainMenu]);
 
@@ -147,6 +148,11 @@ export default function PageEditor({
   }, [seo, title, computedSlug]);
 
   const handleSave = async () => {
+    if (hasSaveError) {
+      toast.error(finalSlugError || "Slug is already taken or invalid. Please enter a unique slug.");
+      return;
+    }
+
     const resolvedParent = isEdit
       ? parentId || null
       : (parentId || initialData?.parentId || null) || null;

@@ -6,6 +6,7 @@ import FilterPropertiesComp from "./components/FilterPropertiesComp";
 import HeroSlider from "./components/HeroSection";
 import HomeAbout from "./components/HomeAbout";
 import HomeBuyComp from "./components/HomeBuyComp";
+import HomeCtaBanner from "./components/HomeCtaBanner";
 import HomeServices from "./components/HomeService";
 import InstrumentsSection from "./components/InstrumentsSection";
 import Testimonials from "./components/Testimonials";
@@ -64,6 +65,7 @@ export default async function Home() {
         <HeroSlider data={data?.hero} />
         <FilterPropertiesComp />
         <HomeBuyComp />
+        <HomeCtaBanner />
         <HomeServices data={data?.services} />
         <HomeAbout data={data?.about} />
         <HomeBlogs data={data?.blogs} />

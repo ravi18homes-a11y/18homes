@@ -7,14 +7,14 @@ import Navbar from "../COMMON/Navbar";
 import Footer from "../COMMON/Footer";
 import { toast } from "react-hot-toast";
 
-const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800";
+const DEFAULT_IMAGE = "https://res.cloudinary.com/domwj0m7s/image/upload/v1785084052/ChatGPT_Image_Jul_26_2026_10_10_07_PM_uuqc8u.png";
 
 const getMediaThumbnail = (url) => {
   if (!url) return DEFAULT_IMAGE;
   const lowerUrl = url.toLowerCase();
   const videoExtensions = [".mp4", ".mov", ".avi", ".webm", ".mkv", ".3gp", ".ogg", ".ogv", ".wmv"];
   const isVideo = videoExtensions.some(ext => lowerUrl.endsWith(ext) || lowerUrl.includes(ext + "?"));
-  
+
   if (isVideo) {
     return url.replace(/\.(mp4|mov|avi|webm|mkv|3gp|ogg|ogv|wmv)(?=\?|$)/i, ".jpg");
   }

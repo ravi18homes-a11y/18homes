@@ -11,6 +11,7 @@ import {
   FileText,
   Layers,
   BookOpen,
+  Building2,
   LogOut,
   ChevronLeft,
   ChevronRight,
@@ -62,7 +63,7 @@ export default function AdminSidebar({
         <div className="flex items-center justify-between sm:justify-center p-5 border-b border-green-600">
           <Link href="/" className="flex items-center gap-3">
             <Image
-              src="https://res.cloudinary.com/dxlykgx6w/image/upload/v1783796029/icon-192_bkv7wb.png"
+              src="https://res.cloudinary.com/domwj0m7s/image/upload/v1785082683/18homes_logo-removebg-preview_doiisr.png"
               alt="18Homes"
               width={40}
               height={40}
@@ -120,6 +121,14 @@ export default function AdminSidebar({
             active={pathname.startsWith("/admin/blogs")}
             icon={<BookOpen size={18} />}
             label="Blogs"
+            isCollapsed={isCollapsed}
+          />
+
+          <NavItem
+            href="/admin/cities"
+            active={pathname.startsWith("/admin/cities")}
+            icon={<Building2 size={18} />}
+            label="Cities"
             isCollapsed={isCollapsed}
           />
 

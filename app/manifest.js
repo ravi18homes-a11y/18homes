@@ -1,13 +1,25 @@
 export default function manifest() {
   return {
-    name: "18 Homes",
+    name: "18 Homes - Best Property for Sale and Rent in NCR",
     short_name: "18Homes",
-    description: "Modern Real Estate Platform in Delhi-NCR",
+    description: "Leading Real Estate Company in NCR, Offering Prime Residential and Commercial Properties.",
     start_url: "/",
     display: "standalone",
     background_color: "#ffffff",
-    theme_color: "#0f172a",
+    theme_color: "#8c4bdc",
     icons: [
+      {
+        src: "https://res.cloudinary.com/domwj0m7s/image/upload/v1785082545/18homes_logo_duhekk.jpg",
+        sizes: "192x192",
+        type: "image/jpeg",
+        purpose: "maskable any",
+      },
+      {
+        src: "https://res.cloudinary.com/domwj0m7s/image/upload/v1785082545/18homes_logo_duhekk.jpg",
+        sizes: "512x512",
+        type: "image/jpeg",
+        purpose: "maskable any",
+      },
       {
         src: "/icon-192.png",
         sizes: "192x192",
