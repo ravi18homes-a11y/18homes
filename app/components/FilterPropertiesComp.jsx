@@ -341,7 +341,7 @@ export default function FilterPropertiesComp() {
 
       setLoading(true);
       try {
-        const params = new URLSearchParams({ purpose, limit: "100" });
+        const params = new URLSearchParams({ purpose, limit: "1000" });
         const response = await fetch(
           `${API_BASE_URL}/api/properties?${params.toString()}`,
         );
@@ -431,6 +431,17 @@ export default function FilterPropertiesComp() {
       const flatCounts = counts["flat"] || {};
       const aptCounts = counts["apartment"] || {};
       if (card.query.bedrooms) {
+        const reqBed = Number(card.query.bedrooms);
+        if (reqBed >= 4) {
+          let sum = 0;
+          Object.keys(flatCounts).forEach((bKey) => {
+            if (!isNaN(bKey) && Number(bKey) >= 4) sum += flatCounts[bKey];
+          });
+          Object.keys(aptCounts).forEach((bKey) => {
+            if (!isNaN(bKey) && Number(bKey) >= 4) sum += aptCounts[bKey];
+          });
+          return sum;
+        }
         return (flatCounts[card.query.bedrooms] || 0) + (aptCounts[card.query.bedrooms] || 0);
       }
       return (flatCounts.total || 0) + (aptCounts.total || 0);
@@ -459,7 +470,7 @@ export default function FilterPropertiesComp() {
 
   return (
     <section className="w-full bg-[#F7F7F7] py-10">
-      
+
 
       {isCategoryPage && (
         <>
@@ -471,8 +482,8 @@ export default function FilterPropertiesComp() {
                 setPurpose("sell");
               }}
               className={`px-5 py-3 rounded-full font-semibold text-[22px] transition ${purpose === "sell"
-                  ? "bg-green-600 text-white"
-                  : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-100"
+                ? "bg-green-600 text-white"
+                : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-100"
                 }`}
             >
               Sell / Purchase
@@ -484,8 +495,8 @@ export default function FilterPropertiesComp() {
                 setPurpose("rent");
               }}
               className={`px-5 py-3 rounded-full font-semibold text-[28px] transition ${purpose === "rent"
-                  ? "bg-red-600 text-white"
-                  : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-100"
+                ? "bg-red-600 text-white"
+                : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-100"
                 }`}
             >
               Rent
@@ -558,7 +569,7 @@ export default function FilterPropertiesComp() {
                           <p className="text-lg font-semibold text-gray-900">
                             {card.label}
                           </p>
-                          <p className="mt-2 text-sm text-gray-600">
+                          <p className="mt-2 text-sm text-blue-600 font-semibold">
                             {count > 0
                               ? `${count} properties found`
                               : "Click to explore properties"}
@@ -599,16 +610,14 @@ export default function FilterPropertiesComp() {
               <Link
                 key={category.key}
                 href={`/category/${category.key}`}
-                className={`flex flex-col items-center justify-center p-4 rounded-2xl border text-center transition-all duration-300 cursor-pointer group ${
-                  isActive
-                    ? "bg-red-600 text-white border-transparent shadow-lg shadow-red-600/20 -translate-y-1 scale-105"
-                    : "bg-white text-gray-700 border-gray-200 hover:border-red-400 hover:text-red-600 hover:shadow-md hover:-translate-y-0.5"
-                }`}
+                className={`flex flex-col items-center justify-center p-4 rounded-2xl border text-center transition-all duration-300 cursor-pointer group ${isActive
+                  ? "bg-red-600 text-white border-transparent shadow-lg shadow-red-600/20 -translate-y-1 scale-105"
+                  : "bg-white text-gray-700 border-gray-200 hover:border-red-400 hover:text-red-600 hover:shadow-md hover:-translate-y-0.5"
+                  }`}
               >
                 <div
-                  className={`w-14 h-14 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${
-                    isActive ? "bg-white/20 text-white" : "bg-red-50 text-red-600 group-hover:bg-red-100"
-                  }`}
+                  className={`w-14 h-14 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${isActive ? "bg-white/20 text-white" : "bg-red-50 text-red-600 group-hover:bg-red-100"
+                    }`}
                 >
                   {IconComponent && (
                     <IconComponent className="w-7 h-7 transition-transform duration-300 group-hover:scale-110" />
