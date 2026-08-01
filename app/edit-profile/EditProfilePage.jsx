@@ -16,7 +16,12 @@ import {
   ArrowLeft,
   Map,
   Compass,
-  FileText
+  FileText,
+  Building2,
+  Briefcase,
+  ShieldCheck,
+  CheckCircle2,
+  AlertCircle
 } from "lucide-react";
 
 const BASE_API_URL = process.env.NEXT_PUBLIC_APP_DATABASE_URL || "http://localhost:5000";
@@ -34,6 +39,9 @@ export default function EditProfile() {
     email: "",
     phone: "",
     avatar: "",
+    role: "user",
+    approvalStatus: "approved",
+    profileCompleted: false,
     address: {
       houseNo: "",
       street: "",
@@ -42,6 +50,32 @@ export default function EditProfile() {
       district: "",
       state: "",
       pincode: "",
+    },
+    kyc: {
+      aadhaarNumber: "",
+      panNumber: "",
+    },
+    builderDetails: {
+      firmName: "",
+      completedProjectsCount: 0,
+      runningProjectsCount: 0,
+      runningProjectsNames: "",
+      upcomingProjects: "",
+      officeAddress: "",
+      reraNumber: "",
+      gstNumber: "",
+      panNumber: "",
+      aadhaarNumber: "",
+    },
+    dealerDetails: {
+      agencyName: "",
+      experienceYears: 0,
+      operatingAreas: "",
+      officeAddress: "",
+      licenseNumber: "",
+      gstNumber: "",
+      panNumber: "",
+      aadhaarNumber: "",
     }
   });
 
@@ -70,6 +104,9 @@ export default function EditProfile() {
           email: u.email || "",
           phone: u.phone || "",
           avatar: u.avatar || "",
+          role: u.role || "user",
+          approvalStatus: u.approvalStatus || "approved",
+          profileCompleted: !!u.profileCompleted,
           address: {
             houseNo: u.address?.houseNo || "",
             street: u.address?.street || "",
@@ -78,6 +115,32 @@ export default function EditProfile() {
             district: u.address?.district || "",
             state: u.address?.state || "",
             pincode: u.address?.pincode || "",
+          },
+          kyc: {
+            aadhaarNumber: u.kyc?.aadhaarNumber || "",
+            panNumber: u.kyc?.panNumber || "",
+          },
+          builderDetails: {
+            firmName: u.builderDetails?.firmName || "",
+            completedProjectsCount: u.builderDetails?.completedProjectsCount || 0,
+            runningProjectsCount: u.builderDetails?.runningProjectsCount || 0,
+            runningProjectsNames: u.builderDetails?.runningProjectsNames || "",
+            upcomingProjects: u.builderDetails?.upcomingProjects || "",
+            officeAddress: u.builderDetails?.officeAddress || "",
+            reraNumber: u.builderDetails?.reraNumber || "",
+            gstNumber: u.builderDetails?.gstNumber || "",
+            panNumber: u.builderDetails?.panNumber || "",
+            aadhaarNumber: u.builderDetails?.aadhaarNumber || "",
+          },
+          dealerDetails: {
+            agencyName: u.dealerDetails?.agencyName || "",
+            experienceYears: u.dealerDetails?.experienceYears || 0,
+            operatingAreas: u.dealerDetails?.operatingAreas || "",
+            officeAddress: u.dealerDetails?.officeAddress || "",
+            licenseNumber: u.dealerDetails?.licenseNumber || "",
+            gstNumber: u.dealerDetails?.gstNumber || "",
+            panNumber: u.dealerDetails?.panNumber || "",
+            aadhaarNumber: u.dealerDetails?.aadhaarNumber || "",
           }
         });
       } else {
@@ -107,6 +170,39 @@ export default function EditProfile() {
     }));
   };
 
+  const handleKycChange = (e) => {
+    const { name, value } = e.target;
+    setProfile((prev) => ({
+      ...prev,
+      kyc: {
+        ...prev.kyc,
+        [name]: value,
+      }
+    }));
+  };
+
+  const handleBuilderChange = (e) => {
+    const { name, value } = e.target;
+    setProfile((prev) => ({
+      ...prev,
+      builderDetails: {
+        ...prev.builderDetails,
+        [name]: value,
+      }
+    }));
+  };
+
+  const handleDealerChange = (e) => {
+    const { name, value } = e.target;
+    setProfile((prev) => ({
+      ...prev,
+      dealerDetails: {
+        ...prev.dealerDetails,
+        [name]: value,
+      }
+    }));
+  };
+
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -126,7 +222,7 @@ export default function EditProfile() {
     try {
       setUploading(true);
       const formData = new FormData();
-      formData.append("files", file); // Multer array parameter name is 'files'
+      formData.append("files", file);
 
       const response = await fetch(`${BASE_API_URL}/api/media/upload`, {
         method: "POST",
@@ -161,18 +257,34 @@ export default function EditProfile() {
     }
 
     if (!profile.name.trim()) {
-      toast.error("Name is required");
+      toast.error("Full Name is required");
       return;
     }
 
-    if (profile.phone && !/^[6-9][0-9]{9}$/.test(profile.phone)) {
-      toast.error("Please enter a valid 10-digit Indian mobile number");
-      return;
-    }
-
-    if (profile.address.pincode && !/^[1-9][0-9]{5}$/.test(profile.address.pincode)) {
-      toast.error("Please enter a valid 6-digit pincode");
-      return;
+    // Role specific validations
+    if (profile.role === "owner") {
+      if (!profile.kyc.aadhaarNumber.trim() && !profile.kyc.panNumber.trim()) {
+        toast.error("Owners must provide either Aadhaar or PAN Number");
+        return;
+      }
+    } else if (profile.role === "builder") {
+      if (!profile.builderDetails.firmName.trim()) {
+        toast.error("Builder Firm Name is required");
+        return;
+      }
+      if (!profile.builderDetails.reraNumber.trim() && !profile.builderDetails.gstNumber.trim() && !profile.builderDetails.panNumber.trim() && !profile.builderDetails.aadhaarNumber.trim()) {
+        toast.error("Builders must fill at least one ID detail (RERA, GST, PAN, or Aadhaar)");
+        return;
+      }
+    } else if (profile.role === "dealer") {
+      if (!profile.dealerDetails.agencyName.trim()) {
+        toast.error("Dealer / Agency Name is required");
+        return;
+      }
+      if (!profile.dealerDetails.licenseNumber.trim() && !profile.dealerDetails.gstNumber.trim() && !profile.dealerDetails.panNumber.trim() && !profile.dealerDetails.aadhaarNumber.trim()) {
+        toast.error("Dealers must fill at least one ID detail (License, GST, PAN, or Aadhaar)");
+        return;
+      }
     }
 
     try {
@@ -187,17 +299,26 @@ export default function EditProfile() {
           name: profile.name,
           phone: profile.phone,
           avatar: profile.avatar,
+          role: profile.role,
           address: profile.address,
+          kyc: profile.kyc,
+          builderDetails: profile.builderDetails,
+          dealerDetails: profile.dealerDetails,
         }),
       });
 
       const data = await response.json();
       if (response.ok && data.success) {
-        toast.success("Profile saved successfully!");
+        toast.success("Profile details saved successfully!");
         localStorage.setItem("userData", JSON.stringify(data.data));
-        
-        // Dispatch storage event to notify navbar in real time
         window.dispatchEvent(new Event("storage"));
+
+        // Redirect based on role
+        setTimeout(() => {
+          if (data.data.role === "owner") router.push("/dashboard/owner");
+          else if (data.data.role === "builder") router.push("/dashboard/builder");
+          else if (data.data.role === "dealer") router.push("/dashboard/dealer");
+        }, 1000);
       } else {
         toast.error(data.message || "Failed to update profile");
       }
@@ -211,9 +332,9 @@ export default function EditProfile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
         <Loader2 className="w-12 h-12 text-[#8c4bdc] animate-spin mb-4" />
-        <p className="text-gray-500 font-medium animate-pulse">Loading profile...</p>
+        <p className="text-slate-500 font-medium animate-pulse">Loading profile...</p>
       </div>
     );
   }
@@ -221,278 +342,586 @@ export default function EditProfile() {
   const defaultAvatar = "https://res.cloudinary.com/dxlykgx6w/image/upload/v1766862633/business-man-avatar-profile_1133257-2431_dygzgs.avif";
 
   return (
-    <div className="min-h-screen mt-[80px] bg-gradient-to-tr from-gray-50 via-slate-50 to-purple-50/20 px-4 py-8">
+    <div className="space-y-6">
       <div className="max-w-5xl mx-auto">
         
-        {/* Breadcrumb / Back Button */}
+        {/* Back Button */}
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-2 text-slate-500 hover:text-[#8c4bdc] mb-6 transition-colors duration-200 group font-medium cursor-pointer"
+          className="flex items-center gap-2 text-slate-600 hover:text-[#8c4bdc] mb-6 transition-colors font-medium cursor-pointer group"
         >
           <ArrowLeft className="w-4 h-4 transform group-hover:-translate-x-1 transition-transform" />
           <span>Back to previous page</span>
         </button>
 
-        <div className="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden">
+        <div className="bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden">
+          
           {/* Header Band */}
-          <div className="bg-gradient-to-r from-[#8c4bdc] via-[#a363ee] to-[#c04b7e] px-8 py-10 text-white relative">
-            <div className="relative z-10">
-              <h1 className="text-3xl font-bold tracking-tight">Edit Profile</h1>
-              <p className="text-purple-100 mt-2 font-light">
-                Update your personal info, profile photo, and address details to complete your profile
-              </p>
+          <div className="bg-gradient-to-r from-[#8c4bdc] via-[#7b3ac5] to-[#c04b7e] px-8 py-10 text-white relative">
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <h1 className="text-3xl font-extrabold tracking-tight">Edit Profile & Account Details</h1>
+                  <span className="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                    {profile.role}
+                  </span>
+                </div>
+                <p className="text-purple-100 font-light text-sm sm:text-base">
+                  Update your contact info, role preferences, address, and verification details.
+                </p>
+              </div>
+
+              {/* Status Badge */}
+              <div className="bg-white/10 backdrop-blur-md border border-white/20 p-3 px-5 rounded-2xl flex items-center gap-3">
+                {profile.approvalStatus === "approved" ? (
+                  <>
+                    <CheckCircle2 className="w-6 h-6 text-emerald-300" />
+                    <div>
+                      <p className="text-xs text-purple-100">Verification Status</p>
+                      <p className="font-bold text-sm text-emerald-200">Account Approved</p>
+                    </div>
+                  </>
+                ) : profile.approvalStatus === "rejected" ? (
+                  <>
+                    <AlertCircle className="w-6 h-6 text-rose-300" />
+                    <div>
+                      <p className="text-xs text-purple-100">Verification Status</p>
+                      <p className="font-bold text-sm text-rose-200">Application Rejected</p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck className="w-6 h-6 text-amber-300" />
+                    <div>
+                      <p className="text-xs text-purple-100">Verification Status</p>
+                      <p className="font-bold text-sm text-amber-200">Pending Admin Approval</p>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
-            {/* Visual Abstract Design */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-20 -mt-20 blur-xl"></div>
-            <div className="absolute bottom-0 right-20 w-32 h-32 bg-white/5 rounded-full blur-lg"></div>
           </div>
 
           <div className="p-6 md:p-10">
             <form onSubmit={handleSubmit} className="space-y-10">
               
-              {/* Profile Image Upload Section */}
-              <div className="flex flex-col items-center sm:flex-row gap-6 pb-8 border-b border-slate-100">
-                <div className="relative group w-32 h-32 rounded-full overflow-hidden border-4 border-slate-100 shadow-md flex-shrink-0 bg-slate-50">
-                  <Image
-                    src={profile.avatar || defaultAvatar}
-                    alt="Profile"
-                    fill
-                    className="object-cover"
-                    priority
-                  />
-                  {uploading && (
-                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white">
-                      <Loader2 className="w-8 h-8 animate-spin" />
-                    </div>
-                  )}
+              {/* Profile Image & Account Role Selection */}
+              <div className="grid md:grid-cols-12 gap-8 pb-8 border-b border-slate-100 items-center">
+                
+                {/* Image Upload */}
+                <div className="md:col-span-5 flex flex-col sm:flex-row items-center gap-5">
+                  <div className="relative group w-28 h-28 rounded-full overflow-hidden border-4 border-slate-100 shadow-md flex-shrink-0 bg-slate-50">
+                    <Image
+                      src={profile.avatar || defaultAvatar}
+                      alt="Profile"
+                      fill
+                      className="object-cover"
+                      priority
+                    />
+                    {uploading && (
+                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white">
+                        <Loader2 className="w-8 h-8 animate-spin" />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
+                    <h3 className="text-base font-bold text-slate-800">Profile Picture</h3>
+                    <p className="text-xs text-slate-400 mt-0.5 mb-3">
+                      JPG/PNG up to 5MB
+                    </p>
+                    
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileChange}
+                      className="hidden"
+                      accept="image/*"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploading}
+                      className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer"
+                    >
+                      <Upload className="w-3.5 h-3.5" />
+                      {uploading ? "Uploading..." : "Upload Photo"}
+                    </button>
+                  </div>
                 </div>
 
-                <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
-                  <h3 className="text-lg font-semibold text-slate-800">Profile Picture</h3>
-                  <p className="text-sm text-slate-400 mt-1 mb-4">
-                    Supports JPG, PNG. Max file size: 5MB
-                  </p>
-                  
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    className="hidden"
-                    accept="image/*"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploading}
-                    className="flex items-center gap-2 bg-[#8c4bdc] hover:bg-[#7b3ac5] text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition shadow-sm hover:shadow hover:-translate-y-0.5 cursor-pointer disabled:opacity-50"
+                {/* Account Role Selector */}
+                <div className="md:col-span-7 bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200">
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
+                    Account Role Type
+                  </label>
+                  <select
+                    name="role"
+                    value={profile.role}
+                    onChange={handleChange}
+                    className="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-[#8c4bdc]/20 focus:border-[#8c4bdc] outline-none cursor-pointer"
                   >
-                    <Upload className="w-4 h-4" />
-                    {uploading ? "Uploading..." : "Upload New Image"}
-                  </button>
+                    <option value="user">Normal User (Buy & View Properties Only)</option>
+                    <option value="owner">Property Owner (Buy & Sell Homes Directly)</option>
+                    <option value="builder">Builder / Real Estate Developer</option>
+                    <option value="dealer">Dealer / Agent / Property Consultant</option>
+                  </select>
+                  <p className="text-xs text-slate-500 mt-2">
+                    {profile.role === "user" && "Normal Users cannot post properties for sale."}
+                    {profile.role === "owner" && "Requires Aadhaar or PAN verification to post properties."}
+                    {profile.role === "builder" && "Requires Firm details & Admin Approval to unlock builder dashboard features."}
+                    {profile.role === "dealer" && "Requires Agency details & Admin Approval to unlock agent features."}
+                  </p>
                 </div>
               </div>
 
-              {/* Form Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                
-                {/* Personal Information Column */}
-                <div className="space-y-6">
-                  <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-                    <User className="w-5 h-5 text-[#8c4bdc]" />
-                    <h2 className="text-xl font-bold text-slate-800">Personal Details</h2>
-                  </div>
+              {/* Personal Details */}
+              <div className="space-y-6">
+                <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <User className="w-5 h-5 text-[#8c4bdc]" />
+                  <h2 className="text-xl font-bold text-slate-800">Basic Contact Details</h2>
+                </div>
 
-                  {/* Name Input */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
-                    <label className="block text-sm font-semibold text-slate-600 mb-2">
-                      Full Name
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      Full Name <span className="text-rose-500">*</span>
                     </label>
-                    <div className="relative">
-                      <User className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
-                      <input
-                        type="text"
-                        name="name"
-                        value={profile.name}
-                        onChange={handleChange}
-                        required
-                        placeholder="John Doe"
-                        className="w-full pl-11 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#8c4bdc]/20 focus:border-[#8c4bdc] outline-none transition duration-150"
-                      />
-                    </div>
+                    <input
+                      type="text"
+                      name="name"
+                      value={profile.name}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#8c4bdc]/20 focus:border-[#8c4bdc] outline-none text-sm"
+                    />
                   </div>
 
-                  {/* Email Input (Disabled) */}
                   <div>
-                    <label className="block text-sm font-semibold text-slate-600 mb-2">
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">
                       Email Address <span className="text-xs text-slate-400 font-normal">(Non-editable)</span>
                     </label>
-                    <div className="relative">
-                      <Mail className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
-                      <input
-                        type="email"
-                        name="email"
-                        value={profile.email}
-                        disabled
-                        placeholder="example@mail.com"
-                        className="w-full pl-11 pr-4 py-3 border border-slate-200 bg-slate-50 text-slate-500 rounded-xl outline-none cursor-not-allowed"
-                      />
-                    </div>
+                    <input
+                      type="email"
+                      value={profile.email}
+                      disabled
+                      className="w-full px-4 py-3 border border-slate-200 bg-slate-50 text-slate-500 rounded-xl outline-none cursor-not-allowed text-sm"
+                    />
                   </div>
 
-                  {/* Phone Input */}
                   <div>
-                    <label className="block text-sm font-semibold text-slate-600 mb-2">
-                      Phone Number
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      Mobile Number
                     </label>
-                    <div className="relative">
-                      <Phone className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
-                      <input
-                        type="tel"
-                        name="phone"
-                        value={profile.phone}
-                        onChange={handleChange}
-                        placeholder="e.g. 9876543210"
-                        className="w-full pl-11 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#8c4bdc]/20 focus:border-[#8c4bdc] outline-none transition duration-150"
-                      />
-                    </div>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={profile.phone}
+                      onChange={handleChange}
+                      placeholder="9876543210"
+                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#8c4bdc]/20 focus:border-[#8c4bdc] outline-none text-sm"
+                    />
                   </div>
                 </div>
-
-                {/* Address Information Column */}
-                <div className="space-y-6">
-                  <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-                    <MapPin className="w-5 h-5 text-[#c04b7e]" />
-                    <h2 className="text-xl font-bold text-slate-800">Address Details</h2>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    {/* House No */}
-                    <div>
-                      <label className="block text-sm font-semibold text-slate-600 mb-2">
-                        House/Flat No
-                      </label>
-                      <div className="relative">
-                        <Home className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-                        <input
-                          type="text"
-                          name="houseNo"
-                          value={profile.address.houseNo}
-                          onChange={handleAddressChange}
-                          placeholder="e.g. A-123"
-                          className="w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#8c4bdc]/20 focus:border-[#8c4bdc] outline-none transition duration-150"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Pincode */}
-                    <div>
-                      <label className="block text-sm font-semibold text-slate-600 mb-2">
-                        Pincode
-                      </label>
-                      <div className="relative">
-                        <MapPin className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-                        <input
-                          type="text"
-                          name="pincode"
-                          value={profile.address.pincode}
-                          onChange={handleAddressChange}
-                          placeholder="e.g. 201010"
-                          className="w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#8c4bdc]/20 focus:border-[#8c4bdc] outline-none transition duration-150"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Street Address */}
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-600 mb-2">
-                      Street Name
-                    </label>
-                    <div className="relative">
-                      <Compass className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-                      <input
-                        type="text"
-                        name="street"
-                        value={profile.address.street}
-                        onChange={handleAddressChange}
-                        placeholder="e.g. Mahatma Gandhi Road"
-                        className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#8c4bdc]/20 focus:border-[#8c4bdc] outline-none transition duration-150"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Locality */}
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-600 mb-2">
-                      Locality / Area
-                    </label>
-                    <div className="relative">
-                      <Building className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-                      <input
-                        type="text"
-                        name="locality"
-                        value={profile.address.locality}
-                        onChange={handleAddressChange}
-                        placeholder="e.g. Indirapuram"
-                        className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#8c4bdc]/20 focus:border-[#8c4bdc] outline-none transition duration-150"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    {/* City */}
-                    <div>
-                      <label className="block text-sm font-semibold text-slate-600 mb-2">
-                        City
-                      </label>
-                      <input
-                        type="text"
-                        name="city"
-                        value={profile.address.city}
-                        onChange={handleAddressChange}
-                        placeholder="e.g. Ghaziabad"
-                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#8c4bdc]/20 focus:border-[#8c4bdc] outline-none transition duration-150"
-                      />
-                    </div>
-
-                    {/* District */}
-                    <div>
-                      <label className="block text-sm font-semibold text-slate-600 mb-2">
-                        District
-                      </label>
-                      <input
-                        type="text"
-                        name="district"
-                        value={profile.address.district}
-                        onChange={handleAddressChange}
-                        placeholder="e.g. Ghaziabad"
-                        className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#8c4bdc]/20 focus:border-[#8c4bdc] outline-none transition duration-150"
-                      />
-                    </div>
-                  </div>
-
-                  {/* State */}
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-600 mb-2">
-                      State
-                    </label>
-                    <div className="relative">
-                      <Map className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-                      <input
-                        type="text"
-                        name="state"
-                        value={profile.address.state}
-                        onChange={handleAddressChange}
-                        placeholder="e.g. Uttar Pradesh"
-                        className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#8c4bdc]/20 focus:border-[#8c4bdc] outline-none transition duration-150"
-                      />
-                    </div>
-                  </div>
-                </div>
-
               </div>
 
-              {/* Action Buttons */}
+              {/* OWNER SPECIFIC KYC SECTION */}
+              {profile.role === "owner" && (
+                <div className="bg-emerald-50/60 p-6 rounded-2xl border border-emerald-200 space-y-6">
+                  <div className="flex items-center gap-2 border-b border-emerald-200 pb-3">
+                    <ShieldCheck className="w-5 h-5 text-emerald-600" />
+                    <h2 className="text-lg font-bold text-emerald-900">Owner Identification (Mandatory: Aadhaar or PAN)</h2>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-xs font-bold text-emerald-800 uppercase tracking-wider mb-2">
+                        Aadhaar Number
+                      </label>
+                      <input
+                        type="text"
+                        name="aadhaarNumber"
+                        value={profile.kyc.aadhaarNumber}
+                        onChange={handleKycChange}
+                        placeholder="12-digit Aadhaar Number"
+                        className="w-full px-4 py-3 bg-white border border-emerald-300 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 outline-none text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-emerald-800 uppercase tracking-wider mb-2">
+                        PAN Card Number
+                      </label>
+                      <input
+                        type="text"
+                        name="panNumber"
+                        value={profile.kyc.panNumber}
+                        onChange={handleKycChange}
+                        placeholder="10-character PAN (e.g. ABCDE1234F)"
+                        className="w-full px-4 py-3 bg-white border border-emerald-300 rounded-xl uppercase focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 outline-none text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* BUILDER SPECIFIC DETAILS SECTION */}
+              {profile.role === "builder" && (
+                <div className="bg-purple-50/60 p-6 rounded-2xl border border-purple-200 space-y-6">
+                  <div className="flex items-center gap-2 border-b border-purple-200 pb-3">
+                    <Building2 className="w-5 h-5 text-purple-600" />
+                    <h2 className="text-lg font-bold text-purple-900">Builder & Firm Details</h2>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-xs font-bold text-purple-800 uppercase tracking-wider mb-2">
+                        Builder / Firm Name <span className="text-rose-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="firmName"
+                        value={profile.builderDetails.firmName}
+                        onChange={handleBuilderChange}
+                        placeholder="e.g. Apex Infratech Pvt Ltd"
+                        className="w-full px-4 py-3 bg-white border border-purple-300 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 outline-none text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-purple-800 uppercase tracking-wider mb-2">
+                        Completed Projects Count
+                      </label>
+                      <input
+                        type="number"
+                        name="completedProjectsCount"
+                        value={profile.builderDetails.completedProjectsCount}
+                        onChange={handleBuilderChange}
+                        placeholder="e.g. 10"
+                        className="w-full px-4 py-3 bg-white border border-purple-300 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 outline-none text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-purple-800 uppercase tracking-wider mb-2">
+                        Running Projects Names & Count
+                      </label>
+                      <input
+                        type="text"
+                        name="runningProjectsNames"
+                        value={profile.builderDetails.runningProjectsNames}
+                        onChange={handleBuilderChange}
+                        placeholder="e.g. Apex Royal, Green Towers (Total 4)"
+                        className="w-full px-4 py-3 bg-white border border-purple-300 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 outline-none text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-purple-800 uppercase tracking-wider mb-2">
+                        Upcoming Projects
+                      </label>
+                      <input
+                        type="text"
+                        name="upcomingProjects"
+                        value={profile.builderDetails.upcomingProjects}
+                        onChange={handleBuilderChange}
+                        placeholder="e.g. Celestial Palms"
+                        className="w-full px-4 py-3 bg-white border border-purple-300 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 outline-none text-sm"
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-bold text-purple-800 uppercase tracking-wider mb-2">
+                        Registered Office Address
+                      </label>
+                      <input
+                        type="text"
+                        name="officeAddress"
+                        value={profile.builderDetails.officeAddress}
+                        onChange={handleBuilderChange}
+                        placeholder="Full Office Address"
+                        className="w-full px-4 py-3 bg-white border border-purple-300 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 outline-none text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-purple-800 uppercase tracking-wider mb-2">
+                        RERA Number
+                      </label>
+                      <input
+                        type="text"
+                        name="reraNumber"
+                        value={profile.builderDetails.reraNumber}
+                        onChange={handleBuilderChange}
+                        placeholder="UPRERA-12345678"
+                        className="w-full px-4 py-3 bg-white border border-purple-300 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 outline-none text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-purple-800 uppercase tracking-wider mb-2">
+                        GST Number
+                      </label>
+                      <input
+                        type="text"
+                        name="gstNumber"
+                        value={profile.builderDetails.gstNumber}
+                        onChange={handleBuilderChange}
+                        placeholder="09ABCDE1234F1Z5"
+                        className="w-full px-4 py-3 bg-white border border-purple-300 rounded-xl uppercase focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 outline-none text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-purple-800 uppercase tracking-wider mb-2">
+                        PAN Card Number
+                      </label>
+                      <input
+                        type="text"
+                        name="panNumber"
+                        value={profile.builderDetails.panNumber}
+                        onChange={handleBuilderChange}
+                        placeholder="ABCDE1234F"
+                        className="w-full px-4 py-3 bg-white border border-purple-300 rounded-xl uppercase focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 outline-none text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-purple-800 uppercase tracking-wider mb-2">
+                        Aadhaar Number
+                      </label>
+                      <input
+                        type="text"
+                        name="aadhaarNumber"
+                        value={profile.builderDetails.aadhaarNumber}
+                        onChange={handleBuilderChange}
+                        placeholder="12-digit Aadhaar"
+                        className="w-full px-4 py-3 bg-white border border-purple-300 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 outline-none text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* DEALER SPECIFIC DETAILS SECTION */}
+              {profile.role === "dealer" && (
+                <div className="bg-amber-50/60 p-6 rounded-2xl border border-amber-200 space-y-6">
+                  <div className="flex items-center gap-2 border-b border-amber-200 pb-3">
+                    <Briefcase className="w-5 h-5 text-amber-600" />
+                    <h2 className="text-lg font-bold text-amber-900">Dealer & Agency Profile</h2>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-xs font-bold text-amber-800 uppercase tracking-wider mb-2">
+                        Agency / Firm Name <span className="text-rose-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="agencyName"
+                        value={profile.dealerDetails.agencyName}
+                        onChange={handleDealerChange}
+                        placeholder="Sharma Realty Consultancy"
+                        className="w-full px-4 py-3 bg-white border border-amber-300 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 outline-none text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-amber-800 uppercase tracking-wider mb-2">
+                        Years of Experience
+                      </label>
+                      <input
+                        type="number"
+                        name="experienceYears"
+                        value={profile.dealerDetails.experienceYears}
+                        onChange={handleDealerChange}
+                        placeholder="e.g. 8"
+                        className="w-full px-4 py-3 bg-white border border-amber-300 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 outline-none text-sm"
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-bold text-amber-800 uppercase tracking-wider mb-2">
+                        Operating Areas & Cities
+                      </label>
+                      <input
+                        type="text"
+                        name="operatingAreas"
+                        value={profile.dealerDetails.operatingAreas}
+                        onChange={handleDealerChange}
+                        placeholder="Noida Sector 62, Indirapuram, Vaishali, Crossing Republik"
+                        className="w-full px-4 py-3 bg-white border border-amber-300 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 outline-none text-sm"
+                      />
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-bold text-amber-800 uppercase tracking-wider mb-2">
+                        Office Address
+                      </label>
+                      <input
+                        type="text"
+                        name="officeAddress"
+                        value={profile.dealerDetails.officeAddress}
+                        onChange={handleDealerChange}
+                        placeholder="Shop 12, Main Market, Sector 18, Noida"
+                        className="w-full px-4 py-3 bg-white border border-amber-300 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 outline-none text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-amber-800 uppercase tracking-wider mb-2">
+                        License Number / RERA Agent Reg.
+                      </label>
+                      <input
+                        type="text"
+                        name="licenseNumber"
+                        value={profile.dealerDetails.licenseNumber}
+                        onChange={handleDealerChange}
+                        placeholder="REA-NOD-2021-9988"
+                        className="w-full px-4 py-3 bg-white border border-amber-300 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 outline-none text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-amber-800 uppercase tracking-wider mb-2">
+                        GST Number
+                      </label>
+                      <input
+                        type="text"
+                        name="gstNumber"
+                        value={profile.dealerDetails.gstNumber}
+                        onChange={handleDealerChange}
+                        placeholder="09LMNOP9876Q1Z3"
+                        className="w-full px-4 py-3 bg-white border border-amber-300 rounded-xl uppercase focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 outline-none text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-amber-800 uppercase tracking-wider mb-2">
+                        PAN Card Number
+                      </label>
+                      <input
+                        type="text"
+                        name="panNumber"
+                        value={profile.dealerDetails.panNumber}
+                        onChange={handleDealerChange}
+                        placeholder="LMNOP9876Q"
+                        className="w-full px-4 py-3 bg-white border border-amber-300 rounded-xl uppercase focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 outline-none text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-amber-800 uppercase tracking-wider mb-2">
+                        Aadhaar Number
+                      </label>
+                      <input
+                        type="text"
+                        name="aadhaarNumber"
+                        value={profile.dealerDetails.aadhaarNumber}
+                        onChange={handleDealerChange}
+                        placeholder="12-digit Aadhaar"
+                        className="w-full px-4 py-3 bg-white border border-amber-300 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 outline-none text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Address Details */}
+              <div className="space-y-6">
+                <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <MapPin className="w-5 h-5 text-[#c04b7e]" />
+                  <h2 className="text-xl font-bold text-slate-800">Address Details</h2>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      House / Flat / Building No
+                    </label>
+                    <input
+                      type="text"
+                      name="houseNo"
+                      value={profile.address.houseNo}
+                      onChange={handleAddressChange}
+                      placeholder="e.g. A-123"
+                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#8c4bdc]/20 focus:border-[#8c4bdc] outline-none text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      Street Name
+                    </label>
+                    <input
+                      type="text"
+                      name="street"
+                      value={profile.address.street}
+                      onChange={handleAddressChange}
+                      placeholder="e.g. MG Road"
+                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#8c4bdc]/20 focus:border-[#8c4bdc] outline-none text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      Locality / Area
+                    </label>
+                    <input
+                      type="text"
+                      name="locality"
+                      value={profile.address.locality}
+                      onChange={handleAddressChange}
+                      placeholder="e.g. Sector 62"
+                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#8c4bdc]/20 focus:border-[#8c4bdc] outline-none text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      City
+                    </label>
+                    <input
+                      type="text"
+                      name="city"
+                      value={profile.address.city}
+                      onChange={handleAddressChange}
+                      placeholder="Noida / Ghaziabad"
+                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#8c4bdc]/20 focus:border-[#8c4bdc] outline-none text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      State
+                    </label>
+                    <input
+                      type="text"
+                      name="state"
+                      value={profile.address.state}
+                      onChange={handleAddressChange}
+                      placeholder="Uttar Pradesh"
+                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#8c4bdc]/20 focus:border-[#8c4bdc] outline-none text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      Pincode
+                    </label>
+                    <input
+                      type="text"
+                      name="pincode"
+                      value={profile.address.pincode}
+                      onChange={handleAddressChange}
+                      placeholder="201301"
+                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#8c4bdc]/20 focus:border-[#8c4bdc] outline-none text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Form Action Buttons */}
               <div className="flex items-center justify-end gap-4 border-t border-slate-100 pt-8 mt-6">
                 <button
                   type="button"
@@ -504,10 +933,10 @@ export default function EditProfile() {
                 <button
                   type="submit"
                   disabled={saving || uploading}
-                  className="flex items-center justify-center gap-2 bg-gradient-to-r from-[#8c4bdc] to-[#c04b7e] hover:from-[#7b3ac5] hover:to-[#ae3a6d] text-white px-8 py-3 rounded-xl font-semibold transition shadow-md hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
+                  className="flex items-center justify-center gap-2 bg-gradient-to-r from-[#8c4bdc] to-[#c04b7e] hover:from-[#7b3ac5] hover:to-[#ae3a6d] text-white px-8 py-3.5 rounded-xl font-bold transition shadow-md hover:shadow-lg disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {saving && <Loader2 className="w-5 h-5 animate-spin" />}
-                  {saving ? "Saving Changes..." : "Save Changes"}
+                  {saving ? "Saving Changes..." : "Save Profile & Details"}
                 </button>
               </div>
 

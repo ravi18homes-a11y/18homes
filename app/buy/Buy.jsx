@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import confetti from "canvas-confetti";
+import FeaturedAgentsWidget from "../../components/FeaturedAgentsWidget";
 
 const DEFAULT_IMAGE =
   "https://res.cloudinary.com/domwj0m7s/image/upload/v1785084052/ChatGPT_Image_Jul_26_2026_10_10_07_PM_uuqc8u.png";
@@ -865,6 +866,9 @@ const BuyPage = () => {
           </div>
         ) : (
           <>
+            {/* Featured Locality Specialist Agents Widget */}
+            <FeaturedAgentsWidget city={filters.city} locality={searchQuery} />
+
             {/* Property Grid */}
             {console.log("Filtered Properties Count:", filteredProperties)}
             {filteredProperties.length > 0 ? (

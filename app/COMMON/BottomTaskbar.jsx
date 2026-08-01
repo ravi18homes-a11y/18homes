@@ -41,9 +41,9 @@ export default function BottomTaskbar() {
   const [loading, setLoading] = useState(false);
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isServicesExpanded, setIsServicesExpanded] = useState(true);
-  const [isBlogsExpanded, setIsBlogsExpanded] = useState(true);
-  const [isCitiesExpanded, setIsCitiesExpanded] = useState(true);
+  const [isServicesExpanded, setIsServicesExpanded] = useState(false);
+  const [isBlogsExpanded, setIsBlogsExpanded] = useState(false);
+  const [isCitiesExpanded, setIsCitiesExpanded] = useState(false);
   const [favorites, setFavorites] = useState([]);
 
   const databaseUrl = process.env.NEXT_PUBLIC_APP_DATABASE_URL || "http://localhost:5000";
@@ -669,23 +669,23 @@ export default function BottomTaskbar() {
                 <span>Home</span>
               </Link>
 
-              <Link
+              {/* <Link
                 href="/buy"
                 onClick={() => setIsMenuOpen(false)}
                 className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition text-gray-700 hover:text-red-600 font-semibold"
               >
                 <Building className="w-5 h-5 text-gray-400" />
                 <span>Buy Properties</span>
-              </Link>
+              </Link> */}
 
-              <Link
+              {/* <Link
                 href="/sell"
                 onClick={() => setIsMenuOpen(false)}
                 className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition text-gray-700 hover:text-red-600 font-semibold"
               >
                 <PlusCircle className="w-5 h-5 text-gray-400" />
                 <span>Sell / Rent Property</span>
-              </Link>
+              </Link> */}
 
               {/* Dynamic Services Dropdown Section */}
               <div className="space-y-1 my-1">
@@ -832,7 +832,7 @@ export default function BottomTaskbar() {
               </div>
 
               {/* Authenticated Links (Always visible, handles guest redirect) */}
-              <Link
+              {/* <Link
                 href="/edit-profile"
                 onClick={(e) => handleAuthLinkClick("/edit-profile", e)}
                 className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition text-gray-700 hover:text-red-600 font-semibold"
@@ -855,7 +855,7 @@ export default function BottomTaskbar() {
               >
                 <Heart className="w-5 h-5 text-gray-400" />
                 <span>Wishlist</span>
-              </Link>
+              </Link> */}
               {/* standard footer contact pages */}
               <Link
                 href="/about"

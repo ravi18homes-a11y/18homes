@@ -44,6 +44,7 @@ export async function GET() {
   const fixed = [
     { key: "home", label: "Home", href: "/" },
     { key: "buy", label: "Buy", href: "/buy" },
+    { key: "projects", label: "Projects", href: "/projects" },
     { key: "sell", label: "Sell", href: "/sell" },
     { key: "service", label: "Service", href: "/service", childrenOverride: serviceChildren },
     { key: "blog", label: "Blog", href: "/blog", childrenOverride: blogChildren },

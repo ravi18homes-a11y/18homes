@@ -360,19 +360,21 @@ export default function Navbar() {
             {(navData?.menus || [
               { key: "home", label: "Home", href: "/", children: [] },
               { key: "buy", label: "Buy", href: "/buy", children: [] },
-              { key: "sell", label: "Sell", href: "/sell", children: [] },
+              { key: "projects", label: "Projects", href: "/projects", children: [] },
               { key: "service", label: "Service", href: "/service", children: [] },
               { key: "blog", label: "Blog", href: "/blog", children: [] },
               { key: "city", label: "City", href: "/city", children: [] },
               { key: "contact", label: "Contact", href: "/contact", children: [] },
-            ]).map((m) => (
-              <NavItem
-                key={m.key}
-                href={m.href}
-                label={m.label}
-                items={m.children}
-              />
-            ))}
+            ])
+              .filter((m) => m.key !== "sell" && m.href !== "/sell")
+              .map((m) => (
+                <NavItem
+                  key={m.key}
+                  href={m.href}
+                  label={m.label}
+                  items={m.children}
+                />
+              ))}
             {(navData?.sitePages || []).map((p) => (
               <NavItem
                 key={p.id}
@@ -517,140 +519,23 @@ export default function Navbar() {
             </div>
           )}
 
-          <div className="relative" ref={profileMenuRef}>
-            <button
-              onClick={() => setShowProfileMenu(!showProfileMenu)}
-              className="w-14 h-14 p-[4px] rounded-full cursor-pointer border-2 border-[#8c4bdc] overflow-hidden hover:border-[#c04b7e] transition"
-            >
-              <Image
-                src={user?.avatar || "https://res.cloudinary.com/dxlykgx6w/image/upload/v1766862633/business-man-avatar-profile_1133257-2431_dygzgs.avif"}
-                alt="Profile"
-                width={48}
-                height={48}
-                className="object-cover"
-                onError={(e) => {
-                  e.target.src =
-                    "https://res.cloudinary.com/dxlykgx6w/image/upload/v1766862633/business-man-avatar-profile_1133257-2431_dygzgs.avif";
-                }}
-              />
-            </button>
-
-            {/* Dropdown Menu */}
-            {showProfileMenu && (
-              <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
-                {!isLoggedIn && (
-                  <Link
-                    href="/login-signup"
-                    className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
-                    onClick={() => setShowProfileMenu(false)}
-                  >
-                    <MdLogin className="text-[#8c4bdc] text-xl" />
-                    <span className="text-black">Login</span>
-                  </Link>
-                )}
-
-                <Link
-                  href="/contact"
-                  className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
-                  onClick={() => setShowProfileMenu(false)}
-                >
-                  <MdPhone className="text-[#8c4bdc] text-xl" />
-                  <span className="text-black">Book Now</span>
-                </Link>
-
-                <Link
-                  href="/recent-history"
-                  className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
-                  onClick={() => setShowProfileMenu(false)}
-                >
-                  <FaHistory className="text-[#8c4bdc] text-xl" />
-                  <span className="text-black">Recent History</span>
-                </Link>
-
-                {isLoggedIn && (
-                  <>
-                    <Link
-                      href="/edit-profile"
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
-                      onClick={() => setShowProfileMenu(false)}
-                    >
-                      <FaEdit className="text-[#8c4bdc] text-xl" />
-                      <span className="text-black">Edit Profile</span>
-                    </Link>
-
-                    <Link
-                      href="/my-properties"
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
-                      onClick={() => setShowProfileMenu(false)}
-                    >
-                      <FaHome className="text-[#8c4bdc] text-xl" />
-                      <span className="text-black">My Properties</span>
-                    </Link>
-
-                    <Link
-                      href="/wishlist"
-                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
-                      onClick={() => setShowProfileMenu(false)}
-                    >
-                      <FaHeart className="text-[#8c4bdc] text-xl" />
-                      <span className="text-black">Wishlist</span>
-                    </Link>
-
-                    {user?.role === "admin" && (
-                      <Link
-                        href="/admin"
-                        className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
-                        onClick={() => setShowProfileMenu(false)}
-                      >
-                        <RiAdminLine className="text-[#8c4bdc] text-xl" />
-                        <span className="text-black">Admin Dashbaord</span>
-                      </Link>
-                    )}
-                  </>
-                )}
-
-                {isLoggedIn && (
-                  <button
-                    className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition w-full text-left"
-                    onClick={() => {
-                      localStorage.removeItem("authToken");
-                      localStorage.removeItem("userData");
-                      setIsLoggedIn(false);
-                      setShowProfileMenu(false);
-                      window.location.href = "/";
-                    }}
-                  >
-                    <FaUser className="text-[#8c4bdc] text-xl" />
-                    <span className="text-black">Logout</span>
-                  </button>
-                )}
-
-                {isInstallable && (
-                  <button
-                    className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition w-full text-left cursor-pointer font-medium"
-                    onClick={() => {
-                      installApp();
-                      setShowProfileMenu(false);
-                    }}
-                  >
-                    <span className="text-[#8c4bdc] text-xl">📲</span>
-                    <span className="text-black">Install App</span>
-                  </button>
-                )}
-
-                <div className="border-t border-gray-200 my-2"></div>
-
-                {/* <Link
-                    href="/setting"
-                    className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 transition"
-                    onClick={() => setShowProfileMenu(false)}
-                  >
-                    <FaCog className="text-[#8c4bdc] text-xl" />
-                    <span className="text-black">Setting</span>
-                  </Link> */}
-              </div>
-            )}
-          </div>
+          <Link
+            href={isLoggedIn ? "/dashboard" : "/login-signup"}
+            title={isLoggedIn ? "Go to Dashboard" : "Login / Signup"}
+            className="w-14 h-14 p-[4px] rounded-full cursor-pointer border-2 border-[#8c4bdc] overflow-hidden hover:border-[#c04b7e] transition flex items-center justify-center bg-slate-100"
+          >
+            <Image
+              src={user?.avatar || "https://res.cloudinary.com/dxlykgx6w/image/upload/v1766862633/business-man-avatar-profile_1133257-2431_dygzgs.avif"}
+              alt="Profile"
+              width={48}
+              height={48}
+              className="object-cover w-full h-full"
+              onError={(e) => {
+                e.target.src =
+                  "https://res.cloudinary.com/dxlykgx6w/image/upload/v1766862633/business-man-avatar-profile_1133257-2431_dygzgs.avif";
+              }}
+            />
+          </Link>
         </div>
 
         {/* <button
@@ -677,10 +562,12 @@ export default function Navbar() {
           {(navData?.menus || [
             { key: "home", label: "Home", href: "/", children: [] },
             { key: "buy", label: "Buy", href: "/buy", children: [] },
-            { key: "sell", label: "Sell", href: "/sell", children: [] },
+            { key: "projects", label: "Projects", href: "/projects", children: [] },
             { key: "service", label: "Service", href: "/service", children: [] },
             { key: "contact", label: "Contact", href: "/contact", children: [] },
-          ]).map((m) => (
+          ])
+            .filter((m) => m.key !== "sell" && m.href !== "/sell")
+            .map((m) => (
             <div key={m.key} className="space-y-2">
               <Link href={m.href} onClick={() => setOpen(false)}>
                 {m.label}
