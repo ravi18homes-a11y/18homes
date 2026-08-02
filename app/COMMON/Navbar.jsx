@@ -99,7 +99,7 @@ function formatTimeAgo(dateString) {
   return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
-const DEFAULT_LOGO = "https://res.cloudinary.com/domwj0m7s/image/upload/v1785082683/18homes_logo-removebg-preview_doiisr.png";
+const DEFAULT_LOGO = "https://res.cloudinary.com/dxlykgx6w/image/upload/v1785662832/18homes_log_best_real_estate_e6spg7.jpg";
 
 export default function Navbar() {
   const { isInstallable, installApp } = usePwa();

@@ -9,13 +9,13 @@ export default function manifest() {
     theme_color: "#8c4bdc",
     icons: [
       {
-        src: "https://res.cloudinary.com/domwj0m7s/image/upload/v1785082545/18homes_logo_duhekk.jpg",
+        src: "https://res.cloudinary.com/dxlykgx6w/image/upload/v1785662832/18homes_log_best_real_estate_e6spg7.jpg",
         sizes: "192x192",
         type: "image/jpeg",
         purpose: "maskable any",
       },
       {
-        src: "https://res.cloudinary.com/domwj0m7s/image/upload/v1785082545/18homes_logo_duhekk.jpg",
+        src: "https://res.cloudinary.com/dxlykgx6w/image/upload/v1785662832/18homes_log_best_real_estate_e6spg7.jpg",
         sizes: "512x512",
         type: "image/jpeg",
         purpose: "maskable any",

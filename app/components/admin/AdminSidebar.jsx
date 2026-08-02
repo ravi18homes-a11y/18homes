@@ -67,7 +67,7 @@ export default function AdminSidebar({
         <div className="flex items-center justify-between sm:justify-center p-5 border-b border-green-600">
           <Link href="/" className="flex items-center gap-3">
             <Image
-              src="https://res.cloudinary.com/domwj0m7s/image/upload/v1785082683/18homes_logo-removebg-preview_doiisr.png"
+              src="https://res.cloudinary.com/dxlykgx6w/image/upload/v1785662832/18homes_log_best_real_estate_e6spg7.jpg"
               alt="18Homes"
               width={40}
               height={40}
