@@ -16,6 +16,10 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  User,
+  Heart,
+  History,
+  PlusCircle,
 } from "lucide-react";
 
 export default function AdminSidebar({
@@ -137,6 +141,69 @@ export default function AdminSidebar({
             active={pathname.startsWith("/admin/pages")}
             icon={<FileText size={18} />}
             label="Pages"
+            isCollapsed={isCollapsed}
+          />
+
+          <NavItem
+            href="/admin/featured-ads"
+            active={pathname.startsWith("/admin/featured-ads")}
+            icon={<Building2 size={18} />}
+            label="Featured Agent Ads"
+            isCollapsed={isCollapsed}
+          />
+
+          <div className="pt-3 pb-1">
+            <div className="border-t border-green-600/50 my-2"></div>
+            <p className={`text-[10px] font-bold text-green-200 uppercase tracking-wider px-4 mb-2 ${isCollapsed ? "md:hidden" : "md:block"}`}>
+              User Tools
+            </p>
+          </div>
+
+          <NavItem
+            href="/dashboard/chats"
+            active={pathname === "/dashboard/chats"}
+            icon={<MessageSquare size={18} />}
+            label="Messages & Chats"
+            isCollapsed={isCollapsed}
+          />
+
+          <NavItem
+            href="/my-properties"
+            active={pathname === "/my-properties"}
+            icon={<Home size={18} />}
+            label="My Properties"
+            isCollapsed={isCollapsed}
+          />
+
+          <NavItem
+            href="/edit-profile"
+            active={pathname === "/edit-profile"}
+            icon={<User size={18} />}
+            label="Edit Profile"
+            isCollapsed={isCollapsed}
+          />
+
+          <NavItem
+            href="/wishlist"
+            active={pathname === "/wishlist"}
+            icon={<Heart size={18} />}
+            label="Saved Wishlist"
+            isCollapsed={isCollapsed}
+          />
+
+          <NavItem
+            href="/recent-history"
+            active={pathname === "/recent-history"}
+            icon={<History size={18} />}
+            label="Recent History"
+            isCollapsed={isCollapsed}
+          />
+
+          <NavItem
+            href="/sell"
+            active={pathname === "/sell"}
+            icon={<PlusCircle size={18} />}
+            label="Post Property"
             isCollapsed={isCollapsed}
           />
 

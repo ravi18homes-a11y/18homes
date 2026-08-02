@@ -86,13 +86,18 @@ const RealEstateApp = () => {
     { key: "30days", name: "30 Days Boost", price: 99, durationDays: 30 },
   ];
 
+  const [user, setUser] = useState(null);
+
   // Track auth state from localStorage (login saves 'authToken')
   useEffect(() => {
     const checkAuth = () => {
       try {
         setToken(localStorage.getItem("authToken"));
+        const u = localStorage.getItem("userData");
+        setUser(u ? JSON.parse(u) : null);
       } catch (e) {
         setToken("");
+        setUser(null);
       }
     };
 
@@ -463,44 +468,74 @@ const RealEstateApp = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm mt-20"></header>
+    <div className="space-y-6">
 
-      {currentPage === "sell" && (
+      {currentPage === "sell" && user && user.role === "user" && (
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <div className="bg-white rounded-3xl shadow-xl p-8 sm:p-12 border border-amber-200 text-center max-w-2xl mx-auto my-8">
+            <div className="w-16 h-16 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-sm">
+              <Home className="w-8 h-8" />
+            </div>
+            <h3 className="text-2xl font-extrabold text-slate-800 mb-3">
+              Sell Access Restricted for Normal Users
+            </h3>
+            <p className="text-slate-600 text-base mb-8 leading-relaxed">
+              As a <strong>Normal User</strong>, your account is configured for buying and browsing properties only. You cannot post properties for sale or rent.
+              <br /><br />
+              To list your property, please switch your account role to <strong>Property Owner</strong>, <strong>Builder</strong>, or <strong>Dealer</strong> from your profile.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                href="/edit-profile"
+                className="bg-gradient-to-r from-[#8c4bdc] to-[#c04b7e] hover:from-[#7b3ac5] hover:to-[#ae3a6d] text-white px-7 py-3.5 rounded-xl font-bold transition shadow-md hover:shadow-lg"
+              >
+                Edit Profile & Switch Role
+              </Link>
+              <Link
+                href="/buy"
+                className="bg-slate-100 text-slate-700 hover:bg-slate-200 px-7 py-3.5 rounded-xl font-bold transition"
+              >
+                Explore Properties (Buy)
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {currentPage === "sell" && (!user || user.role !== "user") && (
         <div className="max-w-4xl mx-auto px-4 py-8">
           {/* Success Message */}
-          {submitSuccess && (
-            <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg flex items-center gap-2">
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-              <span className="font-semibold">
-                Success! Your property has been successfully submitted.
-                Redirecting you to the buy page...
-              </span>
-            </div>
-          )}
+              {submitSuccess && (
+                <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg flex items-center gap-2">
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  <span className="font-semibold">
+                    Success! Your property has been successfully submitted.
+                    Redirecting you to the buy page...
+                  </span>
+                </div>
+              )}
 
-          <div className="bg-white rounded-lg shadow-md p-3 sm:p-6 md:p-8">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-800 mb-2">
-                Sell Your Property
-              </h2>
-              <p className="text-gray-600">
-                Fill in your property details and reach thousands of buyers
-              </p>
-            </div>
+              <div className="bg-white rounded-lg shadow-md p-3 sm:p-6 md:p-8">
+                <div className="text-center mb-8">
+                  <h2 className="text-3xl font-bold text-gray-800 mb-2">
+                    Sell Your Property
+                  </h2>
+                  <p className="text-gray-600">
+                    Fill in your property details and reach thousands of buyers
+                  </p>
+                </div>
 
             <div className="space-y-6">
               {/* Property Images & Videos - Separate Sections */}

@@ -31,7 +31,9 @@ import {
   Train,
   GraduationCap,
   HeartPulse,
+  MessageSquare,
 } from "lucide-react";
+import ChatModal from "../../components/ChatModal";
 
 const AMENITY_ICONS = {
   "garden": { label: "Garden", icon: <Trees className="w-10 h-10 text-[#ff6c00] flex-shrink-0" /> },
@@ -413,6 +415,68 @@ const PropertyDetailsPage = () => {
     return `₹${(numPrice / 100000).toFixed(2)} Lac`;
   };
 
+  const trackPropertyAnalytics = async (eventType, extraData = {}) => {
+    if (!property) return;
+    try {
+      const userDataStr = typeof window !== "undefined" ? localStorage.getItem("userData") : null;
+      let currentUser = {};
+      if (userDataStr) {
+        try { currentUser = JSON.parse(userDataStr); } catch (e) {}
+      }
+
+      const ownerId = property.owner?._id || property.owner?.id || property.owner || property.userId || property.builderId || "";
+      const ownerEmail = property.owner?.email || "";
+      const currentUserId = currentUser._id || currentUser.id || "";
+
+      const payload = {
+        id: Date.now() + "_" + Math.random().toString(36).substr(2, 5),
+        eventType, // "page_view", "view_contact", "phone_click", "whatsapp_click", "time_spent"
+        propertyId: String(property._id || property.id || ""),
+        propertyTitle: property.title || "Property Listing",
+        builderId: String(ownerId),
+        builderEmail: String(ownerEmail),
+        userId: String(currentUserId),
+        city: property.address?.city || property.address?.locality || property.location || "Noida",
+        flatUnit: property.flatNo || property.unitNo || property.title || "A-302",
+        userName: currentUser.name || "Guest Visitor",
+        userEmail: currentUser.email || "visitor@18homes.in",
+        userPhone: currentUser.phone || "+91 98765 43210",
+        timestamp: new Date().toISOString(),
+        durationSec: extraData.durationSec || 0,
+      };
+
+      if (databaseUrl) {
+        fetch(`${databaseUrl}/api/properties/analytics/track`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }).catch(() => {});
+      }
+
+      const existingLogsStr = localStorage.getItem("18homes_analytics_events");
+      let logs = [];
+      if (existingLogsStr) {
+        try { logs = JSON.parse(existingLogsStr); } catch(e) {}
+      }
+      if (!Array.isArray(logs)) logs = [];
+      logs.unshift(payload);
+      localStorage.setItem("18homes_analytics_events", JSON.stringify(logs.slice(0, 1000)));
+    } catch (err) {
+      console.error("Error tracking analytics:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (!property) return;
+    const startTime = Date.now();
+    trackPropertyAnalytics("page_view");
+
+    return () => {
+      const timeSpentSec = Math.max(1, Math.round((Date.now() - startTime) / 1000));
+      trackPropertyAnalytics("time_spent", { durationSec: timeSpentSec });
+    };
+  }, [property?._id || property?.id]);
+
   const openVideo = (video) => {
     setCurrentVideo(video);
     setShowVideoModal(true);
@@ -428,6 +492,7 @@ const PropertyDetailsPage = () => {
     }
     
     setIsLoadingDetails(true);
+    trackPropertyAnalytics("view_contact");
     
     try {
       const parsedUser = JSON.parse(userDataStr);
@@ -445,8 +510,20 @@ const PropertyDetailsPage = () => {
         })
       });
 
-      // 2. Increment contact click count in Express backend
+      // 2. Increment contact click count & Create Lead Entry in MongoDB
       try {
+        fetch(`${databaseUrl}/api/contacts`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({
+            propertyId: id,
+            message: "Buyer requested contact details on 18homes",
+          }),
+        }).catch(() => {});
+
         const clickRes = await fetch(`${databaseUrl}/api/properties/${id}/contact-click`, {
           method: 'POST'
         });
@@ -469,6 +546,94 @@ const PropertyDetailsPage = () => {
       setShowDetails(true);
     } finally {
       setIsLoadingDetails(false);
+    }
+  };
+
+  const [selectedConvId, setSelectedConvId] = useState(null);
+  const [isChatModalOpen, setIsChatModalOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [existingConv, setExistingConv] = useState(null);
+
+  useEffect(() => {
+    try {
+      const u = localStorage.getItem("userData");
+      if (u) setCurrentUser(JSON.parse(u));
+    } catch (e) {}
+  }, []);
+
+  useEffect(() => {
+    const checkExistingChat = async () => {
+      const authToken = localStorage.getItem("authToken");
+      if (!authToken || !id || !databaseUrl) return;
+
+      try {
+        const res = await fetch(`${databaseUrl}/api/chat/conversations`, {
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && Array.isArray(json.data)) {
+            const found = json.data.find(
+              (c) =>
+                (c.property?._id || c.property?.id || c.property) === id
+            );
+            if (found) {
+              setExistingConv(found);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Error checking existing chat:", err);
+      }
+    };
+    checkExistingChat();
+  }, [id, databaseUrl]);
+
+  const handleRequestLiveChat = async () => {
+    const userDataStr = localStorage.getItem("userData");
+    const authToken = localStorage.getItem("authToken");
+
+    if (!userDataStr || !authToken) {
+      toast.error("Please login to chat with property dealer");
+      router.push("/login-signup");
+      return;
+    }
+
+    if (existingConv) {
+      setSelectedConvId(existingConv._id);
+      setIsChatModalOpen(true);
+      return;
+    }
+
+    try {
+      toast.loading("Sending live chat request...", { id: "chat-req" });
+      const res = await fetch(`${databaseUrl}/api/chat/request`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({
+          propertyId: id,
+          message: `Hi, I am interested in ${property?.title || 'this property'}. Can we chat?`,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.data) {
+          toast.success("Chat request sent to dealer!", { id: "chat-req" });
+          setExistingConv(data.data);
+          setSelectedConvId(data.data._id);
+          setIsChatModalOpen(true);
+        }
+      } else {
+        const err = await res.json();
+        toast.error(err.message || "Failed to send chat request", { id: "chat-req" });
+      }
+    } catch (err) {
+      console.error("Chat request error:", err);
+      toast.error("Error connecting to server", { id: "chat-req" });
     }
   };
 
@@ -1140,6 +1305,7 @@ const PropertyDetailsPage = () => {
                         {property.owner?.phone && (
                           <a
                             href={`tel:${property.owner.phone}`}
+                            onClick={() => trackPropertyAnalytics("phone_click")}
                             className="flex items-center gap-3 p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                           >
                             <Phone className="w-5 h-5 text-red-600 flex-shrink-0" />
@@ -1153,6 +1319,7 @@ const PropertyDetailsPage = () => {
                             href={`https://wa.me/91${property.owner.phone}`}
                             target="_blank"
                             rel="noopener noreferrer"
+                            onClick={() => trackPropertyAnalytics("whatsapp_click")}
                             className="flex items-center gap-3 p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                           >
                             <FaWhatsapp className="w-5 h-5 text-green-600 flex-shrink-0" />
@@ -1184,6 +1351,7 @@ const PropertyDetailsPage = () => {
                   {property.owner?.phone ? (
                     <a
                       href={`tel:${property.owner.phone}`}
+                      onClick={() => trackPropertyAnalytics("phone_click")}
                       className="w-full py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
                     >
                       <Phone className="w-5 h-5" />
@@ -1213,23 +1381,33 @@ const PropertyDetailsPage = () => {
                       <span>{property.contactClickCount} {property.contactClickCount === 1 ? 'person has' : 'people have'} already contacted</span>
                     </div>
                   )}
-                  <button 
-                    onClick={handleViewDetails}
-                    disabled={isLoadingDetails}
-                    className="w-[90%] py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
-                  >
-                    {isLoadingDetails ? (
-                      <span className="flex items-center gap-2">
-                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                        </svg>
-                        Loading...
-                      </span>
-                    ) : (
-                      "View Contact"
-                    )}
-                  </button>
+                  <div className="w-[90%] flex flex-col gap-2">
+                    <button 
+                      onClick={handleViewDetails}
+                      disabled={isLoadingDetails}
+                      className="w-full py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+                    >
+                      {isLoadingDetails ? (
+                        <span className="flex items-center gap-2">
+                          <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                          </svg>
+                          Loading...
+                        </span>
+                      ) : (
+                        "View Contact"
+                      )}
+                    </button>
+
+                    <button
+                      onClick={handleRequestLiveChat}
+                      className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 shadow-md shadow-indigo-100"
+                    >
+                      <MessageSquare className="w-5 h-5" />
+                      <span>{existingConv ? "View Live Chat" : "Request Live Chat"}</span>
+                    </button>
+                  </div>
                 </div>
               )}
 
@@ -1477,6 +1655,14 @@ const PropertyDetailsPage = () => {
           </div>
         </div>
       )}
+
+      {/* Real-time Chat Modal */}
+      <ChatModal
+        conversationId={selectedConvId}
+        isOpen={isChatModalOpen}
+        onClose={() => setIsChatModalOpen(false)}
+        currentUser={currentUser}
+      />
     </div>
   );
 };

@@ -5,6 +5,7 @@ import { Edit, Trash2, Home, MapPin, Loader2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Navbar from "../COMMON/Navbar";
 import Footer from "../COMMON/Footer";
+import DashboardLayout from "../dashboard/DashboardLayout";
 import { toast } from "react-hot-toast";
 import confetti from "canvas-confetti";
 
@@ -35,6 +36,20 @@ export default function MyPropertiesPage() {
   const [boostPlan, setBoostPlan] = useState("7days");
   const [boostPlans, setBoostPlans] = useState([]);
   const [boosting, setBoosting] = useState(false);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("userData");
+      if (stored) {
+        const u = JSON.parse(stored);
+        if (u.role === "user") {
+          toast.error("Normal users do not have access to My Properties");
+          router.replace("/dashboard");
+          return;
+        }
+      }
+    } catch (e) {}
+  }, [router]);
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -255,17 +270,17 @@ export default function MyPropertiesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen pt-24 pb-12 flex items-center justify-center bg-gray-50">
-        <Loader2 className="w-8 h-8 animate-spin text-red-600" />
-      </div>
+      <DashboardLayout>
+        <div className="min-h-[400px] flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-[#0d56f6]" />
+        </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <>
-      <Navbar />
-      <div className="min-h-screen bg-gray-50 pt-24 mt-12 py-12">
-        <div className="max-w-7xl mx-auto px-8">
+    <DashboardLayout>
+      <div className="space-y-6">
           <div className="flex justify-between items-center mb-8">
             <div>
               <h1 className="text-3xl font-bold text-gray-800">My Properties</h1>
@@ -374,9 +389,8 @@ export default function MyPropertiesPage() {
             </div>
           )}
         </div>
-      </div>
 
-      {openBoostModal && selectedProperty && (
+        {openBoostModal && selectedProperty && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fadeIn">
           <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 relative border border-gray-100">
             <button
@@ -432,8 +446,6 @@ export default function MyPropertiesPage() {
           </div>
         </div>
       )}
-
-      <Footer />
-    </>
+    </DashboardLayout>
   );
 }

@@ -1,9 +1,23 @@
 "use client";
-import React, { useState } from 'react';
-import { Eye, EyeOff, Home, Mail, Lock, User, Phone, AlertCircle, CheckCircle } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { toast } from 'react-hot-toast';
-
+import React, { useState } from "react";
+import {
+  Eye,
+  EyeOff,
+  Home,
+  Mail,
+  Lock,
+  User,
+  Phone,
+  AlertCircle,
+  CheckCircle,
+  Building2,
+  Briefcase,
+  UserCheck,
+  ArrowRight,
+  ShieldCheck,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
 
 export default function AuthPage() {
   const router = useRouter();
@@ -11,6 +25,10 @@ export default function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+
+  // Selected Role for Registration (Default: 'user')
+  const [selectedRole, setSelectedRole] = useState("user");
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -19,12 +37,48 @@ export default function AuthPage() {
     confirmPassword: "",
   });
 
-
   const API_BASE_URL =
     (process.env.NEXT_PUBLIC_APP_DATABASE_URL || "http://localhost:5000") +
     "/api/auth";
-  console.log("API_BASE_URL (LoginSignComp):", API_BASE_URL);
 
+  const rolesConfig = [
+    {
+      id: "user",
+      title: "Normal User",
+      subtitle: "Buy & View Properties",
+      icon: User,
+      color: "from-blue-500 to-indigo-600",
+      badgeBg: "bg-blue-50 text-blue-700 border-blue-200",
+      description: "Search homes, save wishlists, contact sellers directly.",
+    },
+    {
+      id: "owner",
+      title: "Property Owner",
+      subtitle: "Buy & Sell Home",
+      icon: Home,
+      color: "from-emerald-500 to-teal-600",
+      badgeBg: "bg-emerald-50 text-emerald-700 border-emerald-200",
+      description: "List properties directly, manage leads & edit profile.",
+    },
+    {
+      id: "builder",
+      title: "Builder / Developer",
+      subtitle: "Projects & Commercial",
+      icon: Building2,
+      color: "from-purple-500 to-pink-600",
+      badgeBg: "bg-purple-50 text-purple-700 border-purple-200",
+      description: "Showcase housing projects, RERA details & get verified.",
+    },
+    {
+      id: "dealer",
+      title: "Dealer / Agent",
+      subtitle: "Agent & Broker Services",
+      icon: Briefcase,
+      color: "from-amber-500 to-orange-600",
+      badgeBg: "bg-amber-50 text-amber-700 border-amber-200",
+      description: "Manage client portfolios, post listings & request leads.",
+    },
+  ];
 
 
   const handleChange = (e) => {
@@ -44,7 +98,7 @@ export default function AuthPage() {
 
     if (!isLogin) {
       if (!formData.name || !formData.phone) {
-        toast.error("All fields are required");
+        toast.error("All fields are required for Sign Up");
         setMessage({ type: "error", text: "All fields are required" });
         return false;
       }
@@ -70,7 +124,6 @@ export default function AuthPage() {
       setLoading(true);
       setMessage({ type: "", text: "" });
 
-      console.log("Attempting register to:", `${API_BASE_URL}/register`);
       const response = await fetch(`${API_BASE_URL}/register`, {
         method: "POST",
         headers: {
@@ -81,54 +134,37 @@ export default function AuthPage() {
           email: formData.email,
           phone: formData.phone,
           password: formData.password,
+          role: selectedRole,
         }),
       });
 
-      const text = await response.text();
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch (e) {
-        data = { success: false, message: text || response.statusText };
-      }
+      const data = await response.json();
 
-      if (!response.ok) {
-        console.error("Registration failed:", response.status, data);
-        toast.error(data.message || `Request failed: ${response.status}`);
-        setMessage({
-          type: "error",
-          text: data.message || `Request failed: ${response.status}`,
-        });
-        return;
-      }
-
-      if (data.success) {
-        toast.success("Registration successful! Please login.");
-        setMessage({
-          type: "success",
-          text: data.message || "Registration successful! Please login.",
-        });
-        // Clear form and switch to login after 2 seconds
-        setTimeout(() => {
-          setFormData({
-            name: "",
-            email: formData.email, // Keep email for login
-            phone: "",
-            password: "",
-            confirmPassword: "",
-          });
-          setIsLogin(true);
-          setMessage({ type: "", text: "" });
-        }, 2000);
-      } else {
+      if (!response.ok || !data.success) {
         toast.error(data.message || "Registration failed");
         setMessage({
           type: "error",
           text: data.message || "Registration failed",
         });
+        return;
       }
+
+      toast.success(
+        selectedRole === "builder" || selectedRole === "dealer"
+          ? "Account registered! Pending admin verification."
+          : "Registration successful! Please login."
+      );
+      setMessage({
+        type: "success",
+        text: data.message || "Registration successful! Please login.",
+      });
+
+      setTimeout(() => {
+        setIsLogin(true);
+        setMessage({ type: "", text: "" });
+      }, 1500);
     } catch (error) {
-      console.error("Registration/network error:", error);
+      console.error("Registration error:", error);
       toast.error("Network error. Please try again.");
       setMessage({
         type: "error",
@@ -144,7 +180,6 @@ export default function AuthPage() {
       setLoading(true);
       setMessage({ type: "", text: "" });
 
-      console.log("Attempting login to:", `${API_BASE_URL}/login`);
       const response = await fetch(`${API_BASE_URL}/login`, {
         method: "POST",
         headers: {
@@ -156,45 +191,42 @@ export default function AuthPage() {
         }),
       });
 
-      const text = await response.text();
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch (e) {
-        data = { success: false, message: text || response.statusText };
-      }
+      const data = await response.json();
 
-      if (!response.ok) {
-        // Response HTTP error (4xx/5xx) — show server message if available
-        console.error("Login failed:", response.status, data);
-        toast.error(data.message || `Request failed: ${response.status}`);
-        setMessage({
-          type: "error",
-          text: data.message || `Request failed: ${response.status}`,
-        });
+      if (!response.ok || !data.success || !data.data?.token) {
+        toast.error(data.message || "Login failed");
+        setMessage({ type: "error", text: data.message || "Login failed" });
         return;
       }
 
-      if (data.success && data.data?.token) {
-        toast.success("Login successful!");
-        setMessage({
-          type: "success",
-          text: data.message || "Login successful!",
-        });
-        // Store token in localStorage
-        localStorage.setItem("authToken", data.data.token);
-        localStorage.setItem("userData", JSON.stringify(data.data.user));
-        // Redirect to dashboard or home page after 1.5 seconds
-        setTimeout(() => {
-          window.location.href = "/"; // Change this to your dashboard route
-        }, 1500);
-      } else {
-        toast.error(data.message || "Login failed");
-        setMessage({ type: "error", text: data.message || "Login failed" });
-      }
+      toast.success("Login successful!");
+      setMessage({
+        type: "success",
+        text: data.message || "Login successful!",
+      });
+
+      const loggedUser = data.data.user;
+      localStorage.setItem("authToken", data.data.token);
+      localStorage.setItem("userData", JSON.stringify(loggedUser));
+
+      // Dispatch storage event so navbar updates
+      window.dispatchEvent(new Event("storage"));
+
+      setTimeout(() => {
+        if (loggedUser.role === "admin") {
+          window.location.href = "/admin";
+        } else if (loggedUser.role === "owner") {
+          window.location.href = "/dashboard/owner";
+        } else if (loggedUser.role === "builder") {
+          window.location.href = "/dashboard/builder";
+        } else if (loggedUser.role === "dealer") {
+          window.location.href = "/dashboard/dealer";
+        } else {
+          window.location.href = "/";
+        }
+      }, 1000);
     } catch (error) {
-      // Network or parsing error
-      console.error("Network/login error:", error);
+      console.error("Login error:", error);
       toast.error("Network error. Please try again.");
       setMessage({
         type: "error",
@@ -205,7 +237,8 @@ export default function AuthPage() {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (e) => {
+    if (e) e.preventDefault();
     if (!validateForm()) return;
 
     if (isLogin) {
@@ -215,328 +248,325 @@ export default function AuthPage() {
     }
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      handleSubmit();
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-6xl bg-white rounded-2xl shadow-2xl overflow-hidden grid md:grid-cols-2">
-        {/* Left Side - Branding */}
-        <div className="bg-gradient-to-br from-green-600 gap-[20px] to-green-800 p-12  order-1 text-white flex flex-col justify-around relative overflow-hidden">
-          <button
-            className="bg-[#f3bdf3] text-black p-2 cursor-pointer"
-            onClick={() => router.back()}
-          >
-            Back
-          </button>
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mr-32 -mt-32"></div>
-          <div className="absolute bottom-0 left-0 w-96 h-96 bg-white opacity-5 rounded-full -ml-48 -mb-48"></div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 flex flex-col justify-center items-center p-4 sm:p-6 md:p-10 relative overflow-hidden">
+      
+      {/* Background Decorative Blur Orbs */}
+      <div className="absolute top-10 left-10 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute bottom-10 right-10 w-96 h-96 bg-pink-600/20 rounded-full blur-3xl pointer-events-none"></div>
 
-          <div className="relative z-10">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="bg-white p-2 rounded-lg">
-                <Home className="w-8 h-8 text-green-600" />
+      {/* Main Container */}
+      <div className="w-full max-w-5xl bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-white/20 grid lg:grid-cols-12 relative z-10">
+        
+        {/* Left Side Banner (5 cols) */}
+        <div className="lg:col-span-5 bg-gradient-to-br from-[#8c4bdc] via-[#7b3ac5] to-[#c04b7e] p-8 md:p-10 text-white flex flex-col justify-between relative overflow-hidden">
+          <button
+            onClick={() => router.back()}
+            className="self-start bg-white/10 hover:bg-white/20 text-white text-xs font-semibold px-4 py-2 rounded-full transition backdrop-blur-md flex items-center gap-2 cursor-pointer mb-6"
+          >
+            ← Back to Site
+          </button>
+
+          <div className="my-auto space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="bg-white/20 backdrop-blur-md p-3 rounded-2xl border border-white/30 shadow-lg">
+                <Home className="w-8 h-8 text-white" />
               </div>
-              <h1 className="text-3xl font-bold">18Homes</h1>
+              <span className="text-3xl font-extrabold tracking-tight">18Homes</span>
             </div>
 
-            <div className="space-y-4">
-              <h2 className="text-4xl font-bold leading-tight">
-                Your Dream
-                <br />
-                Home is Here
-              </h2>
-              <p className="text-green-100 text-lg">
-                Ghaziabad | Noida Special
+            <div className="space-y-3">
+              <h1 className="text-3xl sm:text-4xl font-bold leading-tight">
+                Find & Manage <br />
+                <span className="text-pink-200">Your Perfect Property</span>
+              </h1>
+              <p className="text-purple-100 text-sm sm:text-base leading-relaxed">
+                Delhi NCR & Noida's premier verified real estate portal for Buyers, Owners, Builders, & Agents.
               </p>
-              <div className="flex gap-2 mt-6">
-                <div className="bg-black bg-opacity-20 backdrop-blur-sm px-4 py-2 rounded-lg">
-                  <p className="text-sm">Rent / Buy / Sell</p>
-                </div>
-                <div className="bg-black bg-opacity-20 backdrop-blur-sm px-4 py-2 rounded-lg">
-                  <p className="text-sm">Without Broker</p>
-                </div>
+            </div>
+
+            {/* Features List */}
+            <div className="space-y-3 pt-4">
+              <div className="flex items-center gap-3 text-sm bg-white/10 backdrop-blur-sm p-3 rounded-xl border border-white/10">
+                <ShieldCheck className="w-5 h-5 text-emerald-300 flex-shrink-0" />
+                <span>Verified Builder & Dealer Accounts</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm bg-white/10 backdrop-blur-sm p-3 rounded-xl border border-white/10">
+                <UserCheck className="w-5 h-5 text-purple-200 flex-shrink-0" />
+                <span>Role-Based Dashboards & Access</span>
               </div>
             </div>
           </div>
 
-          <div className="relative z-10">
-            <div
-              className="backdrop-blur-sm rounded-xl p-6 border border-white border-opacity-20"
-              style={{
-                backgroundImage: `
-      linear-gradient(
-        rgba(0,0,0,0.6),
-        rgba(0,0,0,0.6)
-      ),
-      url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200')
-    `,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                backgroundRepeat: "no-repeat",
-              }}
-            >
-              <p className="text-sm mb-2 text-green-100">
-                What Our Clients Say
-              </p>
-              <p className="text-white italic">
-                "18Homes helped us a lot in finding our dream home. It was very easy to talk directly to the landlord without a broker."
-              </p>
-              <p className="text-green-200 mt-3 font-semibold">Ravi Sharma</p>
-            </div>
+          <div className="mt-8 pt-6 border-t border-white/20 text-xs text-purple-200 flex items-center justify-between">
+            <span>© 2026 18Homes.in</span>
+            <span>Trusted Real Estate Portal</span>
           </div>
         </div>
 
-        {/* Right Side - Form */}
-        <div className="p-12 flex flex-col justify-center">
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-gray-800 mb-2">
-              {isLogin ? "Welcome Back!" : "Create Account"}
-            </h2>
-            <p className="text-gray-600">
-              {isLogin ? "Login to your account" : "Create a new account"}
-            </p>
-          </div>
-
-          {/* Alert Messages */}
-          {message.text && (
-            <div
-              className={`mb-6 p-4 rounded-lg flex items-start gap-3 ${
-                message.type === "success"
-                  ? "bg-green-50 border border-green-200"
-                  : "bg-red-50 border border-red-200"
-              }`}
-            >
-              {message.type === "success" ? (
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-              ) : (
-                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-              )}
-              <p
-                className={`text-sm ${
-                  message.type === "success" ? "text-green-800" : "text-red-800"
-                }`}
-              >
-                {message.text}
-              </p>
-            </div>
-          )}
-
-          <div className="space-y-5">
-            {!isLogin && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Full Name <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Enter your name"
-                    className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
-                    disabled={loading}
-                  />
-                </div>
-              </div>
-            )}
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  onKeyPress={handleKeyPress}
-                  placeholder="example@email.com"
-                  className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
-                  disabled={loading}
-                />
-              </div>
-            </div>
-
-            {!isLogin && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Mobile Number <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    onKeyPress={handleKeyPress}
-                    placeholder="+91 98765 43210"
-                    className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
-                    disabled={loading}
-                  />
-                </div>
-              </div>
-            )}
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Password <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  onKeyPress={handleKeyPress}
-                  placeholder="••••••••"
-                  className="w-full pl-11 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
-                  disabled={loading}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  disabled={loading}
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {!isLogin && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Confirm Password <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    onKeyPress={handleKeyPress}
-                    placeholder="••••••••"
-                    className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
-                    disabled={loading}
-                  />
-                </div>
-              </div>
-            )}
-
-            {isLogin && (
-              <div className="flex items-center justify-between">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
-                    disabled={loading}
-                  />
-                  <span className="ml-2 text-sm text-gray-600">
-                    Remember me
-                  </span>
-                </label>
-                <button
-                  className="text-sm text-green-600 hover:text-green-700 font-medium"
-                  // disabled={loading}
-                  onClick={() => router.push("/forgot-password")}
-                >
-                  Forgot Password?
-                </button>
-              </div>
-            )}
-
-            <button
-              onClick={handleSubmit}
-              disabled={loading}
-              className={`w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-3 rounded-lg font-semibold transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 ${
-                loading
-                  ? "opacity-70 cursor-not-allowed"
-                  : "hover:from-green-700 hover:to-green-800"
-              }`}
-            >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="none"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  {isLogin ? "Logging in..." : "Signing up..."}
-                </span>
-              ) : isLogin ? (
-                "Login"
-              ) : (
-                "Sign Up"
-              )}
-            </button>
-          </div>
-
-          <div className="mt-6 text-center">
-            <p className="text-gray-600">
-              {isLogin ? "Don't have an account?" : "Already have an account?"}
+        {/* Right Side Form (7 cols) */}
+        <div className="lg:col-span-7 p-6 sm:p-8 md:p-10 flex flex-col justify-between bg-white">
+          
+          <div>
+            {/* Login / Signup Toggle Tabs */}
+            <div className="flex bg-slate-100 p-1.5 rounded-2xl mb-8 border border-slate-200">
               <button
+                type="button"
                 onClick={() => {
-                  setIsLogin(!isLogin);
-                  setFormData({
-                    name: "",
-                    email: "",
-                    phone: "",
-                    password: "",
-                    confirmPassword: "",
-                  });
+                  setIsLogin(true);
                   setMessage({ type: "", text: "" });
                 }}
-                className="ml-2 text-green-600 hover:text-green-700 font-semibold"
-                disabled={loading}
+                className={`flex-1 py-3 text-sm font-bold rounded-xl transition duration-200 cursor-pointer ${
+                  isLogin
+                    ? "bg-white text-[#8c4bdc] shadow-md"
+                    : "text-slate-500 hover:text-slate-800"
+                }`}
               >
-                {isLogin ? "Sign Up" : "Login"}
+                Sign In
               </button>
-            </p>
-          </div>
-
-          {/* <div className="mt-8 pt-6 border-t border-gray-200">
-            <div className="flex items-center justify-center gap-4">
-              <button 
-                className="flex items-center gap-2 px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-                disabled={loading}
+              <button
+                type="button"
+                onClick={() => {
+                  setIsLogin(false);
+                  setMessage({ type: "", text: "" });
+                }}
+                className={`flex-1 py-3 text-sm font-bold rounded-xl transition duration-200 cursor-pointer ${
+                  !isLogin
+                    ? "bg-[#8c4bdc] text-white shadow-md"
+                    : "text-slate-500 hover:text-slate-800"
+                }`}
               >
-                <svg className="w-5 h-5" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                </svg>
-                <span className="text-sm font-medium">Google</span>
+                Create Account
               </button>
             </div>
-          </div> */}
+
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-slate-900">
+                {isLogin ? "Welcome Back!" : "Register on 18Homes"}
+              </h2>
+              <p className="text-sm text-slate-500 mt-1">
+                {isLogin
+                  ? "Enter your credentials to access your account dashboard."
+                  : "Select your role and create a new account."}
+              </p>
+            </div>
+
+            {/* Alert Message Banner */}
+            {message.text && (
+              <div
+                className={`mb-6 p-4 rounded-xl flex items-start gap-3 border text-sm ${
+                  message.type === "success"
+                    ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                    : "bg-rose-50 border-rose-200 text-rose-800"
+                }`}
+              >
+                {message.type === "success" ? (
+                  <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                ) : (
+                  <AlertCircle className="w-5 h-5 text-rose-600 flex-shrink-0 mt-0.5" />
+                )}
+                <span>{message.text}</span>
+              </div>
+            )}
+
+            {/* ROLE SELECTION GRID (Visible on Sign Up) */}
+            {!isLogin && (
+              <div className="mb-6">
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-3">
+                  Select Your Account Role <span className="text-rose-500">*</span>
+                </label>
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  {rolesConfig.map((r) => {
+                    const IconComp = r.icon;
+                    const isSelected = selectedRole === r.id;
+                    return (
+                      <div
+                        key={r.id}
+                        onClick={() => setSelectedRole(r.id)}
+                        className={`p-3.5 rounded-2xl border-2 transition duration-200 cursor-pointer flex flex-col justify-between ${
+                          isSelected
+                            ? "border-[#8c4bdc] bg-purple-50/50 shadow-md ring-2 ring-[#8c4bdc]/20"
+                            : "border-slate-200 hover:border-slate-300 bg-slate-50/50"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div
+                            className={`w-9 h-9 rounded-xl flex items-center justify-center text-white bg-gradient-to-br ${r.color}`}
+                          >
+                            <IconComp className="w-5 h-5" />
+                          </div>
+                          {isSelected && (
+                            <CheckCircle className="w-5 h-5 text-[#8c4bdc]" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-bold text-slate-900 text-sm">
+                            {r.title}
+                          </p>
+                          <p className="text-[11px] text-slate-500 line-clamp-1">
+                            {r.subtitle}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* FORM INPUTS */}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {!isLogin && (
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    Full Name <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      placeholder="e.g. Rahul Sharma"
+                      className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:bg-white focus:ring-2 focus:ring-[#8c4bdc]/20 focus:border-[#8c4bdc] outline-none transition"
+                      disabled={loading}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Email Address <span className="text-rose-500">*</span>
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="name@example.com"
+                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:bg-white focus:ring-2 focus:ring-[#8c4bdc]/20 focus:border-[#8c4bdc] outline-none transition"
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+
+              {!isLogin && (
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    Mobile Number <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      placeholder="9876543210"
+                      className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:bg-white focus:ring-2 focus:ring-[#8c4bdc]/20 focus:border-[#8c4bdc] outline-none transition"
+                      disabled={loading}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Password <span className="text-rose-500">*</span>
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="••••••••"
+                    className="w-full pl-10 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:bg-white focus:ring-2 focus:ring-[#8c4bdc]/20 focus:border-[#8c4bdc] outline-none transition"
+                    disabled={loading}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+                    disabled={loading}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {!isLogin && (
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    Confirm Password <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      placeholder="••••••••"
+                      className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:bg-white focus:ring-2 focus:ring-[#8c4bdc]/20 focus:border-[#8c4bdc] outline-none transition"
+                      disabled={loading}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {isLogin && (
+                <div className="flex items-center justify-between pt-1">
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="w-4 h-4 text-[#8c4bdc] border-slate-300 rounded focus:ring-[#8c4bdc]"
+                    />
+                    <span className="ml-2 text-xs text-slate-600">
+                      Remember me
+                    </span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => router.push("/forgot-password")}
+                    className="text-xs text-[#8c4bdc] hover:underline font-semibold"
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full mt-4 bg-gradient-to-r from-[#8c4bdc] to-[#c04b7e] hover:from-[#7b3ac5] hover:to-[#ae3a6d] text-white py-3.5 rounded-xl font-bold text-sm transition shadow-lg hover:shadow-xl transform active:scale-[0.99] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+              >
+                {loading ? (
+                  <span>Processing...</span>
+                ) : isLogin ? (
+                  <>
+                    <span>Sign In to Account</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                ) : (
+                  <>
+                    <span>Complete Sign Up ({rolesConfig.find(r => r.id === selectedRole)?.title})</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+
         </div>
       </div>
     </div>

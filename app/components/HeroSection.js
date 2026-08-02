@@ -34,7 +34,7 @@ export default function HeroSlider({ data }) {
   ];
 
   return (
-    <section className="relative max-w-[1720px] mx-auto w-full h-[90vh]">
+    <section className="relative max-w-[1720px] mx-auto w-full h-[90vh]" suppressHydrationWarning>
       <Swiper
         modules={[Autoplay, Pagination, EffectFade]}
         effect="fade"
@@ -60,22 +60,6 @@ export default function HeroSlider({ data }) {
           </SwiperSlide>
         ))}
       </Swiper>
-
-      <style jsx global>{`
-        /* DOTS CUSTOM STYLE EXACT SAME AS IMAGE */
-        .swiper-pagination-bullet {
-          width: 15px;
-          height: 15px;
-          border: 2px solid white;
-          background: transparent;
-          opacity: 1;
-        }
-
-        .swiper-pagination-bullet-active {
-          background: #00e6ff !important;
-          border-color: #00e6ff !important;
-        }
-      `}</style>
     </section>
   );
 }

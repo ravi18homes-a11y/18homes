@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Heart, MapPin, Loader2, Home } from "lucide-react";
 import Navbar from "../COMMON/Navbar";
 import Footer from "../COMMON/Footer";
+import DashboardLayout from "../dashboard/DashboardLayout";
 import { toast } from "react-hot-toast";
 
 const DEFAULT_IMAGE = "https://res.cloudinary.com/domwj0m7s/image/upload/v1785084052/ChatGPT_Image_Jul_26_2026_10_10_07_PM_uuqc8u.png";
@@ -122,21 +123,17 @@ export default function WishlistPage() {
 
   if (loading) {
     return (
-      <>
-        <Navbar />
-        <div className="min-h-screen pt-24 pb-12 flex items-center justify-center bg-gray-50">
-          <Loader2 className="w-8 h-8 animate-spin text-red-600" />
+      <DashboardLayout>
+        <div className="min-h-[400px] flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-[#0d56f6]" />
         </div>
-        <Footer />
-      </>
+      </DashboardLayout>
     );
   }
 
   return (
-    <>
-      <Navbar />
-      <div className="min-h-screen bg-gray-50 pt-24 mt-12 py-12">
-        <div className="max-w-7xl mx-auto px-8">
+    <DashboardLayout>
+      <div className="space-y-6">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-800">My Wishlist</h1>
             <p className="text-gray-600 mt-2">View and manage properties you have saved</p>
@@ -235,9 +232,7 @@ export default function WishlistPage() {
               })}
             </div>
           )}
-        </div>
       </div>
-      <Footer />
-    </>
+    </DashboardLayout>
   );
 }
