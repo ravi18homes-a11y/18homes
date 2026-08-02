@@ -12,12 +12,12 @@ export const metadata = {
   description: "Leading Real Estate Company in NCR, Offering Prime Residential and Commercial Properties NCR Region.",
   icons: {
     icon: [
-      { url: "https://res.cloudinary.com/domwj0m7s/image/upload/v1785082545/18homes_logo_duhekk.jpg" },
+      { url: "https://res.cloudinary.com/dxlykgx6w/image/upload/v1785662832/18homes_log_best_real_estate_e6spg7.jpg" },
       { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
     ],
-    shortcut: ["https://res.cloudinary.com/domwj0m7s/image/upload/v1785082545/18homes_logo_duhekk.jpg"],
+    shortcut: ["https://res.cloudinary.com/dxlykgx6w/image/upload/v1785662832/18homes_log_best_real_estate_e6spg7.jpg"],
     apple: [
-      { url: "https://res.cloudinary.com/domwj0m7s/image/upload/v1785082545/18homes_logo_duhekk.jpg", sizes: "180x180", type: "image/jpeg" },
+      { url: "https://res.cloudinary.com/dxlykgx6w/image/upload/v1785662832/18homes_log_best_real_estate_e6spg7.jpg", sizes: "180x180", type: "image/jpeg" },
     ],
   },
   manifest: "/manifest.webmanifest",
@@ -38,8 +38,8 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        <link rel="icon" href="https://res.cloudinary.com/domwj0m7s/image/upload/v1785082545/18homes_logo_duhekk.jpg" />
-        <link rel="apple-touch-icon" href="https://res.cloudinary.com/domwj0m7s/image/upload/v1785082545/18homes_logo_duhekk.jpg" />
+        <link rel="icon" href="https://res.cloudinary.com/dxlykgx6w/image/upload/v1785662832/18homes_log_best_real_estate_e6spg7.jpg" />
+        <link rel="apple-touch-icon" href="https://res.cloudinary.com/dxlykgx6w/image/upload/v1785662832/18homes_log_best_real_estate_e6spg7.jpg" />
       </head>
       <body className={poppins.className}>
         {/* Early PWA Install Prompt Capture */}
