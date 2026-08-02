@@ -6,6 +6,7 @@ import {
   FaInstagram,
   FaYoutube,
 } from "react-icons/fa";
+import { FcGoogle } from "react-icons/fc";
 import { IoMdCall, IoMdMail } from "react-icons/io";
 
 export default function Footer() {
@@ -29,6 +30,7 @@ export default function Footer() {
   const copyright = data?.copyright || "Copyright © 2025 18Homes All Rights Reserved. Design by RS & PS";
   const facebook = data?.facebook || "https://www.facebook.com/share/1AqkBeyC4R/";
   const instagram = data?.instagram || "https://www.instagram.com/18homes?igsh=amNlcWlvOTljY2E0";
+  const googleReview = data?.googleReview || "https://www.google.com/search?sca_esv=5e05885409c385ba&rlz=1C1CHZN_enIN1135IN1135&sxsrf=APpeQntK5jgthH5QlQtfTGlQPfO5AmfGWw:1785259265728&si=APenkKm7iecQ4G6P-TsbSMFKIQtv3EFIqRAFw-i8uEbk55Z-_3xXeJ6ftElQgKGhBtmz7lZUMu6N4dfV-C0K5Sq10tHonnvnI6hOtnfcBOQi7ec4Ai9-EA8r8Cd8WO7PTZi9fVuag2zP&q=18homes+Reviews&sa=X&ved=2ahUKEwjUjvaC8fWVAxWZQ2cHHe24EpQQ0bkNegQIGBAI&biw=1536&bih=730&dpr=1.25#lrd=0x390cf387332bc0ed:0xac8e442c0587a8f7,3,,,,";
   const phone2 = data?.phone2 || "";
   const phone3 = data?.phone3 || "";
   const justdial = data?.justdial || "";
@@ -171,6 +173,11 @@ export default function Footer() {
             {instagram && (
               <Link href={instagram} className="text-[red]" target="_blank">
                 <FaInstagram />
+              </Link>
+            )}
+            {googleReview && (
+              <Link href={googleReview} target="_blank" title="Google Reviews">
+                <FcGoogle />
               </Link>
             )}
             {youtube && (

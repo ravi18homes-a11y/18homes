@@ -72,6 +72,7 @@ const FooterSchema = new mongoose.Schema(
     copyright: { type: String, default: "" },
     facebook: { type: String, default: "" },
     instagram: { type: String, default: "" },
+    googleReview: { type: String, default: "" },
     justdial: { type: String, default: "" },
     youtube: { type: String, default: "" },
     services: { type: [mongoose.Schema.Types.Mixed], default: [] },
