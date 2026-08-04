@@ -27,6 +27,7 @@ export default function MyPropertiesPage() {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
+  const [user, setUser] = useState(null);
   const router = useRouter();
 
   const databaseUrl = process.env.NEXT_PUBLIC_APP_DATABASE_URL || "http://localhost:5000";
@@ -42,6 +43,7 @@ export default function MyPropertiesPage() {
       const stored = localStorage.getItem("userData");
       if (stored) {
         const u = JSON.parse(stored);
+        setUser(u);
         if (u.role === "user") {
           toast.error("Normal users do not have access to My Properties");
           router.replace("/dashboard");
@@ -50,6 +52,21 @@ export default function MyPropertiesPage() {
       }
     } catch (e) {}
   }, [router]);
+
+  const isEditAllowed = (property) => {
+    if (!user) return false;
+    if (user.role === "admin" || user.role === "super_admin") return true;
+
+    // Default edit window is 1 day (Free plan)
+    const editDays = user?.planRules?.editDays ?? 1;
+    if (editDays === -1) return true; // Unlimited edit window
+
+    const createdAt = new Date(property.createdAt || property.createdAtDate || Date.now());
+    const limitMs = editDays * 24 * 60 * 60 * 1000;
+    const expiryTime = createdAt.getTime() + limitMs;
+
+    return Date.now() < expiryTime;
+  };
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -364,13 +381,26 @@ export default function MyPropertiesPage() {
 
                     <div className="mt-auto pt-4 border-t border-gray-100 flex flex-col gap-2">
                       <div className="flex gap-3">
-                        <Link
-                          href={`/edit-property/${property._id || property.id}`}
-                          className="flex-1 flex items-center justify-center gap-2 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors font-medium text-sm"
-                        >
-                          <Edit className="w-4 h-4" />
-                          Edit
-                        </Link>
+                        {isEditAllowed(property) ? (
+                          <Link
+                            href={`/edit-property/${property._id || property.id}`}
+                            className="flex-1 flex items-center justify-center gap-2 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors font-medium text-sm"
+                          >
+                            <Edit className="w-4 h-4" />
+                            Edit
+                          </Link>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              toast.error(`The edit window of ${user?.planRules?.editDays || 1} day(s) has expired for this property. Upgrade your plan to edit.`);
+                            }}
+                            className="flex-1 flex items-center justify-center gap-2 py-2 bg-slate-100 text-slate-400 rounded-lg font-medium text-sm cursor-not-allowed"
+                            title="Edit window expired"
+                          >
+                            <Edit className="w-4 h-4 text-slate-300" />
+                            Edit Expired
+                          </button>
+                        )}
                         <button
                           onClick={() => handleOpenBoostModal(property)}
                           className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg font-medium text-sm transition-all ${property.isBoosted

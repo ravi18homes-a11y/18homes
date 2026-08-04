@@ -20,6 +20,7 @@ import {
   TrendingUp,
   RefreshCw,
   Search,
+  Lock,
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 
@@ -60,8 +61,8 @@ export default function DedicatedAnalyticsPage() {
         const parsed = JSON.parse(u);
         setUser(parsed);
         const role = parsed?.role;
-        if (role && role !== "builder" && role !== "admin" && role !== "super_admin") {
-          toast.error("Access denied. Project Analytics is only available for Builders and Admins.");
+        if (role && role !== "builder" && role !== "dealer" && role !== "admin" && role !== "super_admin") {
+          toast.error("Access denied. Project Analytics is only available for Builders, Dealers, and Admins.");
           router.replace("/dashboard");
           return;
         }
@@ -75,8 +76,8 @@ export default function DedicatedAnalyticsPage() {
           const parsed = JSON.parse(u);
           setUser(parsed);
           const role = parsed?.role;
-          if (role && role !== "builder" && role !== "admin" && role !== "super_admin") {
-            toast.error("Access denied. Project Analytics is only available for Builders and Admins.");
+          if (role && role !== "builder" && role !== "dealer" && role !== "admin" && role !== "super_admin") {
+            toast.error("Access denied. Project Analytics is only available for Builders, Dealers, and Admins.");
             router.replace("/dashboard");
           }
         }
@@ -98,132 +99,66 @@ export default function DedicatedAnalyticsPage() {
 
       const currentBuilderId = String(currentUserObj?.id || currentUserObj?._id || "");
       const currentBuilderEmail = String(currentUserObj?.email || "").toLowerCase();
-      const isAdmin = currentUserObj?.role === "admin" || currentUserObj?.role === "super_admin";
 
-      let apiEvents = [];
-      try {
-        const queryParams = new URLSearchParams();
-        if (currentBuilderId) queryParams.set("builderId", currentBuilderId);
-        if (currentBuilderEmail) queryParams.set("builderEmail", currentBuilderEmail);
+      const queryParams = new URLSearchParams();
+      if (currentBuilderId) queryParams.set("builderId", currentBuilderId);
+      if (currentBuilderEmail) queryParams.set("builderEmail", currentBuilderEmail);
 
-        const res = await fetch(`/api/analytics/builder?${queryParams.toString()}`);
-        if (res.ok) {
-          const json = await res.json();
-          if (json.success && Array.isArray(json.data?.events)) {
-            apiEvents = json.data.events;
-          }
+      const token = localStorage.getItem("authToken");
+      const res = await fetch(`${databaseUrl}/api/properties/analytics/builder?${queryParams.toString()}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data) {
+          const data = json.data;
+          
+          setAnalyticsData({
+            visitorsCount: data.visitorsCount || 0,
+            phoneClickCount: data.phoneClickCount || 0,
+            whatsAppClickCount: data.whatsAppClickCount || 0,
+            propertiesViewsCount: data.propertiesViewsCount || 0,
+            averageTimeMin: data.averageTimeMin || "0 min",
+            mostViewedFlat: data.mostViewedFlat || "N/A",
+            mostInterestedCity: data.mostInterestedCity || "N/A",
+          });
+
+          const ownPropertyEvents = data.events || [];
+
+          const getUniqueUserLogs = (eventList) => {
+            const result = [];
+            const seen = new Set();
+            eventList.forEach((ev) => {
+              const key = (ev.userEmail || ev.userPhone || ev.userName || ev.id || "").toLowerCase();
+              if (key && !seen.has(key)) {
+                seen.add(key);
+                result.push(ev);
+              } else if (!key) {
+                result.push(ev);
+              }
+            });
+            return result;
+          };
+
+          const visitorLogs = getUniqueUserLogs(ownPropertyEvents.filter((e) => e.eventType === "visitor" || e.eventType === "page_view"));
+          const phoneLogs = getUniqueUserLogs(ownPropertyEvents.filter((e) => e.eventType === "phone_click"));
+          const whatsAppLogs = getUniqueUserLogs(ownPropertyEvents.filter((e) => e.eventType === "whatsapp_click"));
+          const contactLogs = getUniqueUserLogs(ownPropertyEvents.filter((e) => e.eventType === "view_contact"));
+
+          const allUniqueUserLogs = getUniqueUserLogs(ownPropertyEvents);
+          setLeadLogs(allUniqueUserLogs);
+          setCategorizedLogs({
+            visitors: visitorLogs,
+            phone: phoneLogs,
+            whatsapp: whatsAppLogs,
+            contact: contactLogs,
+            all: allUniqueUserLogs,
+          });
         }
-      } catch (apiErr) {
-        console.error("API fetch error in analytics page:", apiErr);
       }
-
-      let localEvents = [];
-      const eventsStr = localStorage.getItem("18homes_analytics_events");
-      if (eventsStr) {
-        try { localEvents = JSON.parse(eventsStr); } catch (e) {}
-      }
-
-      const allEvents = Array.isArray(localEvents) ? [...localEvents, ...apiEvents] : apiEvents;
-      const uniqueEventsMap = new Map();
-      allEvents.forEach((ev) => {
-        const key = ev.id || `${ev.eventType}_${ev.timestamp}_${ev.userName}_${ev.propertyId}`;
-        if (!uniqueEventsMap.has(key)) {
-          uniqueEventsMap.set(key, ev);
-        }
-      });
-
-      // Filter events to ONLY include properties owned by THIS builder
-      const ownPropertyEvents = Array.from(uniqueEventsMap.values()).filter((ev) => {
-        if (isAdmin) return true;
-
-        const evBuilderId = String(ev.builderId || "");
-        const evBuilderEmail = String(ev.builderEmail || "").toLowerCase();
-
-        const matchesBuilder = Boolean(
-          (currentBuilderId && evBuilderId === currentBuilderId) ||
-          (currentBuilderEmail && evBuilderEmail === currentBuilderEmail) ||
-          (!evBuilderId || evBuilderId === "builder")
-        );
-
-        return matchesBuilder;
-      });
-
-      // Sort newest first
-      ownPropertyEvents.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
-
-      const getUniqueUserLogs = (eventList) => {
-        const result = [];
-        const seen = new Set();
-        eventList.forEach((ev) => {
-          const key = (ev.userEmail || ev.userPhone || ev.userName || ev.id).toLowerCase();
-          if (!seen.has(key)) {
-            seen.add(key);
-            result.push(ev);
-          }
-        });
-        return result;
-      };
-
-      const visitorLogs = getUniqueUserLogs(ownPropertyEvents.filter((e) => e.eventType === "visitor" || e.eventType === "page_view"));
-      const phoneLogs = getUniqueUserLogs(ownPropertyEvents.filter((e) => e.eventType === "phone_click"));
-      const whatsAppLogs = getUniqueUserLogs(ownPropertyEvents.filter((e) => e.eventType === "whatsapp_click"));
-      const contactLogs = getUniqueUserLogs(ownPropertyEvents.filter((e) => e.eventType === "view_contact"));
-
-      const allUniqueUserLogs = getUniqueUserLogs(ownPropertyEvents);
-      setLeadLogs(allUniqueUserLogs);
-      setCategorizedLogs({
-        visitors: visitorLogs,
-        phone: phoneLogs,
-        whatsapp: whatsAppLogs,
-        contact: contactLogs,
-        all: allUniqueUserLogs,
-      });
-
-      const timeEvents = ownPropertyEvents.filter((e) => e.eventType === "time_spent" && e.durationSec > 0);
-      let avgSec = 0;
-      if (timeEvents.length > 0) {
-        const totalSec = timeEvents.reduce((acc, curr) => acc + (curr.durationSec || 0), 0);
-        avgSec = Math.round(totalSec / timeEvents.length);
-      }
-      const avgMinFormatted = avgSec > 0 ? (avgSec >= 60 ? `${Math.round(avgSec / 60)} min` : `${avgSec} sec`) : "0 min";
-
-      const flatCounts = {};
-      const cityCounts = {};
-      ownPropertyEvents.forEach((e) => {
-        if (e.flatUnit && e.flatUnit !== "N/A") flatCounts[e.flatUnit] = (flatCounts[e.flatUnit] || 0) + 1;
-        if (e.city && e.city !== "N/A") cityCounts[e.city] = (cityCounts[e.city] || 0) + 1;
-      });
-
-      let topFlat = "N/A";
-      let maxFlatCount = 0;
-      Object.entries(flatCounts).forEach(([flat, count]) => {
-        if (count > maxFlatCount) {
-          maxFlatCount = count;
-          topFlat = flat;
-        }
-      });
-
-      let topCity = "N/A";
-      let maxCityCount = 0;
-      Object.entries(cityCounts).forEach(([city, count]) => {
-        if (count > maxCityCount) {
-          maxCityCount = count;
-          topCity = city;
-        }
-      });
-
-      setAnalyticsData({
-        visitorsCount: visitorLogs.length,
-        phoneClickCount: phoneLogs.length,
-        whatsAppClickCount: whatsAppLogs.length,
-        propertiesViewsCount: visitorLogs.length,
-        averageTimeMin: avgMinFormatted,
-        mostViewedFlat: topFlat,
-        mostInterestedCity: topCity,
-      });
-
     } catch (err) {
-      console.error("Error calculating dynamic analytics metrics:", err);
+      console.error("Error calculations in analytics loading:", err);
     } finally {
       if (isInitial) setLoading(false);
     }
@@ -280,7 +215,7 @@ export default function DedicatedAnalyticsPage() {
     return true;
   });
 
-  if (user && user.role !== "builder" && user.role !== "admin" && user.role !== "super_admin") {
+  if (user && user.role !== "builder" && user.role !== "dealer" && user.role !== "admin" && user.role !== "super_admin") {
     return (
       <DashboardLayout>
         <div className="p-12 text-center bg-white rounded-3xl border border-slate-200 shadow-sm max-w-md mx-auto my-12 space-y-4">
@@ -289,7 +224,7 @@ export default function DedicatedAnalyticsPage() {
           </div>
           <h2 className="text-xl font-extrabold text-slate-900">Access Restricted</h2>
           <p className="text-xs text-slate-500">
-            Project Analytics is exclusively reserved for Builder and Admin accounts.
+            Project Analytics is exclusively reserved for Builder, Dealer, and Admin accounts.
           </p>
           <Link
             href="/dashboard"
@@ -301,6 +236,10 @@ export default function DedicatedAnalyticsPage() {
       </DashboardLayout>
     );
   }
+
+  const accessLevel = user?.planRules?.analyticsAccess || 1;
+  const isAdmin = user?.role === "admin" || user?.role === "super_admin";
+  const isFreePlan = !isAdmin && accessLevel < 3;
 
   return (
     <DashboardLayout>
@@ -320,7 +259,7 @@ export default function DedicatedAnalyticsPage() {
                 </span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-                Project Analytics Dashboard
+                Property Analytics Dashboard
               </h1>
               <p className="text-purple-200 text-xs sm:text-sm mt-1">
                 Real-time buyer inquiries, property details views, phone calls & WhatsApp lead logs for your listings.
@@ -337,7 +276,7 @@ export default function DedicatedAnalyticsPage() {
               </button>
 
               <Link
-                href="/dashboard/builder"
+                href={user?.role === "dealer" ? "/dashboard/dealer" : user?.role === "builder" ? "/dashboard/builder" : "/dashboard"}
                 className="bg-white text-slate-900 hover:bg-slate-100 px-5 py-2.5 rounded-2xl font-bold text-xs transition shadow-md flex items-center gap-1.5"
               >
                 <span>Back to Dashboard</span>
@@ -346,169 +285,320 @@ export default function DedicatedAnalyticsPage() {
           </div>
         </div>
 
+        {/* FREE PLAN WARNING BANNER */}
+        {isFreePlan && (
+          <div className="bg-amber-50 border-2 border-amber-300 rounded-3xl p-6 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-amber-100 text-amber-700 rounded-2xl flex items-center justify-center flex-shrink-0">
+                <Lock className="w-6 h-6 text-amber-600" />
+              </div>
+              <div>
+                <h3 className="font-extrabold text-amber-950 text-base">
+                  Analytics & Buyer Inquiries Locked (Free Plan)
+                </h3>
+                <p className="text-xs text-amber-800 mt-0.5">
+                  Upgrade to Gold Plan to unlock 3 analytics features (Total Visitors, Phone Clicks, and WhatsApp Clicks)!
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/membership"
+              className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2.5 rounded-xl font-bold text-xs transition whitespace-nowrap shadow"
+            >
+              Upgrade to Gold
+            </Link>
+          </div>
+        )}
+
         {/* 7 ANALYTICS METRIC CARDS GRID */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
-          
-          {/* Card 1: Visitors Count */}
-          <div
-            onClick={() => setSelectedMetricModal("visitors")}
-            className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-blue-500 transition cursor-pointer group relative overflow-hidden"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Users className="w-6 h-6" />
-              </div>
-              <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full group-hover:bg-blue-600 group-hover:text-white transition">
-                View Logs &rarr;
-              </span>
-            </div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Total Visitors
-            </p>
-            <h3 className="text-3xl font-extrabold text-slate-900 mt-1">
-              {analyticsData.visitorsCount}
-            </h3>
-            <p className="text-[11px] text-slate-400 mt-2 font-medium">
-              Unique users who viewed your property listings
-            </p>
-          </div>
+        {(() => {
+          const canAccessVisitors = isAdmin || accessLevel >= 3;
+          const canAccessPhone = isAdmin || accessLevel >= 3;
+          const canAccessWhatsapp = isAdmin || accessLevel >= 3;
+          const canAccessViews = isAdmin || accessLevel >= 5;
+          const canAccessRetention = isAdmin || accessLevel >= 5;
+          const canAccessTrendingFlat = isAdmin || accessLevel >= 7;
+          const canAccessTrendingCity = isAdmin || accessLevel >= 7;
 
-          {/* Card 2: Phone Click Count */}
-          <div
-            onClick={() => setSelectedMetricModal("phone")}
-            className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-emerald-500 transition cursor-pointer group relative overflow-hidden"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <PhoneCall className="w-6 h-6" />
+          return (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
+              
+              {/* Card 1: Visitors Count */}
+              <div
+                onClick={() => {
+                  if (!canAccessVisitors) {
+                    toast.error("Upgrade your plan to Gold or higher to view analytics!");
+                    return;
+                  }
+                  setSelectedMetricModal("visitors");
+                }}
+                className={`bg-white p-6 rounded-3xl border shadow-sm transition relative overflow-hidden ${
+                  canAccessVisitors
+                    ? "cursor-pointer border-slate-200 hover:shadow-xl hover:border-blue-500 group"
+                    : "border-slate-100 opacity-80"
+                }`}
+              >
+                {!canAccessVisitors && (
+                  <span className="absolute top-3.5 right-3.5 bg-amber-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full flex items-center gap-0.5 uppercase tracking-wider">
+                    <Lock className="w-2.5 h-2.5" /> Gold
+                  </span>
+                )}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Users className="w-6 h-6" />
+                  </div>
+                  {canAccessVisitors && (
+                    <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full group-hover:bg-blue-600 group-hover:text-white transition">
+                      View Logs &rarr;
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Total Visitors
+                </p>
+                <h3 className="text-3xl font-extrabold text-slate-900 mt-1">
+                  {canAccessVisitors ? analyticsData.visitorsCount : "🔒 Locked"}
+                </h3>
+                <p className="text-[11px] text-slate-400 mt-2 font-medium">
+                  Unique users who viewed your property listings
+                </p>
               </div>
-              <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full group-hover:bg-emerald-600 group-hover:text-white transition">
-                View Callers &rarr;
-              </span>
-            </div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Phone Call Clicks
-            </p>
-            <h3 className="text-3xl font-extrabold text-slate-900 mt-1">
-              {analyticsData.phoneClickCount}
-            </h3>
-            <p className="text-[11px] text-slate-400 mt-2 font-medium">
-              Users who clicked to call your phone number
-            </p>
-          </div>
 
-          {/* Card 3: WhatsApp Click Count */}
-          <div
-            onClick={() => setSelectedMetricModal("whatsapp")}
-            className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-green-500 transition cursor-pointer group relative overflow-hidden"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-2xl bg-green-50 text-green-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <FaWhatsapp className="w-6 h-6" />
+              {/* Card 2: Phone Click Count */}
+              <div
+                onClick={() => {
+                  if (!canAccessPhone) {
+                    toast.error("Upgrade your plan to Gold or higher to view phone click analytics!");
+                    return;
+                  }
+                  setSelectedMetricModal("phone");
+                }}
+                className={`bg-white p-6 rounded-3xl border shadow-sm transition relative overflow-hidden ${
+                  canAccessPhone
+                    ? "cursor-pointer border-slate-200 hover:shadow-xl hover:border-emerald-500 group"
+                    : "border-slate-100 opacity-80"
+                }`}
+              >
+                {!canAccessPhone && (
+                  <span className="absolute top-3.5 right-3.5 bg-amber-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full flex items-center gap-0.5 uppercase tracking-wider">
+                    <Lock className="w-2.5 h-2.5" /> Gold
+                  </span>
+                )}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <PhoneCall className="w-6 h-6" />
+                  </div>
+                  {canAccessPhone && (
+                    <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full group-hover:bg-emerald-600 group-hover:text-white transition">
+                      View Callers &rarr;
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Phone Call Clicks
+                </p>
+                <h3 className="text-3xl font-extrabold text-slate-900 mt-1">
+                  {canAccessPhone ? analyticsData.phoneClickCount : "🔒 Locked"}
+                </h3>
+                <p className="text-[11px] text-slate-400 mt-2 font-medium">
+                  Users who clicked to call your phone number
+                </p>
               </div>
-              <span className="text-[10px] font-bold text-green-600 bg-green-50 px-2.5 py-1 rounded-full group-hover:bg-green-600 group-hover:text-white transition">
-                View WhatsApp &rarr;
-              </span>
-            </div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              WhatsApp Chat Clicks
-            </p>
-            <h3 className="text-3xl font-extrabold text-slate-900 mt-1">
-              {analyticsData.whatsAppClickCount}
-            </h3>
-            <p className="text-[11px] text-slate-400 mt-2 font-medium">
-              Buyers who initiated WhatsApp chat inquiry
-            </p>
-          </div>
 
-          {/* Card 4: Properties Views Count */}
-          <div
-            onClick={() => setSelectedMetricModal("visitors")}
-            className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-purple-500 transition cursor-pointer group relative overflow-hidden"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Eye className="w-6 h-6" />
+              {/* Card 3: WhatsApp Click Count */}
+              <div
+                onClick={() => {
+                  if (!canAccessWhatsapp) {
+                    toast.error("Upgrade your plan to Gold or higher to view WhatsApp click analytics!");
+                    return;
+                  }
+                  setSelectedMetricModal("whatsapp");
+                }}
+                className={`bg-white p-6 rounded-3xl border shadow-sm transition relative overflow-hidden ${
+                  canAccessWhatsapp
+                    ? "cursor-pointer border-slate-200 hover:shadow-xl hover:border-green-500 group"
+                    : "border-slate-100 opacity-80"
+                }`}
+              >
+                {!canAccessWhatsapp && (
+                  <span className="absolute top-3.5 right-3.5 bg-amber-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full flex items-center gap-0.5 uppercase tracking-wider">
+                    <Lock className="w-2.5 h-2.5" /> Gold
+                  </span>
+                )}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 rounded-2xl bg-green-50 text-green-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <FaWhatsapp className="w-6 h-6" />
+                  </div>
+                  {canAccessWhatsapp && (
+                    <span className="text-[10px] font-bold text-green-600 bg-green-50 px-2.5 py-1 rounded-full group-hover:bg-green-600 group-hover:text-white transition">
+                      View WhatsApp &rarr;
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  WhatsApp Chat Clicks
+                </p>
+                <h3 className="text-3xl font-extrabold text-slate-900 mt-1">
+                  {canAccessWhatsapp ? analyticsData.whatsAppClickCount : "🔒 Locked"}
+                </h3>
+                <p className="text-[11px] text-slate-400 mt-2 font-medium">
+                  Buyers who initiated WhatsApp chat inquiry
+                </p>
               </div>
-              <span className="text-[10px] font-bold text-purple-600 bg-purple-50 px-2.5 py-1 rounded-full group-hover:bg-purple-600 group-hover:text-white transition">
-                Details &rarr;
-              </span>
-            </div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Property Views
-            </p>
-            <h3 className="text-3xl font-extrabold text-slate-900 mt-1">
-              {analyticsData.propertiesViewsCount}
-            </h3>
-            <p className="text-[11px] text-slate-400 mt-2 font-medium">
-              Total detail page views across your listings
-            </p>
-          </div>
 
-          {/* Card 5: Average Time Spent */}
-          <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
-                <Clock className="w-6 h-6" />
+              {/* Card 4: Properties Views Count */}
+              <div
+                onClick={() => {
+                  if (!canAccessViews) {
+                    toast.error("Upgrade your plan to Platinum or higher to view property views analytics!");
+                    return;
+                  }
+                  setSelectedMetricModal("visitors");
+                }}
+                className={`bg-white p-6 rounded-3xl border shadow-sm transition relative overflow-hidden ${
+                  canAccessViews
+                    ? "cursor-pointer border-slate-200 hover:shadow-xl hover:border-purple-500 group"
+                    : "border-slate-100 opacity-80"
+                }`}
+              >
+                {!canAccessViews && (
+                  <span className="absolute top-3.5 right-3.5 bg-indigo-600 text-white text-[9px] font-black px-2 py-0.5 rounded-full flex items-center gap-0.5 uppercase tracking-wider">
+                    <Lock className="w-2.5 h-2.5" /> Platinum
+                  </span>
+                )}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Eye className="w-6 h-6" />
+                  </div>
+                  {canAccessViews && (
+                    <span className="text-[10px] font-bold text-purple-600 bg-purple-50 px-2.5 py-1 rounded-full group-hover:bg-purple-600 group-hover:text-white transition">
+                      Details &rarr;
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Property Views
+                </p>
+                <h3 className="text-3xl font-extrabold text-slate-900 mt-1">
+                  {canAccessViews ? analyticsData.propertiesViewsCount : "🔒 Locked"}
+                </h3>
+                <p className="text-[11px] text-slate-400 mt-2 font-medium">
+                  Total detail page views across your listings
+                </p>
               </div>
-              <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full">
-                Avg Retention
-              </span>
-            </div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Average Time Spent
-            </p>
-            <h3 className="text-3xl font-extrabold text-slate-900 mt-1">
-              {analyticsData.averageTimeMin}
-            </h3>
-            <p className="text-[11px] text-slate-400 mt-2 font-medium">
-              Average duration buyers stayed on your property pages
-            </p>
-          </div>
 
-          {/* Card 6: Most Viewed Flat */}
-          <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                <Building2 className="w-6 h-6" />
+              {/* Card 5: Average Time Spent */}
+              <div
+                onClick={() => {
+                  if (!canAccessRetention) {
+                    toast.error("Upgrade your plan to Platinum or higher to view retention time analytics!");
+                  }
+                }}
+                className={`bg-white p-6 rounded-3xl border shadow-sm relative overflow-hidden ${
+                  canAccessRetention ? "border-slate-200" : "border-slate-100 opacity-80 cursor-pointer"
+                }`}
+              >
+                {!canAccessRetention && (
+                  <span className="absolute top-3.5 right-3.5 bg-indigo-600 text-white text-[9px] font-black px-2 py-0.5 rounded-full flex items-center gap-0.5 uppercase tracking-wider">
+                    <Lock className="w-2.5 h-2.5" /> Platinum
+                  </span>
+                )}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                    <Clock className="w-6 h-6" />
+                  </div>
+                  <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full">
+                    Avg Retention
+                  </span>
+                </div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Average Time Spent
+                </p>
+                <h3 className="text-3xl font-extrabold text-slate-900 mt-1">
+                  {canAccessRetention ? analyticsData.averageTimeMin : "🔒 Locked"}
+                </h3>
+                <p className="text-[11px] text-slate-400 mt-2 font-medium">
+                  Average duration buyers stayed on your property pages
+                </p>
               </div>
-              <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full">
-                Top Trending Flat
-              </span>
-            </div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Most Viewed Flat / Unit
-            </p>
-            <h3 className="text-base font-extrabold text-slate-900 mt-1 truncate" title={analyticsData.mostViewedFlat}>
-              {analyticsData.mostViewedFlat}
-            </h3>
-            <p className="text-[11px] text-slate-400 mt-2 font-medium">
-              Unit with maximum buyer views & clicks
-            </p>
-          </div>
 
-          {/* Card 7: Most Interested City */}
-          <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm sm:col-span-2 lg:col-span-2 relative overflow-hidden">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center">
-                <MapPin className="w-6 h-6" />
+              {/* Card 6: Most Viewed Flat */}
+              <div
+                onClick={() => {
+                  if (!canAccessTrendingFlat) {
+                    toast.error("Upgrade your plan to Diamond to unlock top trending flat analytics!");
+                  }
+                }}
+                className={`bg-white p-6 rounded-3xl border shadow-sm relative overflow-hidden ${
+                  canAccessTrendingFlat
+                    ? "border-slate-200"
+                    : "border-slate-100 opacity-80 cursor-pointer"
+                }`}
+              >
+                {!canAccessTrendingFlat && (
+                  <span className="absolute top-3.5 right-3.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full flex items-center gap-0.5 uppercase tracking-wider shadow">
+                    <Lock className="w-2.5 h-2.5" /> Diamond
+                  </span>
+                )}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                    <Building2 className="w-6 h-6" />
+                  </div>
+                  <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full">
+                    Top Trending Flat
+                  </span>
+                </div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Most Viewed Flat / Unit
+                </p>
+                <h3 className="text-xl font-extrabold text-slate-900 mt-1 truncate" title={canAccessTrendingFlat ? analyticsData.mostViewedFlat : "🔒 Locked"}>
+                  {canAccessTrendingFlat ? analyticsData.mostViewedFlat : "🔒 Locked"}
+                </h3>
+                <p className="text-[11px] text-slate-400 mt-2 font-medium">
+                  Unit with maximum buyer views & clicks
+                </p>
               </div>
-              <span className="text-[10px] font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-full">
-                Top Location
-              </span>
-            </div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Most Interested Buyer City
-            </p>
-            <h3 className="text-3xl font-extrabold text-slate-900 mt-1">
-              {analyticsData.mostInterestedCity}
-            </h3>
-            <p className="text-[11px] text-slate-400 mt-2 font-medium">
-              City location generating highest lead traffic for your properties
-            </p>
-          </div>
 
-        </div>
+              {/* Card 7: Most Interested City */}
+              <div
+                onClick={() => {
+                  if (!canAccessTrendingCity) {
+                    toast.error("Upgrade your plan to Diamond to unlock top buyer city analytics!");
+                  }
+                }}
+                className={`bg-white p-6 rounded-3xl border shadow-sm sm:col-span-2 lg:col-span-2 relative overflow-hidden ${
+                  canAccessTrendingCity
+                    ? "border-slate-200"
+                    : "border-slate-100 opacity-80 cursor-pointer"
+                }`}
+              >
+                {!canAccessTrendingCity && (
+                  <span className="absolute top-3.5 right-3.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full flex items-center gap-0.5 uppercase tracking-wider shadow">
+                    <Lock className="w-2.5 h-2.5" /> Diamond
+                  </span>
+                )}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center">
+                    <MapPin className="w-6 h-6" />
+                  </div>
+                  <span className="text-[10px] font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-full">
+                    Top Location
+                  </span>
+                </div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Most Interested Buyer City
+                </p>
+                <h3 className="text-3xl font-extrabold text-slate-900 mt-1">
+                  {canAccessTrendingCity ? analyticsData.mostInterestedCity : "🔒 Locked"}
+                </h3>
+                <p className="text-[11px] text-slate-400 mt-2 font-medium">
+                  City location generating highest lead traffic for your properties
+                </p>
+              </div>
+
+            </div>
+          );
+        })()}
 
         {/* DETAILED BUYER INQUIRY LOGS TABLE */}
         <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
