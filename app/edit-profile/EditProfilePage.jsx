@@ -310,14 +310,49 @@ export default function EditProfile() {
       const data = await response.json();
       if (response.ok && data.success) {
         toast.success("Profile details saved successfully!");
-        localStorage.setItem("userData", JSON.stringify(data.data));
+        
+        // Fetch fully populated profile (including plan details)
+        try {
+          const profileRes = await fetch(`${BASE_API_URL}/api/auth/profile`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (profileRes.ok) {
+            const profileJson = await profileRes.json();
+            if (profileJson.success && profileJson.data) {
+              localStorage.setItem("userData", JSON.stringify(profileJson.data));
+            } else {
+              localStorage.setItem("userData", JSON.stringify(data.data));
+            }
+          } else {
+            localStorage.setItem("userData", JSON.stringify(data.data));
+          }
+        } catch (e) {
+          localStorage.setItem("userData", JSON.stringify(data.data));
+        }
+
         window.dispatchEvent(new Event("storage"));
 
         // Redirect based on role
         setTimeout(() => {
-          if (data.data.role === "owner") router.push("/dashboard/owner");
-          else if (data.data.role === "builder") router.push("/dashboard/builder");
-          else if (data.data.role === "dealer") router.push("/dashboard/dealer");
+          const freshUserStr = localStorage.getItem("userData");
+          let freshUser = data.data;
+          if (freshUserStr) {
+            try { freshUser = JSON.parse(freshUserStr); } catch (e) {}
+          }
+
+          const isDealerOrBuilder = ["dealer", "builder"].includes(freshUser.role);
+          const hasNoPaidPlan = isDealerOrBuilder && (freshUser.planName === "Free" || !freshUser.subscription);
+
+          if (hasNoPaidPlan) {
+            toast.info("Please subscribe to a membership plan to activate your account features.");
+            router.push("/membership");
+          } else if (freshUser.role === "owner") {
+            router.push("/dashboard/owner");
+          } else if (freshUser.role === "builder") {
+            router.push("/dashboard/builder");
+          } else if (freshUser.role === "dealer") {
+            router.push("/dashboard/dealer");
+          }
         }, 1000);
       } else {
         toast.error(data.message || "Failed to update profile");

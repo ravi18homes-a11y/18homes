@@ -37,6 +37,8 @@ export default function BuilderDashboard() {
 
   const isApproved = user?.approvalStatus === "approved";
   const profileFilled = !!user?.builderDetails?.firmName;
+  const isBuilder = user?.role === "builder";
+  const hasNoPaidPlan = isBuilder && (user?.planName === "Free" || !user?.subscription);
 
   return (
     <DashboardLayout>
@@ -90,7 +92,7 @@ export default function BuilderDashboard() {
                 <p className="text-xs sm:text-sm text-amber-800 leading-relaxed">
                   {!profileFilled
                     ? "Please complete your Builder profile (Firm name, RERA Number, GST, PAN, Address) so Admin can verify your account."
-                    : "Your builder credentials have been submitted and are pending approval by the Admin. Additional dashboard feature routes will unlock once approved!"}
+                    : "Your builder credentials have been submitted and is pending approval by the Admin. Additional dashboard feature routes will unlock once approved!"}
                 </p>
               </div>
             </div>
@@ -135,17 +137,22 @@ export default function BuilderDashboard() {
           {/* 2. My Housing Projects */}
           <div
             className={`bg-white p-6 rounded-3xl border-2 transition relative overflow-hidden ${
-              isApproved
+              isApproved && !hasNoPaidPlan
                 ? "border-slate-200 hover:border-indigo-500 hover:shadow-xl cursor-pointer"
                 : "border-slate-200 opacity-75 bg-slate-50/70"
             }`}
           >
-            {!isApproved && (
+            {hasNoPaidPlan ? (
+              <div className="absolute top-4 right-4 bg-amber-100 text-amber-800 border border-amber-200 px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1">
+                <Lock className="w-3 h-3 text-amber-600" />
+                <span>Premium Required</span>
+              </div>
+            ) : !isApproved ? (
               <div className="absolute top-4 right-4 bg-slate-200 text-slate-700 px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1">
                 <Lock className="w-3 h-3 text-slate-500" />
                 <span>Locked</span>
               </div>
-            )}
+            ) : null}
             <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-4">
               <Building2 className="w-6 h-6" />
             </div>
@@ -155,7 +162,12 @@ export default function BuilderDashboard() {
             <p className="text-xs text-slate-500 mb-4">
               Manage completed, ongoing, and upcoming residential projects.
             </p>
-            {isApproved ? (
+            {hasNoPaidPlan ? (
+              <Link href="/membership" className="flex items-center text-xs font-bold text-amber-600 gap-1">
+                <span>Upgrade to Unlock</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            ) : isApproved ? (
               <Link href="/dashboard/builder/projects" className="flex items-center text-xs font-bold text-indigo-600 gap-1">
                 <span>View Projects</span>
                 <ArrowRight className="w-4 h-4" />
@@ -170,17 +182,22 @@ export default function BuilderDashboard() {
           {/* 3. Add New Project Listing */}
           <div
             className={`bg-white p-6 rounded-3xl border-2 transition relative overflow-hidden ${
-              isApproved
+              isApproved && !hasNoPaidPlan
                 ? "border-slate-200 hover:border-pink-500 hover:shadow-xl cursor-pointer"
                 : "border-slate-200 opacity-75 bg-slate-50/70"
             }`}
           >
-            {!isApproved && (
+            {hasNoPaidPlan ? (
+              <div className="absolute top-4 right-4 bg-amber-100 text-amber-800 border border-amber-200 px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1">
+                <Lock className="w-3 h-3 text-amber-600" />
+                <span>Premium Required</span>
+              </div>
+            ) : !isApproved ? (
               <div className="absolute top-4 right-4 bg-slate-200 text-slate-700 px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1">
                 <Lock className="w-3 h-3 text-slate-500" />
                 <span>Locked</span>
               </div>
-            )}
+            ) : null}
             <div className="w-12 h-12 rounded-2xl bg-pink-50 text-pink-600 flex items-center justify-center mb-4">
               <PlusCircle className="w-6 h-6" />
             </div>
@@ -190,7 +207,12 @@ export default function BuilderDashboard() {
             <p className="text-xs text-slate-500 mb-4">
               Create new apartment, plot, or commercial project listings.
             </p>
-            {isApproved ? (
+            {hasNoPaidPlan ? (
+              <Link href="/membership" className="flex items-center text-xs font-bold text-amber-600 gap-1">
+                <span>Upgrade to Unlock</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            ) : isApproved ? (
               <Link href="/post-project" className="flex items-center text-xs font-bold text-pink-600 gap-1">
                 <span>Add Project</span>
                 <ArrowRight className="w-4 h-4" />
@@ -203,44 +225,71 @@ export default function BuilderDashboard() {
           </div>
 
           {/* 4. Dedicated Analytics Page */}
-          <Link
-            href="/dashboard/analytics"
-            className="bg-gradient-to-br from-slate-900 via-purple-950 to-indigo-950 text-white p-6 rounded-3xl border-2 border-purple-800 hover:border-purple-500 hover:shadow-2xl transition group cursor-pointer"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-2xl bg-purple-500/20 text-purple-300 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <BarChart3 className="w-6 h-6" />
+          {hasNoPaidPlan ? (
+            <div className="bg-white p-6 rounded-3xl border-2 border-slate-200 opacity-75 bg-slate-50/70 transition relative overflow-hidden">
+              <div className="absolute top-4 right-4 bg-amber-100 text-amber-800 border border-amber-200 px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1">
+                <Lock className="w-3 h-3 text-amber-600" />
+                <span>Premium Required</span>
               </div>
-              <span className="text-[10px] font-extrabold bg-emerald-500/20 text-emerald-300 px-2.5 py-1 rounded-full uppercase">
-                Analytics
-              </span>
+              <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center mb-4">
+                <Lock className="w-6 h-6" />
+              </div>
+              <h3 className="font-bold text-slate-950 text-lg mb-1">
+                Project Analytics
+              </h3>
+              <p className="text-xs text-slate-500 mb-4">
+                View real buyer visits, call clicks & WhatsApp leads for your properties.
+              </p>
+              <Link href="/membership" className="flex items-center text-xs font-bold text-amber-600 gap-1">
+                <span>Upgrade to Unlock</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
             </div>
-            <h3 className="font-bold text-white text-lg mb-1 group-hover:text-purple-300 transition-colors">
-              Project Analytics
-            </h3>
-            <p className="text-xs text-purple-200 mb-4">
-              View real buyer visits, call clicks & WhatsApp leads for your properties.
-            </p>
-            <div className="flex items-center text-xs font-bold text-purple-300 gap-1">
-              <span>Open Analytics</span>
-              <ArrowRight className="w-4 h-4" />
-            </div>
-          </Link>
+          ) : (
+            <Link
+              href="/dashboard/analytics"
+              className="bg-gradient-to-br from-slate-900 via-purple-950 to-indigo-950 text-white p-6 rounded-3xl border-2 border-purple-800 hover:border-purple-500 hover:shadow-2xl transition group cursor-pointer"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-purple-500/20 text-purple-300 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <BarChart3 className="w-6 h-6" />
+                </div>
+                <span className="text-[10px] font-extrabold bg-emerald-500/20 text-emerald-300 px-2.5 py-1 rounded-full uppercase">
+                  Analytics
+                </span>
+              </div>
+              <h3 className="font-bold text-white text-lg mb-1 group-hover:text-purple-300 transition-colors">
+                Project Analytics
+              </h3>
+              <p className="text-xs text-purple-200 mb-4">
+                View real buyer visits, call clicks & WhatsApp leads for your properties.
+              </p>
+              <div className="flex items-center text-xs font-bold text-purple-300 gap-1">
+                <span>Open Analytics</span>
+                <ArrowRight className="w-4 h-4" />
+              </div>
+            </Link>
+          )}
 
           {/* 5. Client Leads & Enquiries */}
           <div
             className={`bg-white p-6 rounded-3xl border-2 transition relative overflow-hidden ${
-              isApproved
+              isApproved && !hasNoPaidPlan
                 ? "border-slate-200 hover:border-indigo-500 hover:shadow-xl cursor-pointer"
                 : "border-slate-200 opacity-75 bg-slate-50/70"
             }`}
           >
-            {!isApproved && (
+            {hasNoPaidPlan ? (
+              <div className="absolute top-4 right-4 bg-amber-100 text-amber-800 border border-amber-200 px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1">
+                <Lock className="w-3 h-3 text-amber-600" />
+                <span>Premium Required</span>
+              </div>
+            ) : !isApproved ? (
               <div className="absolute top-4 right-4 bg-slate-200 text-slate-700 px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1">
                 <Lock className="w-3 h-3 text-slate-500" />
                 <span>Locked</span>
               </div>
-            )}
+            ) : null}
             <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-4">
               <Users className="w-6 h-6" />
             </div>
@@ -250,7 +299,12 @@ export default function BuilderDashboard() {
             <p className="text-xs text-slate-500 mb-4">
               Direct buyer/tenant contact requests for your housing projects.
             </p>
-            {isApproved ? (
+            {hasNoPaidPlan ? (
+              <Link href="/membership" className="flex items-center text-xs font-bold text-amber-600 gap-1">
+                <span>Upgrade to Unlock</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            ) : isApproved ? (
               <Link href="/dashboard/dealer/leads" className="flex items-center text-xs font-bold text-indigo-600 gap-1">
                 <span>Open Leads Inbox</span>
                 <ArrowRight className="w-4 h-4" />

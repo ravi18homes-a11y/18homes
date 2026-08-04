@@ -87,7 +87,7 @@ export default function AdminSidebar({
         </div>
 
         {/* NAV */}
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+        <nav className="flex-1 p-4 pb-28 md:pb-4 space-y-2 overflow-y-auto">
           <NavItem
             href="/admin/"
             active={pathname === "/admin"}

@@ -209,17 +209,47 @@ export default function AuthPage() {
       localStorage.setItem("authToken", data.data.token);
       localStorage.setItem("userData", JSON.stringify(loggedUser));
 
+      // Fetch fresh profile with planRules to see if they are dealer/builder on Free tier
+      const databaseUrl = process.env.NEXT_PUBLIC_APP_DATABASE_URL || "http://localhost:5000";
+      let planName = "Free";
+      try {
+        const profileRes = await fetch(`${databaseUrl}/api/auth/profile`, {
+          headers: { Authorization: `Bearer ${data.data.token}` }
+        });
+        if (profileRes.ok) {
+          const profileJson = await profileRes.json();
+          if (profileJson.success && profileJson.data) {
+            localStorage.setItem("userData", JSON.stringify(profileJson.data));
+            planName = profileJson.data.planName || "Free";
+          }
+        }
+      } catch (err) {
+        console.error("Failed to query user profile details on login:", err);
+      }
+
       // Dispatch storage event so navbar updates
       window.dispatchEvent(new Event("storage"));
 
       setTimeout(() => {
-        if (loggedUser.role === "admin") {
+        const freshUserStr = localStorage.getItem("userData");
+        let freshUser = loggedUser;
+        if (freshUserStr) {
+          try { freshUser = JSON.parse(freshUserStr); } catch (e) {}
+        }
+        
+        const isDealerOrBuilder = ["dealer", "builder"].includes(freshUser.role);
+        const hasNoPaidPlan = isDealerOrBuilder && (freshUser.planName === "Free" || !freshUser.subscription);
+
+        if (freshUser.role === "admin") {
           window.location.href = "/admin";
-        } else if (loggedUser.role === "owner") {
+        } else if (hasNoPaidPlan) {
+          toast.info("Please subscribe to a membership plan to activate your account features.");
+          window.location.href = "/membership";
+        } else if (freshUser.role === "owner") {
           window.location.href = "/dashboard/owner";
-        } else if (loggedUser.role === "builder") {
+        } else if (freshUser.role === "builder") {
           window.location.href = "/dashboard/builder";
-        } else if (loggedUser.role === "dealer") {
+        } else if (freshUser.role === "dealer") {
           window.location.href = "/dashboard/dealer";
         } else {
           window.location.href = "/";

@@ -13,6 +13,7 @@ import {
   Sparkles,
   Users,
   Home,
+  BarChart3,
 } from "lucide-react";
 
 export default function DealerDashboard() {
@@ -37,6 +38,8 @@ export default function DealerDashboard() {
 
   const isApproved = user?.approvalStatus === "approved";
   const profileFilled = !!user?.dealerDetails?.agencyName;
+  const isDealer = user?.role === "dealer";
+  const hasNoPaidPlan = isDealer && (user?.planName === "Free" || !user?.subscription);
 
   return (
     <DashboardLayout>
@@ -202,17 +205,23 @@ export default function DealerDashboard() {
 
           {/* 4. Client Enquiries & Leads */}
           <div
-            className={`bg-white p-6 rounded-3xl border-2 transition relative overflow-hidden ${isApproved
+            className={`bg-white p-6 rounded-3xl border-2 transition relative overflow-hidden ${
+              isApproved && !hasNoPaidPlan
                 ? "border-slate-200 hover:border-indigo-500 hover:shadow-xl cursor-pointer"
                 : "border-slate-200 opacity-75 bg-slate-50/70"
-              }`}
+            }`}
           >
-            {!isApproved && (
+            {hasNoPaidPlan ? (
+              <div className="absolute top-4 right-4 bg-amber-100 text-amber-800 border border-amber-200 px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1">
+                <Lock className="w-3 h-3 text-amber-600" />
+                <span>Premium Required</span>
+              </div>
+            ) : !isApproved ? (
               <div className="absolute top-4 right-4 bg-slate-200 text-slate-700 px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1">
                 <Lock className="w-3 h-3 text-slate-500" />
                 <span>Locked</span>
               </div>
-            )}
+            ) : null}
             <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-4">
               <Users className="w-6 h-6" />
             </div>
@@ -222,7 +231,12 @@ export default function DealerDashboard() {
             <p className="text-xs text-slate-500 mb-4">
               Direct buyer/tenant contact requests for your operating areas.
             </p>
-            {isApproved ? (
+            {hasNoPaidPlan ? (
+              <Link href="/membership" className="flex items-center text-xs font-bold text-amber-600 gap-1">
+                <span>Upgrade to Unlock</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            ) : isApproved ? (
               <Link href="/dashboard/dealer/leads" className="flex items-center text-xs font-bold text-indigo-600 gap-1">
                 <span>Open Leads Inbox</span>
                 <ArrowRight className="w-4 h-4" />
@@ -236,17 +250,23 @@ export default function DealerDashboard() {
 
           {/* 5. Featured Agent Ads */}
           <div
-            className={`bg-white p-6 rounded-3xl border-2 transition relative overflow-hidden ${isApproved
+            className={`bg-white p-6 rounded-3xl border-2 transition relative overflow-hidden ${
+              isApproved && !hasNoPaidPlan
                 ? "border-slate-200 hover:border-pink-500 hover:shadow-xl cursor-pointer"
                 : "border-slate-200 opacity-75 bg-slate-50/70"
-              }`}
+            }`}
           >
-            {!isApproved && (
+            {hasNoPaidPlan ? (
+              <div className="absolute top-4 right-4 bg-amber-100 text-amber-800 border border-amber-200 px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1">
+                <Lock className="w-3 h-3 text-amber-600" />
+                <span>Premium Required</span>
+              </div>
+            ) : !isApproved ? (
               <div className="absolute top-4 right-4 bg-slate-200 text-slate-700 px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1">
                 <Lock className="w-3 h-3 text-slate-500" />
                 <span>Locked</span>
               </div>
-            )}
+            ) : null}
             <div className="w-12 h-12 rounded-2xl bg-pink-50 text-pink-600 flex items-center justify-center mb-4">
               <Sparkles className="w-6 h-6" />
             </div>
@@ -256,9 +276,59 @@ export default function DealerDashboard() {
             <p className="text-xs text-slate-500 mb-4">
               Boost your agency profile in your local area property searches.
             </p>
-            {isApproved ? (
+            {hasNoPaidPlan ? (
+              <Link href="/membership" className="flex items-center text-xs font-bold text-amber-600 gap-1">
+                <span>Upgrade to Unlock</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            ) : isApproved ? (
               <Link href="/dashboard/dealer/featured-ads" className="flex items-center text-xs font-bold text-pink-600 gap-1">
                 <span>Manage Featured Ads</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            ) : (
+              <span className="text-[11px] text-amber-700 font-semibold">
+                Requires Admin Approval
+              </span>
+            )}
+          </div>
+
+          {/* 6. Property Analytics */}
+          <div
+            className={`bg-white p-6 rounded-3xl border-2 transition relative overflow-hidden ${
+              isApproved && !hasNoPaidPlan
+                ? "border-slate-200 hover:border-purple-500 hover:shadow-xl cursor-pointer"
+                : "border-slate-200 opacity-75 bg-slate-50/70"
+            }`}
+          >
+            {hasNoPaidPlan ? (
+              <div className="absolute top-4 right-4 bg-amber-100 text-amber-800 border border-amber-200 px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1">
+                <Lock className="w-3 h-3 text-amber-600" />
+                <span>Gold Required</span>
+              </div>
+            ) : !isApproved ? (
+              <div className="absolute top-4 right-4 bg-slate-200 text-slate-700 px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1">
+                <Lock className="w-3 h-3 text-slate-500" />
+                <span>Locked</span>
+              </div>
+            ) : null}
+            <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center mb-4">
+              <BarChart3 className="w-6 h-6" />
+            </div>
+            <h3 className="font-bold text-slate-900 text-lg mb-1">
+              Property Analytics & Inquiries
+            </h3>
+            <p className="text-xs text-slate-500 mb-4">
+              View buyer visitor logs, phone call clicks, and WhatsApp chat inquiries for your properties.
+            </p>
+            {hasNoPaidPlan ? (
+              <Link href="/dashboard/analytics" className="flex items-center text-xs font-bold text-amber-600 gap-1">
+                <span>Locked (Gold Required)</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            ) : isApproved ? (
+              <Link href="/dashboard/analytics" className="flex items-center text-xs font-bold text-purple-600 gap-1">
+                <span>View Analytics</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             ) : (
