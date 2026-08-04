@@ -390,15 +390,6 @@ export default function AuthPage() {
 
         if (freshUser.role === "admin") {
           window.location.href = "/admin";
-        } else if (hasNoPaidPlan) {
-          toast.info("Please subscribe to a membership plan to activate your account features.");
-          window.location.href = "/membership";
-        } else if (freshUser.role === "owner") {
-          window.location.href = "/dashboard/owner";
-        } else if (freshUser.role === "builder") {
-          window.location.href = "/dashboard/builder";
-        } else if (freshUser.role === "dealer") {
-          window.location.href = "/dashboard/dealer";
         } else {
           window.location.href = "/";
         }
