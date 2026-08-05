@@ -753,6 +753,24 @@ const RealEstateApp = () => {
                 </div>
               </div>
 
+
+              <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Purpose *
+                  </label>
+                  <select
+                    required
+                    value={sellForm.purpose}
+                    onChange={(e) =>
+                      handleSellFormChange("purpose", e.target.value)
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  >
+                    <option value="sell">Sell</option>
+                    <option value="rent">Rent</option>
+                  </select>
+                </div>
+
               {/* Property Title */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -908,7 +926,7 @@ const RealEstateApp = () => {
                     </div>
                   )}
 
-                <div>
+                {/* <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Purpose *
                   </label>
@@ -923,7 +941,7 @@ const RealEstateApp = () => {
                     <option value="sell">Sell</option>
                     <option value="rent">Rent</option>
                   </select>
-                </div>
+                </div> */}
               </div>
 
               {/* Location and Price */}

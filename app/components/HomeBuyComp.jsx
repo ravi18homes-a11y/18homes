@@ -22,7 +22,7 @@ const getMediaThumbnail = (url) => {
 
 export default function HomeBuyComp() {
   const databaseUrl = process.env.NEXT_PUBLIC_APP_DATABASE_URL || "";
-  const [filters, setFilters] = useState({ purpose: "sell" });
+  const [filters, setFilters] = useState({ purpose: "" });
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -110,7 +110,7 @@ export default function HomeBuyComp() {
           return {
             id: prop._id || prop.id,
             title: prop.title || "No Title",
-            location: ownerInfo,
+            location: ` ${prop.address.city ? prop.address.city : `NCR Reason (Not Disclosed)`}`,
             price: prop.priceText || prop.priceValue || prop.price || "",
             bedrooms: prop.bedrooms || 0,
             bathrooms: prop.bathrooms || 0,

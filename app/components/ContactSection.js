@@ -283,8 +283,8 @@ export default function ContactSection({ data }) {
               </div>
               <div>
                 <p className="text-blue-200 text-xs font-medium">Direct Call / WhatsApp</p>
-                <a href="tel:+917827602246" className="text-white font-bold text-sm hover:text-blue-300 transition">
-                  +91 7827602246
+                <a href="tel:+918796763688" className="text-white font-bold text-sm hover:text-blue-300 transition">
+                  +91 8796763688
                 </a>
               </div>
             </div>
