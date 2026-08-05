@@ -46,6 +46,7 @@ export default function UserTable({
             <Th>Contact</Th>
             <Th>Role</Th>
             <Th>Verification</Th>
+            <Th>Plan & Subscription</Th>
             <Th>Account Status</Th>
             <Th className="text-right pr-6">Actions</Th>
           </tr>
@@ -54,6 +55,9 @@ export default function UserTable({
         <tbody className="divide-y divide-slate-100">
           {users.map((u, index) => {
             const isBlocked = u?.isBlocked;
+            const sub = u?.subscription;
+            const isSubActive = sub?.status === "active" && new Date(sub?.expiryDate) > new Date();
+
             return (
               <tr
                 key={u?._id || index}
@@ -128,6 +132,37 @@ export default function UserTable({
                     <span className="text-[11px] font-bold text-rose-700 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200 inline-flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
                       Rejected
+                    </span>
+                  )}
+                </Td>
+
+                {/* ===== PLAN & SUBSCRIPTION ===== */}
+                <Td>
+                  {sub ? (
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className={`text-[11px] font-extrabold px-2.5 py-0.5 rounded-md inline-flex items-center gap-1 ${
+                            isSubActive
+                              ? "bg-purple-100 text-[#8c4bdc] border border-purple-200"
+                              : "bg-slate-100 text-slate-600 border border-slate-200"
+                          }`}
+                        >
+                          {isSubActive ? "👑" : "⌛"} {sub.planName || "Plan"}
+                        </span>
+                        <span className="text-xs font-bold text-slate-700">
+                          {sub.amount > 0 ? `₹${sub.amount.toLocaleString("en-IN")}` : "Free"}
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-slate-400 font-medium">
+                        {isSubActive
+                          ? `Expires: ${new Date(sub.expiryDate).toLocaleDateString("en-IN")}`
+                          : "Expired / Ended"}
+                      </p>
+                    </div>
+                  ) : (
+                    <span className="text-[11px] font-semibold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg inline-block">
+                      No Active Plan
                     </span>
                   )}
                 </Td>
