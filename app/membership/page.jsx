@@ -288,8 +288,54 @@ export default function StandaloneMembershipPage() {
 
       <main className="flex-grow max-w-7xl mt-[80px] mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full space-y-10">
         
-        {/* TOP BANNER / ACCOUNT SUMMARY CARD (Only visible if user logged in as builder/dealer) */}
-        {user && ["builder", "dealer"].includes(user.role) ? (
+        {/* TOP BANNER / ACCOUNT SUMMARY CARD */}
+        {user && (user.role === "admin" || user.role === "super_admin") ? (
+          <div className="bg-gradient-to-r from-purple-950 via-indigo-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden border border-purple-500/30">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
+            <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+              <div className="space-y-3">
+                <span className="bg-purple-500/20 border border-purple-400/30 text-purple-200 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider inline-block">
+                  👑 Administrator Full Access
+                </span>
+                <h1 className="text-2xl sm:text-3xl font-black flex items-center gap-2">
+                  <span>Membership Status:</span>
+                  <span className="bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 bg-clip-text text-transparent font-extrabold">
+                    Admin Unlimited (No Plan Required)
+                  </span>
+                </h1>
+                <p className="text-slate-300 text-xs sm:text-sm max-w-xl leading-relaxed">
+                  As an Administrator, you have complete unlimited permissions across the platform. You do not require any paid subscription plan to list properties, projects, view client leads, or run featured ads.
+                </p>
+              </div>
+
+              <div className="bg-emerald-500/20 backdrop-blur-md p-5 rounded-2xl border border-emerald-500/30 flex items-center gap-5 w-full lg:w-auto">
+                <div className="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center">
+                  <ShieldCheck className="w-6 h-6 text-emerald-400" />
+                </div>
+                <div>
+                  <span className="text-xs text-emerald-300 font-bold uppercase tracking-wider block">Full Privilege</span>
+                  <h4 className="text-base font-black text-white">Unlimited Access Active</h4>
+                  <p className="text-[10px] text-emerald-200 mt-0.5">No expiry • Lifetime Admin Access</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-white/10 grid grid-cols-3 gap-6 relative z-10">
+              <div className="space-y-1">
+                <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-bold">Properties Listed</span>
+                <span className="text-lg font-black text-white">{usageStats.propertiesCount} (Unlimited)</span>
+              </div>
+              <div className="space-y-1">
+                <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-bold">Projects Created</span>
+                <span className="text-lg font-black text-white">{usageStats.projectsCount} (Unlimited)</span>
+              </div>
+              <div className="space-y-1">
+                <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-bold">Featured Ads</span>
+                <span className="text-lg font-black text-white">{usageStats.featuredAdsCount} (Unlimited)</span>
+              </div>
+            </div>
+          </div>
+        ) : user && ["builder", "dealer"].includes(user.role) ? (
           <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl -ml-16 -mb-16"></div>
@@ -501,7 +547,15 @@ export default function StandaloneMembershipPage() {
 
                   {/* Purchase Button */}
                   <div className="pt-6 mt-6 border-t border-slate-100">
-                    {!user ? (
+                    {user && (user.role === "admin" || user.role === "super_admin") ? (
+                      <button
+                        disabled
+                        className="w-full bg-purple-100 text-purple-800 py-3 rounded-2xl text-xs font-black uppercase tracking-wider cursor-default flex items-center justify-center gap-1.5"
+                      >
+                        <ShieldCheck className="w-4 h-4 text-purple-600" />
+                        <span>Admin Access Active</span>
+                      </button>
+                    ) : !user ? (
                       <Link
                         href="/login-signup"
                         className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition flex items-center justify-center gap-2 shadow-sm"

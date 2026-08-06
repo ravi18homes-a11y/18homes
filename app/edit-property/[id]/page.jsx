@@ -634,6 +634,10 @@ const EditPropertyApp = ({ params }) => {
                     <option value="office">Office</option>
                     <option value="apartment">Apartment</option>
                     <option value="commercial">Commercial</option>
+                    <option value="land">Land</option>
+                    <option value="bank_auction">Bank Auction</option>
+                    <option value="pre_launch">Pre Launch Investment</option>
+                    <option value="studio_apartment">Studio Apartment</option>
                   </select>
                 </div>
 

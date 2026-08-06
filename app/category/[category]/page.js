@@ -18,7 +18,7 @@ export default async function CategoryPage() {
   return (
     <main>
       <Navbar />
-      <div className="pt-24 min-h-screen bg-[#F7F7F7]">
+      <div className="pt-24  min-h-screen bg-[#F7F7F7]">
         <FilterPropertiesComp />
       </div>
       <Footer />

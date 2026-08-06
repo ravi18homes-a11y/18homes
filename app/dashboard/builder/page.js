@@ -35,10 +35,11 @@ export default function BuilderDashboard() {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
-  const isApproved = user?.approvalStatus === "approved";
+  const isAdmin = user?.role === "admin" || user?.role === "super_admin";
+  const isApproved = user?.approvalStatus === "approved" || isAdmin;
   const profileFilled = !!user?.builderDetails?.firmName;
   const isBuilder = user?.role === "builder";
-  const hasNoPaidPlan = isBuilder && (user?.planName === "Free" || !user?.subscription);
+  const hasNoPaidPlan = !isAdmin && isBuilder && (user?.planName === "Free" || !user?.subscription);
 
   return (
     <DashboardLayout>

@@ -131,10 +131,11 @@ const RealEstateApp = () => {
     }
   }, [token, databaseUrl]);
 
+  const isAdmin = user?.role === "admin" || user?.role === "super_admin";
   const planName = subStats?.planName || "Free";
   const propertyLimit = subStats?.rules?.propertyLimit ?? 1;
   const currentCount = subStats?.usage?.propertiesCount || 0;
-  const isLimitReached = propertyLimit !== -1 && currentCount >= propertyLimit;
+  const isLimitReached = !isAdmin && propertyLimit !== -1 && currentCount >= propertyLimit;
 
   // const databaseUrl = "http://localhost:5000";
 
@@ -826,6 +827,10 @@ const RealEstateApp = () => {
                     <option value="shop">Shop</option>
                     <option value="apartment">Apartment</option>
                     <option value="commercial">Commercial</option>
+                    <option value="land">Land</option>
+                    <option value="bank_auction">Bank Auction</option>
+                    <option value="pre_launch">Pre Launch Investment</option>
+                    <option value="studio_apartment">Studio Apartment</option>
                   </select>
                 </div>
 

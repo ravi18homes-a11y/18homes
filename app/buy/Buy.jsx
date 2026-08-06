@@ -365,8 +365,9 @@ const BuyPage = () => {
       const matchesType =
         normalizedFilterType === "all" ||
         !normalizedFilterType ||
-        (normalizedFilterType === "agriculture" && (
+        ((normalizedFilterType === "agriculture" || normalizedFilterType === "land") && (
           normalizedPropertyType === "agriculture" ||
+          normalizedPropertyType === "land" ||
           (normalizedPropertyType.startsWith("commercial") && (
             /land|acre|bigha|biswa|hectare/i.test(property.commercialType || "") ||
             /land|acre|bigha|biswa|hectare/i.test(property.commercialTypeCustom || "") ||
@@ -374,7 +375,22 @@ const BuyPage = () => {
             /land|acre|bigha|biswa|hectare/i.test(property.description || "")
           ))
         )) ||
-        (normalizedFilterType !== "agriculture" && normalizedPropertyType === normalizedFilterType) ||
+        (normalizedFilterType === "bank_auction" && (
+          normalizedPropertyType === "bank_auction" ||
+          /bank auction|auction/i.test(property.title || "") ||
+          /bank auction|auction/i.test(property.description || "")
+        )) ||
+        (normalizedFilterType === "pre_launch" && (
+          normalizedPropertyType === "pre_launch" ||
+          /pre launch|pre-launch|investment/i.test(property.title || "") ||
+          /pre launch|pre-launch|investment/i.test(property.description || "")
+        )) ||
+        (normalizedFilterType === "studio_apartment" && (
+          normalizedPropertyType === "studio_apartment" ||
+          /studio/i.test(property.title || "") ||
+          /studio/i.test(property.description || "")
+        )) ||
+        (normalizedFilterType !== "agriculture" && normalizedFilterType !== "land" && normalizedPropertyType === normalizedFilterType) ||
         (normalizedFilterType === "commercial" && normalizedPropertyType.startsWith("commercial"));
 
       const matchesCommercialType =
@@ -595,6 +611,10 @@ const BuyPage = () => {
                   <option value="plot">Plot</option>
                   <option value="shop">Shop</option>
                   <option value="commercial">Commercial</option>
+                  <option value="land">Land</option>
+                  <option value="bank_auction">Bank Auction</option>
+                  <option value="pre_launch">Pre Launch Investment</option>
+                  <option value="studio_apartment">Studio Apartment</option>
                 </select>
               </div>
 
@@ -1208,7 +1228,7 @@ const BuyPage = () => {
       <div className="bg-[#3a40c6] text-white py-12 mt-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-4">
-            Didn&apos;t find your dream property?
+            Still searching your dream property?
           </h2>
           <p className="text-lg mb-6">
             Tell us what you&apos;re looking for, we&apos;ll find the best options for you
