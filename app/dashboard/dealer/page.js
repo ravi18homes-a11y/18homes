@@ -36,10 +36,11 @@ export default function DealerDashboard() {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
-  const isApproved = user?.approvalStatus === "approved";
+  const isAdmin = user?.role === "admin" || user?.role === "super_admin";
+  const isApproved = user?.approvalStatus === "approved" || isAdmin;
   const profileFilled = !!user?.dealerDetails?.agencyName;
   const isDealer = user?.role === "dealer";
-  const hasNoPaidPlan = isDealer && (user?.planName === "Free" || !user?.subscription);
+  const hasNoPaidPlan = !isAdmin && isDealer && (user?.planName === "Free" || !user?.subscription);
 
   return (
     <DashboardLayout>

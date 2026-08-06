@@ -340,8 +340,9 @@ export default function EditProfile() {
             try { freshUser = JSON.parse(freshUserStr); } catch (e) {}
           }
 
+          const isAdmin = freshUser?.role === "admin" || freshUser?.role === "super_admin";
           const isDealerOrBuilder = ["dealer", "builder"].includes(freshUser.role);
-          const hasNoPaidPlan = isDealerOrBuilder && (freshUser.planName === "Free" || !freshUser.subscription);
+          const hasNoPaidPlan = !isAdmin && isDealerOrBuilder && (freshUser.planName === "Free" || !freshUser.subscription);
 
           if (hasNoPaidPlan) {
             toast.info("Please subscribe to a membership plan to activate your account features.");

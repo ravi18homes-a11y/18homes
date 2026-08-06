@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
 import { useParams } from "next/navigation";
-import { Building, Home, Map, Store, Briefcase, Trees } from "lucide-react";
+import { Building, Home, Map, Store, Briefcase, Trees, Landmark, Sparkles, Building2, MapPin, ArrowRight, Loader2 } from "lucide-react";
 
 const categoryIcons = {
   flat: Building,
@@ -12,6 +12,10 @@ const categoryIcons = {
   shop: Store,
   commercial: Briefcase,
   agriculture: Trees,
+  land: Trees,
+  bank_auction: Landmark,
+  pre_launch: Sparkles,
+  studio_apartment: Building2,
 };
 
 const CATEGORY_CONFIG = [
@@ -205,51 +209,58 @@ const CATEGORY_CONFIG = [
     ],
   },
   {
-    key: "agriculture",
+    key: "land",
     title: "Land",
-    description: "Search agriculture land by unit.",
+    description: "Search land & plot options.",
     cards: [
       {
-        key: "bigha",
-        label: "Bigha",
+        key: "land-main",
+        label: "Land Properties",
         image:
           "https://res.cloudinary.com/dxlykgx6w/image/upload/v1777231956/shutterstock_1774880030-min_trtyre.jpg",
-        query: { propertyType: "agriculture", areaUnit: "bigha" },
+        query: { propertyType: "land" },
       },
+    ],
+  },
+  {
+    key: "bank_auction",
+    title: "Bank Auction",
+    description: "Explore Bank Auction property deals.",
+    cards: [
       {
-        key: "biswa",
-        label: "Biswa",
+        key: "bank-auction-main",
+        label: "Bank Auction Properties",
         image:
-          "https://res.cloudinary.com/dxlykgx6w/image/upload/v1777231952/Types-of-plots-and-various-types-of-housing-plots-in-India-feature-compressed_omeimk.jpg",
-        query: { propertyType: "agriculture", areaUnit: "biswa" },
+          "https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=800",
+        query: { propertyType: "bank_auction" },
       },
+    ],
+  },
+  {
+    key: "pre_launch",
+    title: "Pre Launch",
+    description: "Discover Pre-Launch investment opportunities.",
+    cards: [
       {
-        key: "acre-land",
-        label: "Acre",
+        key: "pre-launch-main",
+        label: "Pre Launch Investment",
         image:
-          "https://res.cloudinary.com/dxlykgx6w/image/upload/v1777231951/images_4_steofs.jpg",
-        query: { propertyType: "agriculture", areaUnit: "acre" },
+          "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=800",
+        query: { propertyType: "pre_launch" },
       },
+    ],
+  },
+  {
+    key: "studio_apartment",
+    title: "Studio Apartment",
+    description: "Find modern, compact studio apartments.",
+    cards: [
       {
-        key: "hectare-land",
-        label: "Hectare",
+        key: "studio-apartment-main",
+        label: "Studio Apartment Properties",
         image:
-          "https://res.cloudinary.com/dxlykgx6w/image/upload/v1777231951/images_5_uetcq9.jpg",
-        query: { propertyType: "agriculture", areaUnit: "hectare" },
-      },
-      {
-        key: "lease-land",
-        label: "Lease Land",
-        image:
-          "https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=800",
-        query: { propertyType: "commercial", commercialType: "lease land" },
-      },
-      {
-        key: "commercial-land",
-        label: "Commercial Land",
-        image:
-          "https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=800",
-        query: { propertyType: "commercial", commercialType: "commercial land" },
+          "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=800",
+        query: { propertyType: "studio_apartment" },
       },
     ],
   },
@@ -267,6 +278,21 @@ function buildSearchString(query) {
   return params.toString();
 }
 
+function formatPropertyPrice(price) {
+  if (typeof price === "object" && price !== null && price.value) {
+    return `${price.value} ${price.unit || ""}`;
+  }
+  if (!price || price === 0) return "Price on Request";
+  if (typeof price === "string" && /[a-zA-Z]/.test(price)) {
+    return price.includes("₹") ? price : `₹ ${price}`;
+  }
+  const num = Number(price);
+  if (isNaN(num)) return String(price);
+  if (num >= 10000000) return `₹ ${(num / 10000000).toFixed(2)} Cr`;
+  if (num >= 100000) return `₹ ${(num / 100000).toFixed(2)} Lac`;
+  return `₹ ${num.toLocaleString()}`;
+}
+
 export default function FilterPropertiesComp() {
   const params = useParams();
   const categoryParam = params?.category;
@@ -277,10 +303,15 @@ export default function FilterPropertiesComp() {
   const [counts, setCounts] = useState({});
   const [loading, setLoading] = useState(true);
   const [customCommercialTypes, setCustomCommercialTypes] = useState([]);
+  const [categoryProperties, setCategoryProperties] = useState([]);
+  const [loadingProperties, setLoadingProperties] = useState(false);
 
   const activeCategory = useMemo(() => {
     const baseCategory =
       CATEGORY_CONFIG.find((item) => item.key === selectedCategory) ||
+      (selectedCategory === "agriculture"
+        ? CATEGORY_CONFIG.find((item) => item.key === "land")
+        : null) ||
       CATEGORY_CONFIG[0];
 
     if (selectedCategory === "commercial") {
@@ -304,7 +335,7 @@ export default function FilterPropertiesComp() {
       };
     }
 
-    if (selectedCategory === "agriculture") {
+    if (selectedCategory === "land" || selectedCategory === "agriculture") {
       const cards = [...baseCategory.cards];
 
       customCommercialTypes.forEach((typeVal) => {
@@ -316,7 +347,7 @@ export default function FilterPropertiesComp() {
               key: key,
               label: typeVal,
               image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=800",
-              query: { propertyType: "commercial", commercialType: "other", commercialTypeCustom: typeVal },
+              query: { propertyType: "land", areaUnit: typeVal.toLowerCase() },
             });
           }
         }
@@ -373,11 +404,11 @@ export default function FilterPropertiesComp() {
             isLandWord(property.description)
           );
 
-          if (isCommercialLand) {
-            // Also count it under "agriculture" (Land)!
-            const landType = "agriculture";
+          if (type === "land" || type === "agriculture" || isCommercialLand) {
+            const landType = "land";
             grouped[landType] = grouped[landType] || {};
             grouped[landType].total = (grouped[landType].total || 0) + 1;
+            grouped["agriculture"] = grouped[landType];
 
             const unit = (property.area?.unit || property.areaUnit || "").toLowerCase().trim();
             if (unit) {
@@ -397,13 +428,6 @@ export default function FilterPropertiesComp() {
                 grouped[type][`custom_${customKey}`] = (grouped[type][`custom_${customKey}`] || 0) + 1;
               }
             }
-          } else if (type === "agriculture") {
-            const unit = (property.area?.unit || property.areaUnit || "").toLowerCase().trim();
-            if (unit) {
-              grouped[type][unit] = (grouped[type][unit] || 0) + 1;
-            }
-            const bedrooms = String(property.bedrooms || 0);
-            grouped[type][bedrooms] = (grouped[type][bedrooms] || 0) + 1;
           } else {
             const bedrooms = String(property.bedrooms || 0);
             grouped[type][bedrooms] = (grouped[type][bedrooms] || 0) + 1;
@@ -423,9 +447,47 @@ export default function FilterPropertiesComp() {
     fetchCounts();
   }, [purpose]);
 
+  useEffect(() => {
+    if (!isCategoryPage || !API_BASE_URL) return;
+
+    async function fetchCategoryProperties() {
+      setLoadingProperties(true);
+      try {
+        const catKey = selectedCategory === "agriculture" ? "land" : selectedCategory;
+        const params = new URLSearchParams({
+          purpose,
+          propertyType: catKey,
+          limit: "12",
+        });
+        const res = await fetch(`${API_BASE_URL}/api/properties?${params.toString()}`);
+        const json = await res.json();
+        if (res.ok && json.success && Array.isArray(json.data?.properties)) {
+          setCategoryProperties(json.data.properties);
+        } else {
+          setCategoryProperties([]);
+        }
+      } catch (err) {
+        console.error("Error fetching category properties:", err);
+        setCategoryProperties([]);
+      } finally {
+        setLoadingProperties(false);
+      }
+    }
+
+    fetchCategoryProperties();
+  }, [isCategoryPage, selectedCategory, purpose]);
+
   const getCountForCard = (card) => {
     let type = card.query.propertyType;
     let typeCounts = counts[type] || {};
+
+    if (type === "land" || type === "agriculture") {
+      const landCounts = counts["land"] || counts["agriculture"] || {};
+      if (card.query.areaUnit) {
+        return landCounts[card.query.areaUnit] || 0;
+      }
+      return landCounts.total || 0;
+    }
 
     if (type === "flat" || type === "apartment") {
       const flatCounts = counts["flat"] || {};
@@ -469,20 +531,18 @@ export default function FilterPropertiesComp() {
   };
 
   return (
-    <section className="w-full bg-[#F7F7F7] py-10">
-
-
+    <section className="w-full bg-[#F7F7F7] py-4 sm:py-6">
       {isCategoryPage && (
         <>
-          <div className="max-w-7xl mx-auto  sm:pt-[20px]  px-6 mb-10 flex justify-center gap-3">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-6 flex justify-center gap-3">
             <button
               type="button"
               onClick={() => {
                 setLoading(true);
                 setPurpose("sell");
               }}
-              className={`px-5 py-3 rounded-full font-semibold text-[22px] transition ${purpose === "sell"
-                ? "bg-green-600 text-white"
+              className={`px-5 py-2.5 rounded-full font-semibold text-sm sm:text-base transition ${purpose === "sell"
+                ? "bg-green-600 text-white shadow-md"
                 : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-100"
                 }`}
             >
@@ -494,8 +554,8 @@ export default function FilterPropertiesComp() {
                 setLoading(true);
                 setPurpose("rent");
               }}
-              className={`px-5 py-3 rounded-full font-semibold text-[28px] transition ${purpose === "rent"
-                ? "bg-red-600 text-white"
+              className={`px-5 py-2.5 rounded-full font-semibold text-sm sm:text-base transition ${purpose === "rent"
+                ? "bg-red-600 text-white shadow-md"
                 : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-100"
                 }`}
             >
@@ -503,8 +563,8 @@ export default function FilterPropertiesComp() {
             </button>
           </div>
 
-          <div className="max-w-7xl mx-auto px-6 mb-10">
-            <div className="rounded-3xl bg-white shadow-sm p-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-6">
+            <div className="rounded-3xl bg-white shadow-sm p-4 sm:p-6">
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
                 <div>
                   <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
@@ -519,19 +579,20 @@ export default function FilterPropertiesComp() {
                 {loading ? (
                   <div className="text-gray-500">Loading cards...</div>
                 ) : (
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm font-semibold text-gray-700 bg-gray-100 px-3 py-1.5 rounded-full">
                     {getCountForCard({ query: { propertyType: activeCategory.cards[0].query.propertyType } })} available {purpose}{" "}
                     listings
                   </div>
                 )}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Sub-cards Flex Row Centered */}
+              <div className="flex flex-wrap justify-center gap-5">
                 {loading
                   ? Array.from({ length: 4 }).map((_, index) => (
                     <div
                       key={index}
-                      className="rounded-3xl border border-gray-200 bg-white overflow-hidden animate-pulse"
+                      className="rounded-3xl border border-gray-200 bg-white overflow-hidden animate-pulse w-full sm:w-64"
                     >
                       <div className="h-36 bg-gray-300 rounded-t-3xl" />
                       <div className="p-6">
@@ -546,10 +607,10 @@ export default function FilterPropertiesComp() {
                       <Link
                         key={card.key}
                         href={`/buy?purpose=${purpose}&${buildSearchString(card.query)}`}
-                        className="group block rounded-3xl border border-gray-200 bg-gray-50 transition hover:-translate-y-1 hover:shadow-xl"
+                        className="group block rounded-3xl border border-gray-200 bg-gray-50 transition hover:-translate-y-1 hover:shadow-xl w-full sm:w-[260px] max-w-xs flex-shrink-0"
                       >
                         <div
-                          className={`mb-4 h-36 rounded-t-3xl overflow-hidden shadow-md ${card.image ? "bg-gray-200" : "bg-gray-100"
+                          className={`h-32 rounded-t-3xl overflow-hidden shadow-md ${card.image ? "bg-gray-200" : "bg-gray-100"
                             }`}
                           style={
                             card.image
@@ -561,15 +622,15 @@ export default function FilterPropertiesComp() {
                               : undefined
                           }
                         >
-                          <div className="h-full w-full bg-black/30 flex items-center justify-center text-xl font-bold text-white">
+                          <div className="h-full w-full bg-black/35 flex items-center justify-center text-lg font-bold text-white px-3 text-center">
                             {card.label}
                           </div>
                         </div>
-                        <div className="p-6">
-                          <p className="text-lg font-semibold text-gray-900">
+                        <div className="p-4 text-center">
+                          <p className="text-base font-semibold text-gray-900">
                             {card.label}
                           </p>
-                          <p className="mt-2 text-sm text-blue-600 font-semibold">
+                          <p className="mt-1 text-xs text-blue-600 font-bold">
                             {count > 0
                               ? `${count} properties found`
                               : "Click to explore properties"}
@@ -602,7 +663,7 @@ export default function FilterPropertiesComp() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 mb-10">
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-4 max-w-4xl mx-auto justify-center">
+        <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 xl:grid-cols-9 gap-3 max-w-6xl mx-auto justify-center">
           {CATEGORY_CONFIG.map((category) => {
             const IconComponent = categoryIcons[category.key];
             const isActive = isCategoryPage && selectedCategory === category.key;

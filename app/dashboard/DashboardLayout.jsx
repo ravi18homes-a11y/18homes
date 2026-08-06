@@ -87,8 +87,9 @@ export default function DashboardLayout({ children }) {
   useEffect(() => {
     if (!user) return;
 
-    const isDealerOrBuilder = ["dealer", "builder"].includes(user.role);
-    const hasNoPaidPlan = isDealerOrBuilder && (user.planName === "Free" || !user.subscription);
+    const isAdmin = user?.role === "admin" || user?.role === "super_admin";
+    const isDealerOrBuilder = ["dealer", "builder"].includes(user?.role);
+    const hasNoPaidPlan = !isAdmin && isDealerOrBuilder && (user?.planName === "Free" || !user?.subscription);
 
     const restrictedPaths = [
       "/dashboard/analytics",
@@ -296,7 +297,7 @@ export default function DashboardLayout({ children }) {
       name: "Membership Plans",
       href: "/membership",
       icon: ShieldCheck,
-      roles: ["builder", "dealer"],
+      roles: ["builder", "dealer", "admin", "super_admin"],
     },
     {
       name: "My Properties",
@@ -332,25 +333,25 @@ export default function DashboardLayout({ children }) {
       name: "My Projects",
       href: "/dashboard/builder/projects",
       icon: Building2,
-      roles: ["builder"],
+      roles: ["builder", "admin", "super_admin"],
     },
     {
       name: "Post Project",
       href: "/post-project",
       icon: PlusCircle,
-      roles: ["builder"],
+      roles: ["builder", "admin", "super_admin"],
     },
     {
       name: "Client Leads",
       href: "/dashboard/dealer/leads",
       icon: Users,
-      roles: ["builder", "dealer"],
+      roles: ["builder", "dealer", "admin", "super_admin"],
     },
     {
       name: "Featured Ads",
       href: "/dashboard/dealer/featured-ads",
       icon: Sparkles,
-      roles: ["builder", "dealer"],
+      roles: ["builder", "dealer", "admin", "super_admin"],
     },
   ];
 
@@ -458,8 +459,9 @@ export default function DashboardLayout({ children }) {
             </p>
 
             {navLinks.map((link) => {
+              const isAdminUser = user?.role === "admin" || user?.role === "super_admin";
               const isDealerOrBuilder = ["dealer", "builder"].includes(user?.role);
-              const hasNoPaidPlan = isDealerOrBuilder && (user?.planName === "Free" || !user?.subscription);
+              const hasNoPaidPlan = !isAdminUser && isDealerOrBuilder && (user?.planName === "Free" || !user?.subscription);
               const premiumHrefs = [
                 "/dashboard/analytics",
                 "/dashboard/builder/projects",
