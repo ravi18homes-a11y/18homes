@@ -391,7 +391,17 @@ export default function AuthPage() {
         if (freshUser.role === "admin") {
           window.location.href = "/admin";
         } else {
-          window.location.href = "/";
+          let targetUrl = "/";
+          if (typeof window !== "undefined") {
+            const searchParams = new URLSearchParams(window.location.search);
+            const redirectParam = searchParams.get("redirect");
+            if (redirectParam) {
+              targetUrl = redirectParam;
+            } else if (localStorage.getItem("pendingSellFormData")) {
+              targetUrl = "/sell";
+            }
+          }
+          window.location.href = targetUrl;
         }
       }, 1000);
     } catch (error) {
