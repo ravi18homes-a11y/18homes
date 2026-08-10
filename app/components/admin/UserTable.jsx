@@ -45,6 +45,7 @@ export default function UserTable({
             <Th>User Info</Th>
             <Th>Contact</Th>
             <Th>Role</Th>
+            <Th>Rating</Th>
             <Th>Verification</Th>
             <Th>Plan & Subscription</Th>
             <Th>Account Status</Th>
@@ -113,6 +114,17 @@ export default function UserTable({
                     }`}
                   >
                     {u?.role || "user"}
+                  </span>
+                </Td>
+
+                {/* ===== SELLER / USER RATING ===== */}
+                <Td>
+                  <span className="text-[11px] font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200 inline-flex items-center gap-1">
+                    <span className="text-amber-500 font-extrabold text-xs">★</span>
+                    <span>{Number(u?.averageRating !== undefined ? u.averageRating : 5.0).toFixed(1)}</span>
+                    {u?.totalRatings > 0 && (
+                      <span className="text-[10px] text-amber-600 font-normal">({u.totalRatings})</span>
+                    )}
                   </span>
                 </Td>
 

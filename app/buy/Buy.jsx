@@ -49,7 +49,7 @@ const INITIAL_FILTERS = {
   furnishing: "all",
   minArea: "",
   maxArea: "",
-  purpose: "sell",
+  purpose: "all",
   sortBy: "newest",
   areaUnit: "",
   custom: "",
@@ -179,7 +179,7 @@ const BuyPage = () => {
 
         if (searchQuery) params.append("search", searchQuery);
         if (filters.city) params.append("city", filters.city);
-        if (filters.purpose) params.append("purpose", filters.purpose);
+        if (filters.purpose && filters.purpose !== "all") params.append("purpose", filters.purpose);
         if (filters.propertyType !== "all")
           params.append("propertyType", filters.propertyType);
         if (filters.propertyType === "commercial" && filters.commercialType && filters.commercialType !== "all") {
@@ -286,6 +286,8 @@ const BuyPage = () => {
               listedBy: prop.listedBy || "owner",
               isSold: prop.isSold || false,
               owner: prop.owner,
+              averageRating: prop.averageRating !== undefined ? prop.averageRating : 5.0,
+              totalRatings: prop.totalRatings || 0,
             };
           });
 
@@ -407,6 +409,7 @@ const BuyPage = () => {
 
       const matchesPurpose =
         !normalizedFilterPurpose ||
+        normalizedFilterPurpose === "all" ||
         normalizedPropertyPurpose === normalizedFilterPurpose;
       const matchesAreaUnit =
         !normalizedFilterAreaUnit ||
@@ -828,9 +831,19 @@ const BuyPage = () => {
           <div className="flex items-center gap-2 flex-wrap">
             <button
               type="button"
+              onClick={() => setFilters({ ...filters, purpose: "all" })}
+              className={`px-4 py-2 rounded-full border font-semibold transition cursor-pointer ${filters.purpose === "all" || !filters.purpose
+                ? "bg-[#8c4bdc] text-white border-[#8c4bdc] shadow-sm"
+                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                }`}
+            >
+              All
+            </button>
+            <button
+              type="button"
               onClick={() => setFilters({ ...filters, purpose: "sell" })}
-              className={`px-4 py-2 rounded-full border transition ${filters.purpose === "sell"
-                ? "bg-green-600 text-white border-green-600"
+              className={`px-4 py-2 rounded-full border font-semibold transition cursor-pointer ${filters.purpose === "sell"
+                ? "bg-green-600 text-white border-green-600 shadow-sm"
                 : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
                 }`}
             >
@@ -839,8 +852,8 @@ const BuyPage = () => {
             <button
               type="button"
               onClick={() => setFilters({ ...filters, purpose: "rent" })}
-              className={`px-4 py-2 rounded-full border transition ${filters.purpose === "rent"
-                ? "bg-red-600 text-white border-red-600"
+              className={`px-4 py-2 rounded-full border font-semibold transition cursor-pointer ${filters.purpose === "rent"
+                ? "bg-red-600 text-white border-red-600 shadow-sm"
                 : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
                 }`}
             >
@@ -1062,9 +1075,18 @@ const BuyPage = () => {
                     </div>
 
                     <div className="p-4">
-                      <h3 className="text-xl font-bold text-gray-800 mb-2">
-                        {property.title}
-                      </h3>
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <h3 className="text-xl font-bold text-gray-800 line-clamp-1">
+                          {property.title}
+                        </h3>
+                        <div className="flex items-center gap-1 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-lg shrink-0" title={`${property.averageRating || 5.0} Stars (${property.totalRatings || 0} reviews)`}>
+                          <span className="text-amber-500 font-bold text-xs">★</span>
+                          <span className="text-xs font-black text-amber-900">{Number(property.averageRating || 5.0).toFixed(1)}</span>
+                          {property.totalRatings > 0 && (
+                            <span className="text-[10px] text-amber-700">({property.totalRatings})</span>
+                          )}
+                        </div>
+                      </div>
                       <div className="flex items-center text-gray-600 mb-3">
                         <MapPin className="w-4 h-4 mr-1 shrink-0" />
                         <span className="text-sm capitalize truncate">

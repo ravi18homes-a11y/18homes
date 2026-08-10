@@ -137,9 +137,7 @@ const RealEstateApp = () => {
   const currentCount = subStats?.usage?.propertiesCount || 0;
   const isLimitReached = !isAdmin && propertyLimit !== -1 && currentCount >= propertyLimit;
 
-  // const databaseUrl = "http://localhost:5000";
-
-  const [sellForm, setSellForm] = useState({
+  const initialFormState = {
     title: "",
     description: "",
     purpose: "sell",
@@ -172,7 +170,36 @@ const RealEstateApp = () => {
       school: "",
       hospital: "",
     },
-  });
+  };
+
+  const [sellForm, setSellForm] = useState(initialFormState);
+
+  // Restore pending form data from localStorage if exists and not expired
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("pendingSellFormData");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const SESSION_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours
+        if (parsed?.formData && parsed?.timestamp && Date.now() - parsed.timestamp < SESSION_TIMEOUT) {
+          setSellForm(parsed.formData);
+          toast.success("Welcome back! Your property details have been restored.");
+        } else {
+          localStorage.removeItem("pendingSellFormData");
+        }
+      }
+    } catch (e) {
+      console.error("Error restoring saved sell form:", e);
+      localStorage.removeItem("pendingSellFormData");
+    }
+  }, []);
+
+  const handleCancelForm = () => {
+    localStorage.removeItem("pendingSellFormData");
+    setSellForm(initialFormState);
+    toast.info("Form cleared");
+    router.push("/");
+  };
 
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
@@ -288,7 +315,26 @@ const RealEstateApp = () => {
         : "md:col-span-3";
 
   const handleSubmitProperty = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
+
+    if (isSubmitting) return;
+
+    if (!sellForm.title?.trim()) {
+      toast.error("Property Title is required!");
+      return;
+    }
+    if (!sellForm.description?.trim()) {
+      toast.error("Property Description is required!");
+      return;
+    }
+    if (!sellForm.priceNumber) {
+      toast.error("Property Price is required!");
+      return;
+    }
+    if (!sellForm.address?.trim()) {
+      toast.error("Property Location / Address is required!");
+      return;
+    }
 
     setIsSubmitting(true);
 
@@ -296,8 +342,14 @@ const RealEstateApp = () => {
       const token = localStorage.getItem("authToken");
 
       if (!token) {
-        toast.error("Please login first");
+        const pendingData = {
+          formData: sellForm,
+          timestamp: Date.now(),
+        };
+        localStorage.setItem("pendingSellFormData", JSON.stringify(pendingData));
+        toast.error("Please login or sign up to list your property. Your form details have been saved!");
         setIsSubmitting(false);
+        router.push("/login-signup?redirect=/sell");
         return;
       }
 
@@ -353,40 +405,8 @@ const RealEstateApp = () => {
         const propertyId = createdProperty?._id || createdProperty?.id;
 
         const resetForm = () => {
-          setSellForm({
-            title: "",
-            description: "",
-            purpose: "sell",
-            propertyType: "apartment",
-            commercialType: "",
-            commercialTypeCustom: "",
-            isHighRise: false,
-            floorNo: "",
-            totalFloors: "",
-            priceNumber: "",
-            priceUnit: "Lac",
-            area: [{ size: "", unit: "sqft" }],
-            bedrooms: "1",
-            bathrooms: "1",
-            furnishing: "unfurnished",
-            address: "",
-            images: [],
-            videos: [],
-            ownerName: "",
-            ownerPhone: "",
-            ownerEmail: "",
-            listedBy: "owner",
-            ageOfProperty: "New Construction",
-            balconies: "0",
-            amenities: [],
-            distances: {
-              busStand: "",
-              metroStation: "",
-              atm: "",
-              school: "",
-              hospital: "",
-            },
-          });
+          localStorage.removeItem("pendingSellFormData");
+          setSellForm(initialFormState);
         };
 
         if (shouldBoost && propertyId) {
@@ -1332,12 +1352,13 @@ const RealEstateApp = () => {
 
               {/* Submit Buttons */}
               <div className="flex justify-end gap-3 pt-6">
-                <Link
-                  href={"/"}
-                  className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                <button
+                  type="button"
+                  onClick={handleCancelForm}
+                  className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-700 font-medium cursor-pointer"
                 >
                   Cancel
-                </Link>
+                </button>
 
                 <button
                   type="button"

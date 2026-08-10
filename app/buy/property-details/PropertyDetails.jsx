@@ -59,6 +59,7 @@ const DISTANCE_INFO = {
 };
 import Link from "next/link";
 import EmiCalculator from "@/app/components/EmiCalculator";
+import PropertyReviews from "@/app/components/PropertyReviews";
 import { FaWhatsapp, FaFacebook, FaTwitter } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 import confetti from "canvas-confetti";
@@ -1261,6 +1262,12 @@ const PropertyDetailsPage = () => {
                 </div>
               </div>
             )}
+
+            {/* User Ratings & Reviews Section */}
+            <PropertyReviews
+              propertyId={property._id || property.id}
+              ownerId={property.owner?._id || property.owner?.id || property.owner}
+            />
           </div>
 
           {/* Right Column - Contact Agent */}
@@ -1297,7 +1304,14 @@ const PropertyDetailsPage = () => {
                               </span>
                             )}
                           </div>
-                          <p className="text-sm text-gray-600">Property Owner</p>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <p className="text-xs text-gray-600 capitalize">{property.owner?.role || "Owner"}</p>
+                            {property.owner?.averageRating && (
+                              <span className="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded flex items-center gap-0.5">
+                                ★ {Number(property.owner.averageRating).toFixed(1)}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
 

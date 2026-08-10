@@ -372,7 +372,8 @@ export default function FilterPropertiesComp() {
 
       setLoading(true);
       try {
-        const params = new URLSearchParams({ purpose, limit: "1000" });
+        const params = new URLSearchParams({ limit: "1000" });
+        if (purpose && purpose !== "all") params.append("purpose", purpose);
         const response = await fetch(
           `${API_BASE_URL}/api/properties?${params.toString()}`,
         );
@@ -455,10 +456,10 @@ export default function FilterPropertiesComp() {
       try {
         const catKey = selectedCategory === "agriculture" ? "land" : selectedCategory;
         const params = new URLSearchParams({
-          purpose,
           propertyType: catKey,
           limit: "12",
         });
+        if (purpose && purpose !== "all") params.append("purpose", purpose);
         const res = await fetch(`${API_BASE_URL}/api/properties?${params.toString()}`);
         const json = await res.json();
         if (res.ok && json.success && Array.isArray(json.data?.properties)) {
@@ -539,9 +540,22 @@ export default function FilterPropertiesComp() {
               type="button"
               onClick={() => {
                 setLoading(true);
+                setPurpose("all");
+              }}
+              className={`px-5 py-2.5 rounded-full font-semibold text-sm sm:text-base transition cursor-pointer ${purpose === "all" || !purpose
+                ? "bg-[#8c4bdc] text-white shadow-md"
+                : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-100"
+                }`}
+            >
+              All
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setLoading(true);
                 setPurpose("sell");
               }}
-              className={`px-5 py-2.5 rounded-full font-semibold text-sm sm:text-base transition ${purpose === "sell"
+              className={`px-5 py-2.5 rounded-full font-semibold text-sm sm:text-base transition cursor-pointer ${purpose === "sell"
                 ? "bg-green-600 text-white shadow-md"
                 : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-100"
                 }`}
@@ -554,7 +568,7 @@ export default function FilterPropertiesComp() {
                 setLoading(true);
                 setPurpose("rent");
               }}
-              className={`px-5 py-2.5 rounded-full font-semibold text-sm sm:text-base transition ${purpose === "rent"
+              className={`px-5 py-2.5 rounded-full font-semibold text-sm sm:text-base transition cursor-pointer ${purpose === "rent"
                 ? "bg-red-600 text-white shadow-md"
                 : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-100"
                 }`}
