@@ -130,6 +130,13 @@ const CATEGORY_CONFIG = [
     description: "Find the right shop size.",
     cards: [
       {
+        key: "all-shop",
+        label: "All Shops",
+        image:
+          "https://res.cloudinary.com/dxlykgx6w/image/upload/v1777231952/images_czl57p.jpg",
+        query: { propertyType: "shop" },
+      },
+      {
         key: "small-shop",
         label: "Small Shop",
         image:
@@ -417,6 +424,23 @@ export default function FilterPropertiesComp() {
             }
           }
 
+          if (type === "shop") {
+            const getShopCategorySize = (prop) => {
+              if (prop.shopSize && String(prop.shopSize).trim() !== "") {
+                return String(prop.shopSize).trim().toLowerCase();
+              }
+              const areaVal = typeof prop.area === "object" ? prop.area?.size : prop.area;
+              const numArea = Number(String(areaVal || 0).replace(/\D/g, "")) || 0;
+              if (numArea <= 0) return "small";
+              if (numArea < 300) return "small";
+              if (numArea < 800) return "medium";
+              if (numArea < 2000) return "large";
+              return "showroom";
+            };
+            const sSize = getShopCategorySize(property);
+            grouped[type][sSize] = (grouped[type][sSize] || 0) + 1;
+          }
+
           if (type === "commercial") {
             const commType = property.commercialType || "unknown";
             grouped[type][commType] = (grouped[type][commType] || 0) + 1;
@@ -508,6 +532,14 @@ export default function FilterPropertiesComp() {
         return (flatCounts[card.query.bedrooms] || 0) + (aptCounts[card.query.bedrooms] || 0);
       }
       return (flatCounts.total || 0) + (aptCounts.total || 0);
+    }
+
+    if (type === "shop") {
+      const shopCounts = counts["shop"] || {};
+      if (card.query.shopSize) {
+        return shopCounts[card.query.shopSize] || 0;
+      }
+      return shopCounts.total || 0;
     }
 
     if (type === "commercial") {

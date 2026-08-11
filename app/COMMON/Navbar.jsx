@@ -582,17 +582,23 @@ export default function Navbar() {
             </div>
           ))}
 
-          {isInstallable && (
-            <button
-              onClick={() => {
-                installApp();
-                setOpen(false);
-              }}
-              className="text-left text-[#8c4bdc] font-semibold flex items-center gap-2 py-1 cursor-pointer"
-            >
-              <span>📲</span> Install App
-            </button>
-          )}
+          <Link
+            href="/membership"
+            onClick={() => setOpen(false)}
+            className="text-left text-blue-600 font-bold flex items-center gap-2 py-1 cursor-pointer"
+          >
+            <span>💎</span> Membership Plans
+          </Link>
+
+          <button
+            onClick={() => {
+              if (installApp) installApp();
+              setOpen(false);
+            }}
+            className="text-left text-blue-600 font-bold flex items-center gap-2 py-1 cursor-pointer"
+          >
+            <span>📲</span> Install 18Homes App
+          </button>
 
           {(navData?.sitePages || []).map((p) => (
             <div key={p.id} className="space-y-2">

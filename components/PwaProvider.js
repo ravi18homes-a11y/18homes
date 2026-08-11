@@ -126,19 +126,26 @@ export default function PwaProvider({ children }) {
   }, [isInstallable]);
 
   const installApp = async () => {
-    if (!deferredPrompt) {
-      console.log("No install prompt available");
+    const promptObj = deferredPrompt || (typeof window !== "undefined" ? window.deferredPrompt : null);
+
+    if (!promptObj) {
+      console.log("No native install prompt available, displaying installation guide popup");
+      setShowInstallPopup(true);
       return;
     }
-    // Show the install prompt
-    deferredPrompt.prompt();
-    // Wait for the user to respond to the prompt
-    const { outcome } = await deferredPrompt.userChoice;
-    console.log(`User response to the install prompt: ${outcome}`);
-    // We've used the prompt, and can't use it again
-    setDeferredPrompt(null);
-    setIsInstallable(false);
-    setShowInstallPopup(false);
+
+    try {
+      await promptObj.prompt();
+      const { outcome } = await promptObj.userChoice;
+      console.log(`User response to install prompt: ${outcome}`);
+      setDeferredPrompt(null);
+      if (typeof window !== "undefined") window.deferredPrompt = null;
+      setIsInstallable(false);
+      setShowInstallPopup(false);
+    } catch (err) {
+      console.error("Error triggering native install prompt:", err);
+      setShowInstallPopup(true);
+    }
   };
 
   const DEFAULT_LOGO = "https://res.cloudinary.com/dxlykgx6w/image/upload/v1785662832/18homes_log_best_real_estate_e6spg7.jpg";
@@ -163,12 +170,12 @@ export default function PwaProvider({ children }) {
       }}
     >
       {children}
-      {/* Homepage Install Popup */}
+      {/* Homepage & Manual Trigger Install Popup */}
       {showInstallPopup && (
         <>
           {/* Backdrop overlay */}
           <div
-            className="fixed inset-0 bg-black/30 z-[9998] backdrop-blur-xs transition-opacity duration-300"
+            className="fixed inset-0 bg-black/50 z-[9998] backdrop-blur-sm transition-opacity duration-300"
             onClick={() => setShowInstallPopup(false)}
           />
           <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9999] w-[90vw] max-w-sm rounded-3xl border border-slate-100 bg-white p-6 shadow-2xl ring-1 ring-slate-100/50 transition-all duration-300 flex flex-col items-center text-center">
@@ -191,22 +198,30 @@ export default function PwaProvider({ children }) {
               <Image src={DEFAULT_LOGO} alt="18Homes" width={48} height={48} className="rounded-xl object-contain" />
             </div>
             <div className="space-y-2 w-full">
-              <h4 className="font-bold text-slate-900 text-lg">Install 18 Homes</h4>
+              <h4 className="font-bold text-slate-900 text-lg">Install 18Homes App</h4>
               <p className="text-xs text-slate-600 leading-relaxed px-2">
-                Add 18 Homes to your home screen for quick access and offline features.
+                Add 18Homes to your home screen for fast access, property alerts & offline features.
               </p>
-              <div className="pt-3 flex items-center justify-center gap-3 w-full">
-                <button
-                  onClick={installApp}
-                  className="flex-1 rounded-full bg-slate-900 py-2.5 text-xs font-semibold text-white transition hover:bg-slate-800 cursor-pointer shadow-md"
-                >
-                  Install Now
-                </button>
+              <div className="pt-3 flex flex-col gap-2 w-full">
+                {(deferredPrompt || (typeof window !== "undefined" && window.deferredPrompt)) ? (
+                  <button
+                    onClick={installApp}
+                    className="w-full rounded-full bg-blue-600 py-3 text-xs font-bold text-white transition hover:bg-blue-700 cursor-pointer shadow-md"
+                  >
+                    Install Now
+                  </button>
+                ) : (
+                  <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3 text.xs text-slate-600 text-left space-y-1">
+                    <p className="font-bold text-slate-800 text-xs">To Install 18Homes App:</p>
+                    <p className="text-[11px]">1. Tap the <strong>Browser Menu (⋮ or Share icon)</strong></p>
+                    <p className="text-[11px]">2. Tap <strong>"Add to Home Screen"</strong> or <strong>"Install App"</strong></p>
+                  </div>
+                )}
                 <button
                   onClick={() => setShowInstallPopup(false)}
-                  className="flex-1 rounded-full bg-slate-100 py-2.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-200 cursor-pointer"
+                  className="w-full rounded-full bg-slate-100 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-200 cursor-pointer"
                 >
-                  Later
+                  Close
                 </button>
               </div>
             </div>

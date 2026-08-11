@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Award,
   Sparkles,
@@ -9,7 +9,8 @@ import {
   Phone,
   MessageCircle,
   MapPin,
-  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 const DEFAULT_AVATAR =
@@ -43,9 +44,15 @@ const parsePhoneNumber = (rawPhone) => {
   return { isValid: true, formattedDisplay, waNumber, callNumber };
 };
 
-export default function FeaturedAgentsWidget({ city = "", locality = "" }) {
+export default function FeaturedAgentsWidget({
+  city = "",
+  locality = "",
+  selectedAgentId = null,
+  onSelectAgent = null,
+}) {
   const [agents, setAgents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const scrollContainerRef = useRef(null);
 
   const databaseUrl =
     process.env.NEXT_PUBLIC_APP_DATABASE_URL || "http://localhost:5000";
@@ -78,13 +85,23 @@ export default function FeaturedAgentsWidget({ city = "", locality = "" }) {
     fetchFeaturedAgents();
   }, [city, locality, databaseUrl]);
 
+  const scroll = (direction) => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 340;
+      scrollContainerRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
+
   if (loading || agents.length === 0) {
     return null; // Silent if no active ads
   }
 
   return (
-    <div className="bg-gradient-to-r from-amber-900 via-orange-950 to-slate-900 rounded-3xl p-6 shadow-2xl text-white space-y-4 border-2 border-amber-500/30 my-6">
-      <div className="flex items-center justify-between flex-wrap gap-2 border-b border-amber-500/20 pb-3">
+    <div className="bg-gradient-to-r from-amber-950 via-orange-950 to-slate-900 rounded-3xl p-5 sm:p-6 shadow-2xl text-white space-y-4 border-2 border-amber-500/30 my-6 relative overflow-hidden">
+      <div className="flex items-center justify-between flex-wrap gap-3 border-b border-amber-500/20 pb-3">
         <div className="flex items-center gap-2">
           <span className="p-2 bg-amber-500/20 rounded-xl text-amber-400">
             <Award className="w-5 h-5" />
@@ -95,35 +112,74 @@ export default function FeaturedAgentsWidget({ city = "", locality = "" }) {
               <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
             </h3>
             <p className="text-xs text-amber-200/80">
-              Verified local experts in {locality || city || "your target location"}
+              Verified local experts in {locality || city || "your target location"} &bull; Click agent card to filter properties
             </p>
           </div>
         </div>
 
-        <span className="bg-amber-500/20 text-amber-300 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider border border-amber-400/30">
-          Featured Ads
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="bg-amber-500/20 text-amber-300 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider border border-amber-400/30">
+            Featured Ads
+          </span>
+
+          {/* Slider Scroll Arrows */}
+          {agents.length > 1 && (
+            <div className="flex items-center gap-1 ml-1">
+              <button
+                onClick={() => scroll("left")}
+                className="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white transition border border-amber-400/20 active:scale-95 cursor-pointer"
+                title="Scroll Left"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => scroll("right")}
+                className="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white transition border border-amber-400/20 active:scale-95 cursor-pointer"
+                title="Scroll Right"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Cards Slider Container */}
+      <div
+        ref={scrollContainerRef}
+        className="flex gap-4 overflow-x-auto scroll-smooth snap-x pb-2 scrollbar-thin scrollbar-thumb-amber-500/30 scrollbar-track-transparent"
+        style={{ scrollbarWidth: "thin" }}
+      >
         {agents.map((ad) => {
           const dealer = ad.dealer || {};
+          const dealerId = dealer._id || dealer.id;
           const agencyName =
             dealer.dealerDetails?.agencyName ||
             dealer.builderDetails?.companyName ||
             "Real Estate Agency";
 
+          const locationText = ad.locality
+            ? `${ad.locality}, ${ad.city}`
+            : ad.city || "Area Specialist";
+
+          const isSelected = selectedAgentId && selectedAgentId === dealerId;
+
           const phoneInfo = parsePhoneNumber(dealer.phone);
           const whatsappUrl = phoneInfo.isValid
             ? `https://wa.me/${phoneInfo.waNumber}?text=${encodeURIComponent(
-                `Hello ${dealer.name}, I found your Featured Agent profile on 18homes for ${ad.city}. I want to inquire about properties.`
+                `Hello ${dealer.name}, I found your Featured Agent profile on 18homes for ${locationText}. I want to inquire about properties.`
               )}`
             : null;
 
           return (
             <div
               key={ad._id}
-              className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-amber-400/20 hover:border-amber-400/50 hover:bg-white/15 transition space-y-3 flex flex-col justify-between"
+              onClick={() => onSelectAgent && onSelectAgent(dealer, ad)}
+              className={`backdrop-blur-md rounded-2xl p-4 border transition space-y-3 flex flex-col justify-between w-[280px] sm:w-[330px] md:w-[350px] shrink-0 snap-start flex-shrink-0 cursor-pointer ${
+                isSelected
+                  ? "bg-amber-500/30 border-amber-400 shadow-xl ring-2 ring-amber-400/60"
+                  : "bg-white/10 border-amber-400/20 hover:border-amber-400/60 hover:bg-white/15"
+              }`}
             >
               <div className="flex items-start gap-3">
                 <img
@@ -132,31 +188,53 @@ export default function FeaturedAgentsWidget({ city = "", locality = "" }) {
                   className="w-14 h-14 rounded-2xl object-cover border-2 border-amber-400/40 flex-shrink-0"
                 />
 
-                <div className="min-w-0 space-y-0.5 flex-1">
-                  <div className="flex items-center gap-1">
-                    <h4 className="font-extrabold text-sm text-white truncate">
-                      {dealer.name || "Top Agent"}
-                    </h4>
-                    <ShieldCheck className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                <div className="min-w-0 space-y-1 flex-1">
+                  <div className="flex items-center justify-between gap-1">
+                    <div className="flex items-center gap-1 min-w-0">
+                      <h4 className="font-extrabold text-sm text-white truncate">
+                        {dealer.name || "Top Agent"}
+                      </h4>
+                      <ShieldCheck className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                    </div>
+                    {isSelected && (
+                      <span className="bg-amber-400 text-slate-950 text-[9px] font-black px-1.5 py-0.5 rounded uppercase shrink-0">
+                        Active Filter
+                      </span>
+                    )}
                   </div>
 
                   <p className="text-xs text-amber-300 font-semibold truncate">
                     {agencyName}
                   </p>
 
-                  <p className="text-[11px] text-slate-300 line-clamp-1 italic">
+                  {/* Location Tag */}
+                  <div className="flex items-center gap-1 text-[11px] font-bold text-amber-200 bg-amber-500/15 px-2 py-0.5 rounded-lg border border-amber-400/20 w-fit max-w-full">
+                    <MapPin className="w-3 h-3 text-amber-400 flex-shrink-0" />
+                    <span className="truncate">{locationText}</span>
+                  </div>
+
+                  <p className="text-[11px] text-slate-300 line-clamp-1 italic pt-0.5">
                     "{ad.tagline}"
                   </p>
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-white/10 flex items-center justify-between text-xs">
+              {/* Click instruction / Status */}
+              <div className="text-[10px] font-extrabold text-amber-300/90 text-right">
+                {isSelected ? (
+                  <span className="text-emerald-300">✓ Showing Properties</span>
+                ) : (
+                  <span className="hover:underline">Click card to view listings →</span>
+                )}
+              </div>
+
+              <div className="pt-2.5 border-t border-white/10 flex items-center justify-between text-xs">
                 <span className="text-[11px] text-amber-200/90 font-bold flex items-center gap-1">
                   <Building className="w-3.5 h-3.5" />
                   <span>{ad.activePropertyCount || 0} Active Properties</span>
                 </span>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                   {whatsappUrl && (
                     <a
                       href={whatsappUrl}
@@ -187,3 +265,4 @@ export default function FeaturedAgentsWidget({ city = "", locality = "" }) {
     </div>
   );
 }
+
