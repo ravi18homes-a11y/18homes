@@ -17,6 +17,7 @@ import {
   Share2,
   ChevronRight,
   ChevronLeft,
+  Award,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import confetti from "canvas-confetti";
@@ -68,6 +69,7 @@ const BuyPage = () => {
   const [filters, setFilters] = useState(INITIAL_FILTERS);
   const [favorites, setFavorites] = useState([]);
   const [activePopover, setActivePopover] = useState(null);
+  const [selectedAgent, setSelectedAgent] = useState(null);
 
   useEffect(() => {
     const fetchFavorites = async () => {
@@ -207,7 +209,8 @@ const BuyPage = () => {
         params.append("sort", sortParam);
 
         params.append("page", page.toString());
-        params.append("limit", pagination.limit.toString());
+        const currentLimit = selectedAgent ? 100 : pagination.limit;
+        params.append("limit", currentLimit.toString());
 
         const apiUrl = `${databaseUrl}/api/properties?${params.toString()}`;
         console.log("Fetching from:", apiUrl);
@@ -312,7 +315,7 @@ const BuyPage = () => {
         }
       }
     },
-    [databaseUrl, searchQuery, filters, pagination.limit],
+    [databaseUrl, searchQuery, filters, selectedAgent, pagination.limit],
   );
 
   // Reset to page 1 whenever search/filters change, then fetch
@@ -320,7 +323,7 @@ const BuyPage = () => {
     if (!filtersInitialized) return;
     setPagination((prev) => ({ ...prev, page: 1 }));
     fetchProperties(1);
-  }, [searchQuery, filters, filtersInitialized, fetchProperties]);
+  }, [searchQuery, filters, selectedAgent, filtersInitialized, fetchProperties]);
 
   // Fetch when page changes (but not when filters/search trigger a reset)
   const handlePageChange = (newPage) => {
@@ -329,7 +332,30 @@ const BuyPage = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const getPhoneDigits = (phone) => {
+    if (!phone || typeof phone !== "string") return "";
+    const digits = phone.replace(/\D/g, "");
+    return digits.length >= 10 ? digits.slice(-10) : digits;
+  };
+
+  const handleSelectAgent = (dealer, ad) => {
+    const dealerId = dealer._id || dealer.id;
+    if (selectedAgent && (selectedAgent.id === dealerId || (selectedAgent.name && selectedAgent.name === dealer.name))) {
+      setSelectedAgent(null);
+      toast.success("Showing all properties");
+    } else {
+      setSelectedAgent({
+        id: dealerId ? String(dealerId) : "",
+        name: dealer.name || "Featured Agent",
+        email: dealer.email || "",
+        phone: dealer.phone || "",
+      });
+      toast.success(`Filtering properties for ${dealer.name || "Agent"}`);
+    }
+  };
+
   const shouldApplyClientFilters =
+    selectedAgent !== null ||
     filters.bathrooms !== "any" ||
     filters.minArea !== "" ||
     filters.maxArea !== "" ||
@@ -340,7 +366,7 @@ const BuyPage = () => {
     filters.isBoosted === "true" ||
     (filters.propertyType === "commercial" && (filters.commercialType !== "all" || filters.commercialTypeCustom));
 
-  const filteredProperties = shouldApplyClientFilters
+  const filteredProperties = (shouldApplyClientFilters
     ? properties.filter((property) => {
       const matchesBath =
         filters.bathrooms === "any" ||
@@ -392,6 +418,11 @@ const BuyPage = () => {
           /studio/i.test(property.title || "") ||
           /studio/i.test(property.description || "")
         )) ||
+        (normalizedFilterType === "shop" && (
+          normalizedPropertyType === "shop" ||
+          /shop|showroom|store/i.test(property.type || "") ||
+          /shop|showroom|store/i.test(property.title || "")
+        )) ||
         (normalizedFilterType !== "agriculture" && normalizedFilterType !== "land" && normalizedPropertyType === normalizedFilterType) ||
         (normalizedFilterType === "commercial" && normalizedPropertyType.startsWith("commercial"));
 
@@ -418,9 +449,23 @@ const BuyPage = () => {
           normalizeString(property.commercialTypeCustom).includes(normalizedFilterAreaUnit) ||
           normalizeString(property.commercialType).includes(normalizedFilterAreaUnit)
         ));
+
+      const getPropertyShopSize = (prop) => {
+        if (prop.shopSize && String(prop.shopSize).trim() !== "") {
+          return normalizeString(prop.shopSize);
+        }
+        const numArea = Number(String(prop.area).replace(/\D/g, "")) || 0;
+        if (numArea <= 0) return "small";
+        if (numArea < 300) return "small";
+        if (numArea < 800) return "medium";
+        if (numArea < 2000) return "large";
+        return "showroom";
+      };
+
       const matchesShopSize =
         !normalizedFilterShopSize ||
-        normalizedShopSize === normalizedFilterShopSize;
+        normalizedShopSize === normalizedFilterShopSize ||
+        getPropertyShopSize(property) === normalizedFilterShopSize;
       const matchesOfficeType =
         !normalizedFilterOfficeType ||
         normalizedOfficeType === normalizedFilterOfficeType;
@@ -446,7 +491,42 @@ const BuyPage = () => {
         matchesBoosted
       );
     })
-    : properties;
+    : properties
+  ).filter((property) => {
+    if (!selectedAgent) return true;
+
+    const agentId = String(selectedAgent.id || "").trim();
+    const agentName = String(selectedAgent.name || "").trim().toLowerCase();
+    const agentEmail = String(selectedAgent.email || "").trim().toLowerCase();
+    const agentPhoneDigits = getPhoneDigits(selectedAgent.phone);
+
+    const owner = property.owner;
+    const ownerId = String(
+      owner?._id || owner?.id || (typeof owner === "string" ? owner : "") || property.userId || property.builderId || property.dealerId || ""
+    ).trim();
+
+    const ownerName = String(owner?.name || "").trim().toLowerCase();
+    const ownerEmail = String(owner?.email || "").trim().toLowerCase();
+    const ownerPhoneDigits = getPhoneDigits(owner?.phone);
+
+    // 1. ID Match
+    if (agentId && ownerId && agentId === ownerId) return true;
+
+    // 2. Email Match
+    if (agentEmail && ownerEmail && agentEmail === ownerEmail) return true;
+
+    // 3. Phone Match
+    if (agentPhoneDigits && ownerPhoneDigits && agentPhoneDigits === ownerPhoneDigits) return true;
+
+    // 4. Name Match (exact or contains)
+    if (agentName && ownerName) {
+      if (agentName === ownerName || agentName.includes(ownerName) || ownerName.includes(agentName)) {
+        return true;
+      }
+    }
+
+    return false;
+  });
 
   const toggleFavorite = async (id) => {
     const token = localStorage.getItem("authToken");
@@ -900,7 +980,31 @@ const BuyPage = () => {
         ) : (
           <>
             {/* Featured Locality Specialist Agents Widget */}
-            <FeaturedAgentsWidget city={filters.city} locality={searchQuery} />
+            <FeaturedAgentsWidget
+              city={filters.city}
+              locality={searchQuery}
+              selectedAgentId={selectedAgent?.id}
+              onSelectAgent={handleSelectAgent}
+            />
+
+            {/* Selected Agent Filter Alert Banner */}
+            {selectedAgent && (
+              <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 my-6 flex items-center justify-between shadow-sm">
+                <div className="flex items-center gap-2 text-amber-950 font-bold text-sm">
+                  <Award className="w-5 h-5 text-amber-600 shrink-0" />
+                  <span>
+                    Showing properties listed by: <strong className="text-amber-900 underline font-black">{selectedAgent.name}</strong> ({filteredProperties.length} Properties found)
+                  </span>
+                </div>
+                <button
+                  onClick={() => setSelectedAgent(null)}
+                  className="text-xs font-bold bg-amber-200 hover:bg-amber-300 text-amber-950 px-3 py-1.5 rounded-xl transition flex items-center gap-1 cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                  <span>Clear Filter (Show All)</span>
+                </button>
+              </div>
+            )}
 
             {/* Property Grid */}
             {console.log("Filtered Properties Count:", filteredProperties)}
@@ -1168,14 +1272,26 @@ const BuyPage = () => {
               </div>
             ) : (
               /* Empty State */
-              <div className="text-center py-16">
+              <div className="text-center py-16 bg-white rounded-3xl border-2 border-slate-100 p-8 shadow-sm">
                 <Home className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                  No Properties Found
+                <h3 className="text-xl font-bold text-gray-800 mb-2">
+                  {selectedAgent
+                    ? `No listings found for ${selectedAgent.name}`
+                    : "No Properties Found"}
                 </h3>
-                <p className="text-gray-600">
-                  Please change your filters or try a different search
+                <p className="text-gray-600 mb-4 text-sm">
+                  {selectedAgent
+                    ? "This agent currently has no active listings matching your filters."
+                    : "Please change your filters or try a different search"}
                 </p>
+                {selectedAgent && (
+                  <button
+                    onClick={() => setSelectedAgent(null)}
+                    className="px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-md transition cursor-pointer"
+                  >
+                    Show All Properties
+                  </button>
+                )}
               </div>
             )}
 

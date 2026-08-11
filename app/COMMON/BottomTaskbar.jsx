@@ -26,10 +26,14 @@ import {
   Layers,
   BookOpen,
   Building2,
+  Award,
+  Download,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { usePwa } from "@/components/PwaProvider";
 
 export default function BottomTaskbar() {
+  const { isInstallable, installApp } = usePwa();
   const pathname = usePathname();
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -668,6 +672,39 @@ export default function BottomTaskbar() {
                 <Home className="w-5 h-5 text-gray-400" />
                 <span>Home</span>
               </Link>
+
+              {/* Membership Page Link (Blue Color Highlighted) */}
+              <Link
+                href="/membership"
+                onClick={() => setIsMenuOpen(false)}
+                className="flex items-center justify-between p-3 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200/80 transition font-bold my-1 shadow-xs"
+              >
+                <div className="flex items-center gap-3">
+                  <Award className="w-5 h-5 text-blue-600 shrink-0" />
+                  <span>Membership Plans</span>
+                </div>
+                <span className="bg-blue-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                  PRO
+                </span>
+              </Link>
+
+              {/* PWA App Install Button */}
+              <button
+                type="button"
+                onClick={async () => {
+                  setIsMenuOpen(false);
+                  if (installApp) {
+                    await installApp();
+                  }
+                }}
+                className="w-full flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white hover:from-blue-700 hover:to-indigo-700 transition font-bold shadow-md my-1 cursor-pointer active:scale-[0.98]"
+              >
+                <div className="flex items-center gap-3">
+                  <Download className="w-5 h-5 text-white animate-bounce shrink-0" />
+                  <span>Install 18Homes App</span>
+                </div>
+               
+              </button>
 
               {/* <Link
                 href="/buy"

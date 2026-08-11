@@ -367,6 +367,7 @@ const RealEstateApp = () => {
           description: sellForm.description,
           purpose: sellForm.purpose,
           propertyType: sellForm.propertyType,
+          shopSize: sellForm.propertyType === "shop" ? (sellForm.shopSize || "small") : undefined,
           commercialType: sellForm.propertyType === "commercial" ? sellForm.commercialType : undefined,
           commercialTypeCustom: (sellForm.propertyType === "commercial" && sellForm.commercialType === "other") ? sellForm.commercialTypeCustom : undefined,
           isHighRise: (sellForm.propertyType === "flat" || sellForm.propertyType === "apartment") ? sellForm.isHighRise : false,
@@ -853,6 +854,27 @@ const RealEstateApp = () => {
                     <option value="studio_apartment">Studio Apartment</option>
                   </select>
                 </div>
+
+                {sellForm.propertyType === "shop" && (
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Shop Size Category *
+                    </label>
+                    <select
+                      required
+                      value={sellForm.shopSize || "small"}
+                      onChange={(e) =>
+                        handleSellFormChange("shopSize", e.target.value)
+                      }
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 font-medium"
+                    >
+                      <option value="small">Small Shop (&lt; 300 sq.ft)</option>
+                      <option value="medium">Medium Shop (300 - 800 sq.ft)</option>
+                      <option value="large">Large Shop (800 - 2000 sq.ft)</option>
+                      <option value="showroom">Showroom (2000+ sq.ft)</option>
+                    </select>
+                  </div>
+                )}
 
                 {sellForm.propertyType === "commercial" && (
                   <div className="md:col-span-2">
