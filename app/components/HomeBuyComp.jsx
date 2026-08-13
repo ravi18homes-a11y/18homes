@@ -472,8 +472,13 @@ export default function HomeBuyComp() {
               </div>
 
               <div className="p-4">
-                <h3 className="text-xl font-bold text-gray-800 mb-2">
-                  {property.title}
+                <h3 className="text-xl font-bold text-gray-800 mb-2 flex items-center gap-1.5">
+                  {/* {property.isBoosted && (
+                    <span className="inline-flex items-center gap-0.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[11px] font-black px-2 py-0.5 rounded-full shadow-sm shrink-0" title="Boosted Property">
+                      🚀 Boosted
+                    </span>
+                  )} */}
+                  <span>{property.title}</span>
                 </h3>
                 <div className="flex items-center text-gray-600 mb-3">
                   <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />

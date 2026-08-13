@@ -29,6 +29,13 @@ const HeroSlideSchema = new mongoose.Schema(
     heading2: { type: String, default: "" },
     heading3: { type: String, default: "" },
     heading4: { type: String, default: "" },
+    heading1Color: { type: String, default: "" },
+    heading1BgColor: { type: String, default: "" },
+    heading2Color: { type: String, default: "" },
+    heading3Color: { type: String, default: "" },
+    heading4Color: { type: String, default: "" },
+    bgColor: { type: String, default: "" },
+    textColor: { type: String, default: "" },
   },
   { _id: false }
 );
@@ -96,6 +103,8 @@ const HomepageSchema = new mongoose.Schema(
     seo: { type: SeoSchema, default: () => ({}) },
     hero: {
       slides: { type: [HeroSlideSchema], default: [] },
+      bgColor: { type: String, default: "" },
+      textColor: { type: String, default: "" },
     },
     about: {
       subtitle: { type: String, default: "About" },

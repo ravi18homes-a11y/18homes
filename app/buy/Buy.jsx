@@ -366,7 +366,69 @@ const BuyPage = () => {
     filters.isBoosted === "true" ||
     (filters.propertyType === "commercial" && (filters.commercialType !== "all" || filters.commercialTypeCustom));
 
-  const filteredProperties = (shouldApplyClientFilters
+  const calculateClientRelevance = (property, query, currentFilters) => {
+    let score = 0;
+    if (currentFilters.city && property.location && property.location.toLowerCase().includes(currentFilters.city.toLowerCase())) {
+      score += 100;
+    }
+    if (query) {
+      const s = query.toLowerCase();
+      if (property.title && property.title.toLowerCase().includes(s)) score += 40;
+      if (property.location && property.location.toLowerCase().includes(s)) score += 50;
+    }
+    if (currentFilters.bedrooms && currentFilters.bedrooms !== "any") {
+      const reqB = Number(currentFilters.bedrooms);
+      const propB = Number(property.bedrooms || 0);
+      if (reqB === propB) score += 50;
+      else if (Math.abs(reqB - propB) === 1) score += 25;
+    }
+    return score;
+  };
+
+  const sortPropertiesByPrioritiesClient = (list, query, currentFilters) => {
+    return [...list].sort((a, b) => {
+      const relA = calculateClientRelevance(a, query, currentFilters);
+      const relB = calculateClientRelevance(b, query, currentFilters);
+      if (relB !== relA) return relB - relA;
+
+      const timeA = new Date(a.createdAt || 0).getTime();
+      const timeB = new Date(b.createdAt || 0).getTime();
+      if (timeB !== timeA) return timeB - timeA;
+
+      const engA = Number(a.views || 0) + Number(a.contactClickCount || 0) * 5;
+      const engB = Number(b.views || 0) + Number(b.contactClickCount || 0) * 5;
+      return engB - engA;
+    });
+  };
+
+  const interleaveFeedClient = (boostedList, normalList) => {
+    const mixed = [];
+    let bIdx = 0;
+    let nIdx = 0;
+    const intervals = [3, 4, 3, 5, 4];
+    let intervalIdx = 0;
+
+    if (bIdx < boostedList.length) {
+      mixed.push(boostedList[bIdx++]);
+    }
+
+    while (nIdx < normalList.length || bIdx < boostedList.length) {
+      const countToInsert = intervals[intervalIdx % intervals.length];
+      intervalIdx++;
+
+      for (let i = 0; i < countToInsert && nIdx < normalList.length; i++) {
+        mixed.push(normalList[nIdx++]);
+      }
+
+      if (bIdx < boostedList.length) {
+        mixed.push(boostedList[bIdx++]);
+      }
+    }
+
+    return mixed;
+  };
+
+  const rawFiltered = (shouldApplyClientFilters
     ? properties.filter((property) => {
       const matchesBath =
         filters.bathrooms === "any" ||
@@ -527,6 +589,13 @@ const BuyPage = () => {
 
     return false;
   });
+
+  const filteredProperties = (filters.sortBy === "newest" || !filters.sortBy) && filters.isBoosted !== "true"
+    ? interleaveFeedClient(
+      sortPropertiesByPrioritiesClient(rawFiltered.filter((p) => p.isBoosted), searchQuery, filters),
+      sortPropertiesByPrioritiesClient(rawFiltered.filter((p) => !p.isBoosted), searchQuery, filters)
+    )
+    : rawFiltered;
 
   const toggleFavorite = async (id) => {
     const token = localStorage.getItem("authToken");
@@ -1180,8 +1249,13 @@ const BuyPage = () => {
 
                     <div className="p-4">
                       <div className="flex items-center justify-between gap-2 mb-2">
-                        <h3 className="text-xl font-bold text-gray-800 line-clamp-1">
-                          {property.title}
+                        <h3 className="text-xl font-bold text-gray-800 line-clamp-1 flex items-center gap-1.5">
+                          {/* {property.isBoosted && (
+                            <span className="inline-flex items-center gap-0.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[11px] font-black px-2 py-0.5 rounded-full shadow-sm shrink-0" title="Boosted Property">
+                              🚀 Boosted
+                            </span>
+                          )} */}
+                          <span>{property.title}</span>
                         </h3>
                         <div className="flex items-center gap-1 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-lg shrink-0" title={`${property.averageRating || 5.0} Stars (${property.totalRatings || 0} reviews)`}>
                           <span className="text-amber-500 font-bold text-xs">★</span>
