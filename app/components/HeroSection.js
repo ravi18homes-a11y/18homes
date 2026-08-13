@@ -9,6 +9,7 @@ import "swiper/css/effect-fade";
 import "swiper/css/pagination";
 
 export default function HeroSlider({ data }) {
+  const sectionBg = data?.bgColor || undefined;
   const slides = data?.slides || [
     {
       image: "https://res.cloudinary.com/dxlykgx6w/image/upload/v1764928068/3d-rendering-modern-dining-room-living-room-with-luxury-decor-yellow-lamp_105762-2232_iu2qqe.avif",
@@ -34,7 +35,11 @@ export default function HeroSlider({ data }) {
   ];
 
   return (
-    <section className="relative max-w-[1720px] mx-auto w-full h-[90vh]" suppressHydrationWarning>
+    <section
+      className="relative max-w-[1720px] mx-auto w-full h-[90vh]"
+      style={sectionBg ? { backgroundColor: sectionBg } : {}}
+      suppressHydrationWarning
+    >
       <Swiper
         modules={[Autoplay, Pagination, EffectFade]}
         effect="fade"
@@ -56,6 +61,13 @@ export default function HeroSlider({ data }) {
               heading2={slide.heading2}
               heading3={slide.heading3}
               heading4={slide.heading4}
+              heading1Color={slide.heading1Color}
+              heading1BgColor={slide.heading1BgColor}
+              heading2Color={slide.heading2Color}
+              heading3Color={slide.heading3Color}
+              heading4Color={slide.heading4Color}
+              bgColor={slide.bgColor || data?.bgColor}
+              textColor={slide.textColor || data?.textColor}
             />
           </SwiperSlide>
         ))}
@@ -64,39 +76,81 @@ export default function HeroSlider({ data }) {
   );
 }
 
-function BannerSlide({ image, heading1, heading2, heading3, heading4 }) {
+function BannerSlide({
+  image,
+  heading1,
+  heading2,
+  heading3,
+  heading4,
+  heading1Color,
+  heading1BgColor,
+  heading2Color,
+  heading3Color,
+  heading4Color,
+  bgColor,
+  textColor,
+}) {
+  const currentBgColor = bgColor || undefined;
+  const fallbackTextColor = textColor || "black";
+
+  const h1TextColor = heading1Color || fallbackTextColor;
+  const h1Bg = heading1BgColor || "white";
+  const h2TextColor = heading2Color || fallbackTextColor;
+  const h3TextColor = heading3Color || fallbackTextColor;
+  const h4TextColor = heading4Color || fallbackTextColor;
+
   return (
-    <div className="relative w-full h-[90vh] flex items-center justify-center text-center">
+    <div
+      className="relative w-full h-[90vh] flex items-center justify-center text-center"
+      style={currentBgColor ? { backgroundColor: currentBgColor } : {}}
+    >
       {/* Background Image */}
-      <Image
-        src={image}
-        alt="Banner slide image"
-        fill
-        priority
-        className="object-cover brightness-90"
-      />
+      {image && (
+        <Image
+          src={image}
+          alt="Banner slide image"
+          fill
+          priority
+          className="object-cover brightness-90"
+        />
+      )}
 
       <div className="relative z-20 max-w-[900px] px-4">
         {heading1 && (
-          <h2 className="text-[black] text-3xl md:text-4xl mb-4 font-medium bg-[white] p-3 inline-block">
+          <h2
+            className="text-3xl md:text-4xl mb-4 font-medium p-3 inline-block rounded-md"
+            style={{
+              color: h1TextColor,
+              backgroundColor: h1Bg,
+            }}
+          >
             {heading1}
           </h2>
         )}
         {heading2 && (
           <h3
-            className="text-[black] text-3xl md:text-4xl font-light mb-3 block"
-            style={{ fontFamily: "'Dancing Script', cursive" }}
+            className="text-3xl md:text-4xl font-light mb-3 block"
+            style={{
+              fontFamily: "'Dancing Script', cursive",
+              color: h2TextColor,
+            }}
           >
             {heading2}
           </h3>
         )}
         {heading3 && (
-          <h1 className="text-[black] text-5xl md:text-6xl font-bold tracking-wide block">
+          <h1
+            className="text-5xl md:text-6xl font-bold tracking-wide block"
+            style={{ color: h3TextColor }}
+          >
             {heading3}
           </h1>
         )}
         {heading4 && (
-          <h2 className="text-[black] text-4xl md:text-4xl font-semibold mt-1 block">
+          <h2
+            className="text-4xl md:text-4xl font-semibold mt-1 block"
+            style={{ color: h4TextColor }}
+          >
             {heading4}
           </h2>
         )}

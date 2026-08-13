@@ -22,7 +22,7 @@ export default function HomepageEditor() {
         const hero = rawJson.hero || {};
         const slides = Array.isArray(hero.slides) ? [...hero.slides] : [];
         while (slides.length < 3) {
-          slides.push({ image: "", heading1: "", heading2: "", heading3: "", heading4: "" });
+          slides.push({ image: "", heading1: "", heading2: "", heading3: "", heading4: "", bgColor: "", textColor: "" });
         }
 
         // Enrich About Points
@@ -95,7 +95,22 @@ export default function HomepageEditor() {
           },
           hero: {
             ...hero,
-            slides: slides.slice(0, 3)
+            bgColor: hero.bgColor || "",
+            textColor: hero.textColor || "",
+            slides: slides.slice(0, 3).map((slide) => ({
+              image: slide?.image || "",
+              heading1: slide?.heading1 || "",
+              heading2: slide?.heading2 || "",
+              heading3: slide?.heading3 || "",
+              heading4: slide?.heading4 || "",
+              heading1Color: slide?.heading1Color || "",
+              heading1BgColor: slide?.heading1BgColor || "",
+              heading2Color: slide?.heading2Color || "",
+              heading3Color: slide?.heading3Color || "",
+              heading4Color: slide?.heading4Color || "",
+              bgColor: slide?.bgColor || "",
+              textColor: slide?.textColor || "",
+            })),
           },
           about: {
             subtitle: about.subtitle || "About",
@@ -694,9 +709,54 @@ export default function HomepageEditor() {
         {/* HERO TAB */}
         {activeTab === "hero" && (
           <div className="space-y-8">
-            <h3 className="text-lg font-semibold text-slate-800 border-b pb-2">Hero Slider (3 slides)</h3>
+            <h3 className="text-lg font-semibold text-slate-800 border-b pb-2">Hero Banner / Slider Settings</h3>
+
+            {/* HERO SECTION OVERALL COLORS */}
+            <div className="p-5 border border-slate-100 rounded-3xl bg-slate-50/50 space-y-4">
+              <h4 className="font-semibold text-slate-700">Hero Section Colors (Default for all slides)</h4>
+              <div className="grid gap-6 md:grid-cols-2">
+                <label className="block space-y-2 text-sm text-slate-700">
+                  <span className="font-medium">Background Color</span>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="color"
+                      value={data.hero?.bgColor || "#ffffff"}
+                      onChange={(e) => updateField(["hero", "bgColor"], e.target.value)}
+                      className="w-10 h-10 border border-slate-200 rounded cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={data.hero?.bgColor || ""}
+                      onChange={(e) => updateField(["hero", "bgColor"], e.target.value)}
+                      placeholder="#ffffff"
+                      className="flex-1 rounded-3xl border border-slate-200 bg-white px-4 py-2 text-slate-900 outline-none focus:border-slate-400 text-sm"
+                    />
+                  </div>
+                </label>
+                <label className="block space-y-2 text-sm text-slate-700">
+                  <span className="font-medium">Text Color</span>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="color"
+                      value={data.hero?.textColor || "#000000"}
+                      onChange={(e) => updateField(["hero", "textColor"], e.target.value)}
+                      className="w-10 h-10 border border-slate-200 rounded cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={data.hero?.textColor || ""}
+                      onChange={(e) => updateField(["hero", "textColor"], e.target.value)}
+                      placeholder="#000000"
+                      className="flex-1 rounded-3xl border border-slate-200 bg-white px-4 py-2 text-slate-900 outline-none focus:border-slate-400 text-sm"
+                    />
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <h4 className="font-semibold text-slate-800 text-base">Hero Slides (3 slides)</h4>
             {(data.hero?.slides || []).map((slide, idx) => (
-              <div key={idx} className="p-5 border border-slate-100 rounded-3xl bg-slate-50/50 space-y-4">
+              <div key={idx} className="p-5 border border-slate-100 rounded-3xl bg-slate-50/50 space-y-5">
                 <h4 className="font-semibold text-slate-700">Slide {idx + 1}</h4>
                 <div className="grid gap-6 md:grid-cols-2">
                   <div className="space-y-4">
@@ -737,7 +797,148 @@ export default function HomepageEditor() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                {/* Individual Line / Sentence Color Controls */}
+                <div className="pt-3 border-t border-slate-200/60 space-y-4">
+                  <h5 className="font-semibold text-xs text-slate-600 uppercase tracking-wider">Individual Sentence / Heading Colors</h5>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <label className="block space-y-1.5 text-xs text-slate-700">
+                      <span className="font-medium">Top Badge Text Color</span>
+                      <div className="flex gap-2 items-center">
+                        <input
+                          type="color"
+                          value={slide.heading1Color || slide.textColor || data.hero?.textColor || "#000000"}
+                          onChange={(e) => updateField(["hero", "slides", idx, "heading1Color"], e.target.value)}
+                          className="w-8 h-8 border border-slate-200 rounded cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={slide.heading1Color || ""}
+                          onChange={(e) => updateField(["hero", "slides", idx, "heading1Color"], e.target.value)}
+                          placeholder="#000000 (default)"
+                          className="flex-1 rounded-2xl border border-slate-200 bg-white px-3 py-1.5 text-slate-900 outline-none focus:border-slate-400 text-xs"
+                        />
+                      </div>
+                    </label>
+
+                    <label className="block space-y-1.5 text-xs text-slate-700">
+                      <span className="font-medium">Top Badge Background Color</span>
+                      <div className="flex gap-2 items-center">
+                        <input
+                          type="color"
+                          value={slide.heading1BgColor || "#ffffff"}
+                          onChange={(e) => updateField(["hero", "slides", idx, "heading1BgColor"], e.target.value)}
+                          className="w-8 h-8 border border-slate-200 rounded cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={slide.heading1BgColor || ""}
+                          onChange={(e) => updateField(["hero", "slides", idx, "heading1BgColor"], e.target.value)}
+                          placeholder="#ffffff (default)"
+                          className="flex-1 rounded-2xl border border-slate-200 bg-white px-3 py-1.5 text-slate-900 outline-none focus:border-slate-400 text-xs"
+                        />
+                      </div>
+                    </label>
+
+                    <label className="block space-y-1.5 text-xs text-slate-700">
+                      <span className="font-medium">Script Subheading Color (Line 2)</span>
+                      <div className="flex gap-2 items-center">
+                        <input
+                          type="color"
+                          value={slide.heading2Color || slide.textColor || data.hero?.textColor || "#000000"}
+                          onChange={(e) => updateField(["hero", "slides", idx, "heading2Color"], e.target.value)}
+                          className="w-8 h-8 border border-slate-200 rounded cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={slide.heading2Color || ""}
+                          onChange={(e) => updateField(["hero", "slides", idx, "heading2Color"], e.target.value)}
+                          placeholder="#000000 (default)"
+                          className="flex-1 rounded-2xl border border-slate-200 bg-white px-3 py-1.5 text-slate-900 outline-none focus:border-slate-400 text-xs"
+                        />
+                      </div>
+                    </label>
+
+                    <label className="block space-y-1.5 text-xs text-slate-700">
+                      <span className="font-medium">Main Banner Title Color (Line 3)</span>
+                      <div className="flex gap-2 items-center">
+                        <input
+                          type="color"
+                          value={slide.heading3Color || slide.textColor || data.hero?.textColor || "#000000"}
+                          onChange={(e) => updateField(["hero", "slides", idx, "heading3Color"], e.target.value)}
+                          className="w-8 h-8 border border-slate-200 rounded cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={slide.heading3Color || ""}
+                          onChange={(e) => updateField(["hero", "slides", idx, "heading3Color"], e.target.value)}
+                          placeholder="#000000 (default)"
+                          className="flex-1 rounded-2xl border border-slate-200 bg-white px-3 py-1.5 text-slate-900 outline-none focus:border-slate-400 text-xs"
+                        />
+                      </div>
+                    </label>
+
+                    <label className="block space-y-1.5 text-xs text-slate-700 md:col-span-2">
+                      <span className="font-medium">Call to Action Heading Color (Line 4)</span>
+                      <div className="flex gap-2 items-center">
+                        <input
+                          type="color"
+                          value={slide.heading4Color || slide.textColor || data.hero?.textColor || "#000000"}
+                          onChange={(e) => updateField(["hero", "slides", idx, "heading4Color"], e.target.value)}
+                          className="w-8 h-8 border border-slate-200 rounded cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={slide.heading4Color || ""}
+                          onChange={(e) => updateField(["hero", "slides", idx, "heading4Color"], e.target.value)}
+                          placeholder="#000000 (default)"
+                          className="flex-1 rounded-2xl border border-slate-200 bg-white px-3 py-1.5 text-slate-900 outline-none focus:border-slate-400 text-xs"
+                        />
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="grid gap-6 md:grid-cols-2 pt-2 border-t border-slate-200/60">
+                  <label className="block space-y-2 text-sm text-slate-700">
+                    <span className="font-medium">Slide Specific Background Color <span className="text-xs text-slate-400">(Optional override)</span></span>
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="color"
+                        value={slide.bgColor || data.hero?.bgColor || "#ffffff"}
+                        onChange={(e) => updateField(["hero", "slides", idx, "bgColor"], e.target.value)}
+                        className="w-9 h-9 border border-slate-200 rounded cursor-pointer"
+                      />
+                      <input
+                        type="text"
+                        value={slide.bgColor || ""}
+                        onChange={(e) => updateField(["hero", "slides", idx, "bgColor"], e.target.value)}
+                        placeholder="Default to section color"
+                        className="flex-1 rounded-3xl border border-slate-200 bg-white px-4 py-2 text-slate-900 outline-none focus:border-slate-400 text-sm"
+                      />
+                    </div>
+                  </label>
+
+                  <label className="block space-y-2 text-sm text-slate-700">
+                    <span className="font-medium">Slide Specific Text Color <span className="text-xs text-slate-400">(Optional override)</span></span>
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="color"
+                        value={slide.textColor || data.hero?.textColor || "#000000"}
+                        onChange={(e) => updateField(["hero", "slides", idx, "textColor"], e.target.value)}
+                        className="w-9 h-9 border border-slate-200 rounded cursor-pointer"
+                      />
+                      <input
+                        type="text"
+                        value={slide.textColor || ""}
+                        onChange={(e) => updateField(["hero", "slides", idx, "textColor"], e.target.value)}
+                        placeholder="Default to section color"
+                        className="flex-1 rounded-3xl border border-slate-200 bg-white px-4 py-2 text-slate-900 outline-none focus:border-slate-400 text-sm"
+                      />
+                    </div>
+                  </label>
+                </div>
+
+                <div className="space-y-2 pt-2">
                   <span className="block text-sm font-semibold text-slate-700">Slide Image</span>
                   <div className="flex items-center gap-4">
                     {slide.image && (
