@@ -109,7 +109,20 @@ export default function DashboardChatsPage() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setConversations(data.data || []);
+        const fetchedConvs = data.data || [];
+        setConversations(fetchedConvs);
+
+        // Auto select conversation if conversationId is provided in URL
+        if (typeof window !== "undefined") {
+          const urlParams = new URLSearchParams(window.location.search);
+          const queryConvId = urlParams.get("conversationId");
+          if (queryConvId) {
+            const matched = fetchedConvs.find((c) => String(c._id) === String(queryConvId));
+            if (matched) {
+              setSelectedConv(matched);
+            }
+          }
+        }
       } else {
         toast.error(data.message || "Failed to load chat conversations");
       }
@@ -340,14 +353,14 @@ export default function DashboardChatsPage() {
     <DashboardLayout>
       <div className="space-y-4">
         {/* TOP HEADER CARD */}
-        <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 rounded-3xl p-6 text-white shadow-lg border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-300 shadow-inner">
-              <MessageSquare className="w-6 h-6" />
+        <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 rounded-2xl sm:rounded-3xl p-4 sm:p-6 text-white shadow-lg border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-300 shadow-inner flex-shrink-0">
+              <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-lg sm:text-2xl font-extrabold tracking-tight">
                   Messages & Inquiries
                 </h1>
                 <span className="bg-indigo-500/20 text-indigo-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-indigo-400/30">
@@ -364,25 +377,25 @@ export default function DashboardChatsPage() {
           <button
             onClick={fetchConversations}
             disabled={loadingConvs}
-            className="self-start md:self-auto bg-white/10 hover:bg-white/20 text-white border border-white/10 px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2 cursor-pointer"
+            className="self-start sm:self-auto bg-white/10 hover:bg-white/20 text-white border border-white/10 px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2 cursor-pointer shadow-xs"
           >
-            <Loader2 className={`w-4 h-4 ${loadingConvs ? "animate-spin" : ""}`} />
+            <Loader2 className={`w-3.5 h-3.5 ${loadingConvs ? "animate-spin" : ""}`} />
             <span>Sync Inbox</span>
           </button>
         </div>
 
         {/* MAIN DUAL PANE CHAT CONTAINER */}
-        <div className="bg-white border border-slate-200/90 rounded-3xl shadow-sm overflow-hidden grid grid-cols-1 md:grid-cols-12 min-h-[640px] max-h-[calc(100vh-180px)]">
+        <div className="bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl shadow-sm overflow-hidden flex flex-col md:grid md:grid-cols-12 h-[calc(100vh-210px)] min-h-[500px] max-h-[820px]">
 
           {/* ================= LEFT PANE: CONVERSATION LIST ================= */}
           <div
             className={`
-              md:col-span-4 border-r border-slate-200/80 flex flex-col bg-slate-50/50
-              ${selectedConv ? "hidden md:flex" : "flex"}
+              md:col-span-5 lg:col-span-4 border-r border-slate-200/80 flex flex-col bg-slate-50/50 h-full overflow-hidden
+              ${selectedConv ? "hidden md:flex" : "flex flex-1"}
             `}
           >
             {/* SEARCH & FILTERS BAR */}
-            <div className="p-4 border-b border-slate-200/80 space-y-3 bg-white">
+            <div className="p-3 sm:p-4 border-b border-slate-200/80 space-y-2.5 bg-white flex-shrink-0">
               <div className="relative">
                 <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
@@ -390,12 +403,12 @@ export default function DashboardChatsPage() {
                   placeholder="Search buyer, dealer or property..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3.5 py-2 text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 transition"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-8 py-2 text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition"
                 />
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold p-1"
                   >
                     ×
                   </button>
@@ -403,7 +416,7 @@ export default function DashboardChatsPage() {
               </div>
 
               {/* Status Tabs */}
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 no-scrollbar text-xs">
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
                 {[
                   { id: "all", label: "All" },
                   { id: "accepted", label: "Active" },
@@ -414,7 +427,7 @@ export default function DashboardChatsPage() {
                     key={tab.id}
                     onClick={() => setStatusFilter(tab.id)}
                     className={`
-                      px-3 py-1.5 rounded-lg font-semibold text-[11px] whitespace-nowrap transition cursor-pointer
+                      px-3 py-1 rounded-lg font-semibold text-[11px] whitespace-nowrap transition cursor-pointer
                       ${
                         statusFilter === tab.id
                           ? "bg-slate-900 text-white shadow-xs"
@@ -429,7 +442,7 @@ export default function DashboardChatsPage() {
             </div>
 
             {/* CONVERSATION ITEMS SCROLL AREA */}
-            <div className="flex-1 overflow-y-auto divide-y divide-slate-100">
+            <div className="flex-1 overflow-y-auto divide-y divide-slate-100 min-h-0">
               {loadingConvs ? (
                 <div className="h-64 flex flex-col items-center justify-center p-6 text-slate-400 gap-2">
                   <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
@@ -467,7 +480,7 @@ export default function DashboardChatsPage() {
                       `}
                     >
                       {/* Avatar */}
-                      <div className="relative w-11 h-11 rounded-2xl overflow-hidden bg-slate-200 border border-slate-200 flex-shrink-0">
+                      <div className="relative w-11 h-11 rounded-2xl overflow-hidden bg-slate-200 border border-slate-200 flex-shrink-0 shadow-xs">
                         <Image
                           src={partner?.avatar || DEFAULT_AVATAR}
                           alt={partner?.name || "Participant"}
@@ -499,7 +512,7 @@ export default function DashboardChatsPage() {
                         </p>
 
                         {/* Status Tag */}
-                        <div className="mt-2 flex items-center justify-between">
+                        <div className="mt-2 flex items-center justify-between gap-1 flex-wrap">
                           {conv.status === "accepted" ? (
                             <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100 flex items-center gap-1">
                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -561,15 +574,15 @@ export default function DashboardChatsPage() {
           {/* ================= RIGHT PANE: ACTIVE CHAT VIEW ================= */}
           <div
             className={`
-              md:col-span-8 flex flex-col bg-white
-              ${!selectedConv ? "hidden md:flex" : "flex"}
+              md:col-span-7 lg:col-span-8 flex flex-col bg-white h-full overflow-hidden
+              ${!selectedConv ? "hidden md:flex" : "flex flex-1"}
             `}
           >
             {!selectedConv ? (
               /* EMPTY CHAT SELECTION STATE */
-              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-slate-50/40">
-                <div className="w-20 h-20 rounded-3xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 mb-4 shadow-xs">
-                  <MessageSquare className="w-10 h-10 stroke-[1.5]" />
+              <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-8 text-center bg-slate-50/40">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 mb-4 shadow-xs">
+                  <MessageSquare className="w-8 h-8 sm:w-10 sm:h-10 stroke-[1.5]" />
                 </div>
                 <h3 className="font-bold text-slate-800 text-base sm:text-lg">
                   Select a Conversation
@@ -601,14 +614,15 @@ export default function DashboardChatsPage() {
               /* ACTIVE CHAT MAIN WINDOW */
               <>
                 {/* ACTIVE CHAT TOP BAR */}
-                <div className="p-4 border-b border-slate-200/80 bg-white flex items-center justify-between gap-3 shadow-xs">
-                  <div className="flex items-center gap-3 min-w-0">
+                <div className="p-3.5 sm:p-4 border-b border-slate-200/80 bg-white flex items-center justify-between gap-2.5 shadow-xs flex-shrink-0">
+                  <div className="flex items-center gap-2.5 min-w-0">
                     {/* Back Button (Mobile) */}
                     <button
                       onClick={() => setSelectedConv(null)}
-                      className="md:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition"
+                      className="md:hidden flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1.5 rounded-xl border border-indigo-200/80 transition cursor-pointer flex-shrink-0"
                     >
-                      <ArrowLeft className="w-5 h-5" />
+                      <ArrowLeft className="w-4 h-4" />
+                      <span>Inbox</span>
                     </button>
 
                     {/* Partner Avatar */}
@@ -617,7 +631,7 @@ export default function DashboardChatsPage() {
                       const partner = partnerInfo?.user;
                       return (
                         <>
-                          <div className="relative w-10 h-10 rounded-2xl overflow-hidden bg-slate-200 border border-slate-200 flex-shrink-0">
+                          <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-2xl overflow-hidden bg-slate-200 border border-slate-200 flex-shrink-0 shadow-xs">
                             <Image
                               src={partner?.avatar || DEFAULT_AVATAR}
                               alt={partner?.name || "Partner"}
@@ -627,23 +641,23 @@ export default function DashboardChatsPage() {
                           </div>
 
                           <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-bold text-sm text-slate-900 truncate">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <h3 className="font-bold text-xs sm:text-sm text-slate-900 truncate max-w-[130px] sm:max-w-[200px]">
                                 {partner?.name || "Participant"}
                               </h3>
-                              <span className="text-[9px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">
+                              <span className="text-[9px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-md">
                                 {partner?.role || "User"}
                               </span>
                             </div>
-                            <div className="flex items-center gap-3 text-slate-500 text-[11px] mt-0.5 truncate">
+                            <div className="flex items-center gap-2 text-slate-500 text-[11px] mt-0.5 truncate">
                               {partner?.phone && (
-                                <span className="flex items-center gap-1 truncate">
+                                <span className="flex items-center gap-1 truncate text-[10px] sm:text-[11px]">
                                   <Phone className="w-3 h-3 text-slate-400" />
                                   {partner.phone}
                                 </span>
                               )}
                               {partner?.email && (
-                                <span className="hidden sm:flex items-center gap-1 truncate">
+                                <span className="hidden lg:flex items-center gap-1 truncate text-[11px]">
                                   <Mail className="w-3 h-3 text-slate-400" />
                                   {partner.email}
                                 </span>
@@ -657,9 +671,9 @@ export default function DashboardChatsPage() {
 
                   {/* Property Quick Card Badge */}
                   {selectedConv?.property && (
-                    <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-2 flex items-center gap-2.5 max-w-[240px] flex-shrink-0">
+                    <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-1.5 sm:p-2 flex items-center gap-2 max-w-[140px] sm:max-w-[230px] flex-shrink-0">
                       {selectedConv.property.images?.[0] ? (
-                        <div className="relative w-9 h-9 rounded-xl overflow-hidden bg-slate-200 flex-shrink-0">
+                        <div className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-xl overflow-hidden bg-slate-200 flex-shrink-0">
                           <Image
                             src={selectedConv.property.images[0]}
                             alt={selectedConv.property.title || "Property"}
@@ -668,11 +682,11 @@ export default function DashboardChatsPage() {
                           />
                         </div>
                       ) : (
-                        <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0">
+                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0">
                           <Home className="w-4 h-4" />
                         </div>
                       )}
-                      <div className="min-w-0 flex-1">
+                      <div className="min-w-0 flex-1 hidden sm:block">
                         <p className="font-bold text-[11px] text-slate-900 truncate leading-tight">
                           {selectedConv.property.title}
                         </p>
@@ -683,10 +697,10 @@ export default function DashboardChatsPage() {
                       <Link
                         href={`/buy/property-details?id=${selectedConv.property._id}`}
                         target="_blank"
-                        className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition flex-shrink-0"
+                        className="p-1 sm:p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition flex-shrink-0"
                         title="View Property Details"
                       >
-                        <ExternalLink className="w-4 h-4" />
+                        <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                       </Link>
                     </div>
                   )}
@@ -694,13 +708,13 @@ export default function DashboardChatsPage() {
 
                 {/* STATUS ALERT BANNER (For Pending / Rejected Requests) */}
                 {selectedConv.status === "pending" && (
-                  <div className="bg-amber-50 border-b border-amber-200/80 px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div className="bg-amber-50 border-b border-amber-200/80 px-3.5 py-2.5 flex flex-col sm:flex-row items-center justify-between gap-2.5 flex-shrink-0">
                     <div className="flex items-center gap-2 text-amber-900 text-xs font-semibold">
                       <Clock className="w-4 h-4 text-amber-600 flex-shrink-0" />
                       <span>
                         {isDealerOrOwner(selectedConv)
                           ? "This buyer requested to chat with you about this property listing."
-                          : "Chat request submitted! Waiting for the property owner/dealer to accept."}
+                          : "Chat request submitted! Waiting for property owner to accept."}
                       </span>
                     </div>
 
@@ -709,7 +723,7 @@ export default function DashboardChatsPage() {
                         <button
                           onClick={() => handleRespondRequest(selectedConv._id, "accepted")}
                           disabled={respondingReq}
-                          className="flex-1 sm:flex-initial bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-1.5 rounded-xl transition flex items-center justify-center gap-1 shadow-xs cursor-pointer"
+                          className="flex-1 sm:flex-initial bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-1.5 rounded-xl transition flex items-center justify-center gap-1 shadow-xs cursor-pointer"
                         >
                           <Check className="w-3.5 h-3.5" />
                           <span>Accept Request</span>
@@ -717,7 +731,7 @@ export default function DashboardChatsPage() {
                         <button
                           onClick={() => handleRespondRequest(selectedConv._id, "rejected")}
                           disabled={respondingReq}
-                          className="flex-1 sm:flex-initial bg-white hover:bg-rose-50 text-rose-600 border border-slate-200 text-xs font-bold px-4 py-1.5 rounded-xl transition flex items-center justify-center gap-1 cursor-pointer"
+                          className="flex-1 sm:flex-initial bg-white hover:bg-rose-50 text-rose-600 border border-slate-200 text-xs font-bold px-3.5 py-1.5 rounded-xl transition flex items-center justify-center gap-1 cursor-pointer"
                         >
                           <X className="w-3.5 h-3.5" />
                           <span>Decline</span>
@@ -728,22 +742,22 @@ export default function DashboardChatsPage() {
                 )}
 
                 {selectedConv.status === "rejected" && (
-                  <div className="bg-rose-50 border-b border-rose-200/80 px-4 py-3 flex items-center gap-2 text-rose-800 text-xs font-semibold">
+                  <div className="bg-rose-50 border-b border-rose-200/80 px-4 py-2.5 flex items-center gap-2 text-rose-800 text-xs font-semibold flex-shrink-0">
                     <ShieldAlert className="w-4 h-4 text-rose-600 flex-shrink-0" />
                     <span>This chat request was declined. Further messaging is disabled.</span>
                   </div>
                 )}
 
                 {/* MESSAGES LIST AREA */}
-                <div className="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4 bg-slate-50/60">
+                <div className="flex-1 p-3.5 sm:p-6 overflow-y-auto space-y-3.5 bg-slate-50/60 min-h-0">
                   {loadingMsgs ? (
                     <div className="h-full flex items-center justify-center text-slate-400 text-xs gap-2">
                       <Loader2 className="w-5 h-5 animate-spin text-indigo-600" />
                       <span>Loading message history...</span>
                     </div>
                   ) : messages.length === 0 ? (
-                    <div className="h-full flex flex-col items-center justify-center text-center p-8 text-slate-400 space-y-2">
-                      <MessageCircle className="w-12 h-12 text-slate-300 stroke-[1.5]" />
+                    <div className="h-full flex flex-col items-center justify-center text-center p-6 text-slate-400 space-y-2">
+                      <MessageCircle className="w-10 h-10 text-slate-300 stroke-[1.5]" />
                       <p className="text-xs font-bold text-slate-700">No messages sent yet</p>
                       <p className="text-[11px] text-slate-400 max-w-xs">
                         {selectedConv.status === "accepted"
@@ -770,10 +784,10 @@ export default function DashboardChatsPage() {
                           )}
                           <div
                             className={`
-                              max-w-[85%] sm:max-w-[70%] rounded-2xl px-4 py-2.5 text-xs font-medium leading-relaxed shadow-xs
+                              max-w-[88%] sm:max-w-[75%] rounded-2xl px-3.5 py-2.5 text-xs font-medium leading-relaxed shadow-xs
                               ${
                                 isMine
-                                  ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-br-xs"
+                                  ? "bg-gradient-to-r from-indigo-600 via-indigo-600 to-blue-600 text-white rounded-br-xs"
                                   : "bg-white text-slate-800 border border-slate-200/90 rounded-bl-xs"
                               }
                             `}
@@ -791,7 +805,7 @@ export default function DashboardChatsPage() {
                 </div>
 
                 {/* BOTTOM MESSAGE INPUT BAR */}
-                <div className="p-3.5 bg-white border-t border-slate-200/80">
+                <div className="p-3 sm:p-3.5 bg-white border-t border-slate-200/80 flex-shrink-0">
                   {selectedConv.status !== "accepted" ? (
                     <div className="text-center py-2 text-xs text-slate-400 font-medium">
                       Messaging is disabled until chat request status is <strong>Accepted</strong>.
@@ -807,18 +821,18 @@ export default function DashboardChatsPage() {
                         value={messageInput}
                         onChange={(e) => setMessageInput(e.target.value)}
                         disabled={sendingMsg}
-                        className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 transition"
+                        className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5 text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 transition"
                       />
                       <button
                         type="submit"
                         disabled={!messageInput.trim() || sendingMsg}
-                        className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white px-5 py-3 rounded-2xl font-bold transition shadow-sm flex items-center gap-2 cursor-pointer text-xs"
+                        className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white px-4 py-2.5 rounded-2xl font-bold transition shadow-xs flex items-center gap-1.5 cursor-pointer text-xs flex-shrink-0"
                       >
                         {sendingMsg ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
                           <>
-                            <span>Send</span>
+                            <span className="hidden sm:inline">Send</span>
                             <Send className="w-3.5 h-3.5" />
                           </>
                         )}

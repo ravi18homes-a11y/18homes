@@ -208,6 +208,17 @@ export default function DashboardLayout({ children }) {
     }
   };
 
+  const handleNotificationClick = (notif) => {
+    markAsRead(notif._id);
+    setShowNotifMenu(false);
+
+    if (notif.metadata?.conversationId) {
+      router.push(`/dashboard/chats?conversationId=${notif.metadata.conversationId}`);
+    } else if (notif.type === "contact_request") {
+      router.push("/dashboard/dealer/leads");
+    }
+  };
+
   const clearAllNotifications = async () => {
     const token = localStorage.getItem("authToken");
     if (!token) return;
@@ -542,7 +553,7 @@ export default function DashboardLayout({ children }) {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="md:hidden p-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition cursor-pointer"
+            className="md:hidden p-2 rounded-xl bg-[#0034ff] text-[white] hover:bg-slate-200 transition cursor-pointer"
           >
             <Menu className="w-5 h-5" />
           </button>
@@ -642,21 +653,32 @@ export default function DashboardLayout({ children }) {
                   notifications.map((notif) => (
                     <div
                       key={notif._id}
-                      onClick={() => markAsRead(notif._id)}
-                      className={`p-4 flex items-start gap-3 transition cursor-pointer hover:bg-slate-50 ${!notif.read ? "bg-blue-50/50" : "bg-white"
+                      onClick={() => handleNotificationClick(notif)}
+                      className={`p-4 flex items-start gap-3 transition cursor-pointer hover:bg-slate-50 ${!notif.read ? "bg-indigo-50/40" : "bg-white"
                         }`}
                     >
                       <div className="mt-0.5 flex-shrink-0">
                         {notif.type === "approval" ? (
                           <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                        ) : notif.type === "new_message" ? (
+                          <MessageSquare className="w-5 h-5 text-indigo-600" />
+                        ) : notif.type === "contact_request" ? (
+                          <Users className="w-5 h-5 text-amber-600" />
                         ) : (
                           <Info className="w-5 h-5 text-blue-500" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold text-slate-800 leading-tight">
-                          {notif.title || "System Notification"}
-                        </p>
+                        <div className="flex items-center justify-between gap-1">
+                          <p className="text-xs font-bold text-slate-800 leading-tight">
+                            {notif.title || "System Notification"}
+                          </p>
+                          {notif.metadata?.conversationId && (
+                            <span className="text-[10px] text-indigo-600 font-bold bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100 flex-shrink-0">
+                              Open Chat 💬
+                            </span>
+                          )}
+                        </div>
                         <p className="text-xs text-slate-600 mt-1 leading-snug">
                           {notif.message}
                         </p>

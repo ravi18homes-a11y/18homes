@@ -69,6 +69,72 @@ export default function ClientLeadsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [updatingId, setUpdatingId] = useState(null);
 
+  // Track counts locally in browser cache so refresh never resets them
+  const [contactCounts, setContactCounts] = useState(() => {
+    try {
+      const saved = localStorage.getItem("lead_contact_counts");
+      return saved ? JSON.parse(saved) : {};
+    } catch (e) {
+      return {};
+    }
+  });
+
+  const handleActionClick = async (lead, actionType) => {
+    const leadId = lead._id;
+    const newStatus = "contacted";
+
+    const currentWa = contactCounts[leadId]?.whatsapp || lead.whatsappCount || lead.whatsappClicks || 0;
+    const currentCall = contactCounts[leadId]?.call || lead.callCount || lead.callClicks || 0;
+    const updatedWa = actionType === "whatsapp" ? currentWa + 1 : currentWa;
+    const updatedCall = actionType === "call" ? currentCall + 1 : currentCall;
+
+    // 1. Update contactCounts state & localStorage
+    const updatedCountsMap = {
+      ...contactCounts,
+      [leadId]: { whatsapp: updatedWa, call: updatedCall },
+    };
+    setContactCounts(updatedCountsMap);
+    try {
+      localStorage.setItem("lead_contact_counts", JSON.stringify(updatedCountsMap));
+    } catch (e) {}
+
+    // 2. Optimistically update React leads state
+    setLeads((prevLeads) =>
+      prevLeads.map((item) => {
+        if (item._id === leadId) {
+          return {
+            ...item,
+            status: newStatus,
+            whatsappCount: updatedWa,
+            callCount: updatedCall,
+          };
+        }
+        return item;
+      })
+    );
+
+    // 3. Persist in Backend Database API
+    try {
+      const token = localStorage.getItem("authToken");
+      await fetch(`${databaseUrl}/api/contacts/${leadId}/status`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          status: newStatus,
+          action: actionType,
+          actionType: actionType,
+          whatsappCount: updatedWa,
+          callCount: updatedCall,
+        }),
+      });
+    } catch (err) {
+      console.error("Failed to sync lead action with backend API:", err);
+    }
+  };
+
   // Chat Modal State
   const [selectedConvId, setSelectedConvId] = useState(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -217,7 +283,9 @@ export default function ClientLeadsPage() {
 
     const matchesTab =
       activeTab === "all" ||
-      (activeTab === "new" && status === "new") ||
+      (activeTab === "new" && (status === "new" || !status)) ||
+      (activeTab === "contacted" && status === "contacted") ||
+      (activeTab === "site_visit" && status === "site_visit") ||
       (activeTab === "in_progress" && (status === "contacted" || status === "site_visit")) ||
       (activeTab === "closed" && status === "closed");
 
@@ -243,10 +311,23 @@ export default function ClientLeadsPage() {
   const newLeadsCount = leads.filter(
     (l) => !l.status || l.status === "new"
   ).length;
+  const contactedLeadsCount = leads.filter(
+    (l) => l.status === "contacted"
+  ).length;
   const inProgressCount = leads.filter(
     (l) => l.status === "contacted" || l.status === "site_visit"
   ).length;
   const closedCount = leads.filter((l) => l.status === "closed").length;
+
+  const totalWhatsAppClicks = leads.reduce((acc, lead) => {
+    const count = contactCounts[lead._id]?.whatsapp || lead.whatsappCount || lead.whatsappClicks || 0;
+    return acc + count;
+  }, 0);
+
+  const totalCallClicks = leads.reduce((acc, lead) => {
+    const count = contactCounts[lead._id]?.call || lead.callCount || lead.callClicks || 0;
+    return acc + count;
+  }, 0);
 
   return (
     <DashboardLayout>
@@ -308,49 +389,73 @@ export default function ClientLeadsPage() {
         {mainView === "leads" ? (
           <>
             {/* Stats Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white p-5 rounded-2xl border-2 border-slate-100 shadow-sm flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
-                  <Users className="w-6 h-6" />
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              <div className="bg-white p-4 rounded-2xl border-2 border-slate-100 shadow-sm flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold flex-shrink-0">
+                  <Users className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500 font-semibold">Total Leads</p>
-                  <h4 className="text-xl font-black text-slate-900">{totalLeads}</h4>
+                  <p className="text-[11px] text-slate-500 font-semibold">Total Leads</p>
+                  <h4 className="text-lg font-black text-slate-900">{totalLeads}</h4>
                 </div>
               </div>
 
-              <div className="bg-white p-5 rounded-2xl border-2 border-slate-100 shadow-sm flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
-                  <Clock className="w-6 h-6" />
+              <div className="bg-white p-4 rounded-2xl border-2 border-slate-100 shadow-sm flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold flex-shrink-0">
+                  <Clock className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500 font-semibold">New Enquiries</p>
-                  <h4 className="text-xl font-black text-amber-600">
+                  <p className="text-[11px] text-slate-500 font-semibold">New Enquiries</p>
+                  <h4 className="text-lg font-black text-amber-600">
                     {newLeadsCount}
                   </h4>
                 </div>
               </div>
 
-              <div className="bg-white p-5 rounded-2xl border-2 border-slate-100 shadow-sm flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
-                  <UserCheck className="w-6 h-6" />
+              <div className="bg-white p-4 rounded-2xl border-2 border-slate-100 shadow-sm flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold flex-shrink-0">
+                  <UserCheck className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500 font-semibold">In Progress</p>
-                  <h4 className="text-xl font-black text-blue-600">
-                    {inProgressCount}
+                  <p className="text-[11px] text-slate-500 font-semibold">Contacted</p>
+                  <h4 className="text-lg font-black text-blue-600">
+                    {contactedLeadsCount}
                   </h4>
                 </div>
               </div>
 
-              <div className="bg-white p-5 rounded-2xl border-2 border-slate-100 shadow-sm flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
-                  <CheckCircle2 className="w-6 h-6" />
+              <div className="bg-white p-4 rounded-2xl border-2 border-slate-100 shadow-sm flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold flex-shrink-0">
+                  <CheckCircle2 className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500 font-semibold">Deals Closed</p>
-                  <h4 className="text-xl font-black text-emerald-600">
+                  <p className="text-[11px] text-slate-500 font-semibold">Deals Closed</p>
+                  <h4 className="text-lg font-black text-emerald-600">
                     {closedCount}
+                  </h4>
+                </div>
+              </div>
+
+              <div className="bg-white p-4 rounded-2xl border-2 border-slate-100 shadow-sm flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold flex-shrink-0">
+                  <MessageCircle className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-[11px] text-slate-500 font-semibold">WhatsApp Clicks</p>
+                  <h4 className="text-lg font-black text-emerald-700">
+                    {totalWhatsAppClicks}
+                  </h4>
+                </div>
+              </div>
+
+              <div className="bg-white p-4 rounded-2xl border-2 border-slate-100 shadow-sm flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center font-bold flex-shrink-0">
+                  <Phone className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-[11px] text-slate-500 font-semibold">Call Clicks</p>
+                  <h4 className="text-lg font-black text-slate-800">
+                    {totalCallClicks}
                   </h4>
                 </div>
               </div>
@@ -507,6 +612,9 @@ export default function ClientLeadsPage() {
                     ? `tel:${phoneInfo.callNumber}`
                     : buyerPhone ? `tel:${buyerPhone}` : null;
 
+                  const waCount = contactCounts[lead._id]?.whatsapp || lead.whatsappCount || lead.whatsappClicks || 0;
+                  const callCount = contactCounts[lead._id]?.call || lead.callCount || lead.callClicks || 0;
+
                   return (
                     <div
                       key={lead._id}
@@ -598,20 +706,32 @@ export default function ClientLeadsPage() {
                             href={whatsappUrl}
                             target="_blank"
                             rel="noopener noreferrer"
+                            onClick={() => handleActionClick(lead, "whatsapp")}
                             className="flex-1 sm:flex-initial bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs transition flex items-center justify-center gap-2 shadow-sm"
                           >
                             <MessageCircle className="w-4 h-4" />
                             <span>WhatsApp</span>
+                            {waCount > 0 && (
+                              <span className="bg-emerald-800/80 text-white text-[10px] px-2 py-0.5 rounded-full font-black">
+                                {waCount}
+                              </span>
+                            )}
                           </a>
                         )}
 
                         {callUrl && (
                           <a
                             href={callUrl}
+                            onClick={() => handleActionClick(lead, "call")}
                             className="flex-1 sm:flex-initial bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl font-bold text-xs transition flex items-center justify-center gap-2 shadow-sm"
                           >
                             <Phone className="w-4 h-4" />
                             <span>Call</span>
+                            {callCount > 0 && (
+                              <span className="bg-slate-700 text-white text-[10px] px-2 py-0.5 rounded-full font-black">
+                                {callCount}
+                              </span>
+                            )}
                           </a>
                         )}
 

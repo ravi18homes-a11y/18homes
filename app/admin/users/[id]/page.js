@@ -19,7 +19,8 @@ import {
   Shield,
   Loader2,
   ExternalLink,
-  Home
+  Home,
+  Crown
 } from "lucide-react";
 
 export default function AdminUserDetailPage() {
@@ -401,6 +402,20 @@ export default function AdminUserDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* ================= MEMBERSHIP PLAN DETAILS ================= */}
+      {user?.subscription && (
+        <Section title="Current Active Membership Plan" icon={<Crown className="w-5 h-5 text-[#8c4bdc]" />}>
+          <Grid>
+            <Field label="Plan Name" value={user.subscription.planName} />
+            <Field label="Plan Source" value={user.subscription.assignedByAdmin ? "🛡️ Admin Granted" : "💳 User Purchased (Self)"} />
+            <Field label="Billing Amount" value={user.subscription.amount > 0 ? `₹${user.subscription.amount.toLocaleString("en-IN")}` : "Free"} />
+            <Field label="Invoice Number" value={user.subscription.invoiceNumber || "—"} />
+            <Field label="Start Date" value={user.subscription.startDate ? new Date(user.subscription.startDate).toLocaleDateString("en-IN") : "—"} />
+            <Field label="Expiry Date" value={user.subscription.expiryDate ? new Date(user.subscription.expiryDate).toLocaleDateString("en-IN") : "—"} />
+          </Grid>
+        </Section>
+      )}
 
       {/* ================= BUILDER / DEALER DETAILS ================= */}
       {user?.role === "builder" && user?.builderDetails && (
