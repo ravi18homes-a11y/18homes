@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Eye, Edit3, Ban, ShieldCheck, Trash2, Check, X, User } from "lucide-react";
+import { Eye, Edit3, Ban, ShieldCheck, Trash2, Check, X, User, Crown } from "lucide-react";
 
 export default function UserTable({
   users = [],
@@ -9,6 +9,7 @@ export default function UserTable({
   onApprove,
   onReject,
   onToggleBlock,
+  onAssignPlan,
 }) {
   /* ================= GUARDS ================= */
   if (!Array.isArray(users)) {
@@ -152,7 +153,7 @@ export default function UserTable({
                 <Td>
                   {sub ? (
                     <div className="space-y-1">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 flex-wrap">
                         <span
                           className={`text-[11px] font-extrabold px-2.5 py-0.5 rounded-md inline-flex items-center gap-1 ${
                             isSubActive
@@ -162,6 +163,11 @@ export default function UserTable({
                         >
                           {isSubActive ? "👑" : "⌛"} {sub.planName || "Plan"}
                         </span>
+                        {sub.assignedByAdmin && (
+                          <span className="text-[10px] font-extrabold bg-indigo-100 text-indigo-800 border border-indigo-200 px-2 py-0.5 rounded-md flex items-center gap-1" title="Plan assigned directly by Admin">
+                            🛡️ Admin Granted
+                          </span>
+                        )}
                         <span className="text-xs font-bold text-slate-700">
                           {sub.amount > 0 ? `₹${sub.amount.toLocaleString("en-IN")}` : "Free"}
                         </span>
@@ -195,6 +201,14 @@ export default function UserTable({
                 {/* ===== ACTIONS ===== */}
                 <Td className="text-right pr-6">
                   <div className="flex items-center justify-end gap-1.5">
+                    {/* ASSIGN PLAN BUTTON */}
+                    <button
+                      onClick={() => onAssignPlan?.(u)}
+                      className="p-2 text-purple-600 hover:text-purple-800 hover:bg-purple-100 rounded-xl transition cursor-pointer"
+                      title="Assign / Upgrade Plan"
+                    >
+                      <Crown className="w-4 h-4 text-[#8c4bdc]" />
+                    </button>
                     {/* VIEW BUTTON */}
                     <Link
                       href={`/admin/users/${u?._id}`}

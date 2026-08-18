@@ -26,7 +26,8 @@ import {
   RotateCcw,
   Sparkles,
   Layers,
-  Receipt
+  Receipt,
+  ShieldCheck
 } from "lucide-react";
 import Link from "next/link";
 
@@ -50,6 +51,7 @@ export default function UsersPage() {
   const [approvalFilter, setApprovalFilter] = useState("");
   const [planStatusFilter, setPlanStatusFilter] = useState("");
   const [planNameFilter, setPlanNameFilter] = useState("");
+  const [assignedByAdminFilter, setAssignedByAdminFilter] = useState("");
 
   // 💰 Revenue & Subscription Stats State
   const [totalRevenue, setTotalRevenue] = useState(0);
@@ -60,6 +62,13 @@ export default function UsersPage() {
   // 📜 Purchaser Modal State
   const [showPurchasersModal, setShowPurchasersModal] = useState(false);
   const [purchaserSearch, setPurchaserSearch] = useState("");
+
+  // 👑 Assign Plan Modal State
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [assignTargetUser, setAssignTargetUser] = useState(null);
+  const [selectedPlanId, setSelectedPlanId] = useState("");
+  const [customDurationDays, setCustomDurationDays] = useState("");
+  const [assigningLoading, setAssigningLoading] = useState(false);
 
   const token =
     typeof window !== "undefined"
@@ -81,6 +90,7 @@ export default function UsersPage() {
       if (approvalFilter && approvalFilter !== "all") params.append("approvalStatus", approvalFilter);
       if (planStatusFilter && planStatusFilter !== "all") params.append("planStatus", planStatusFilter);
       if (planNameFilter && planNameFilter !== "all") params.append("planName", planNameFilter);
+      if (assignedByAdminFilter && assignedByAdminFilter !== "all") params.append("assignedByAdmin", assignedByAdminFilter);
 
       const res = await fetch(`${API}?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -107,7 +117,7 @@ export default function UsersPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, search, roleFilter, statusFilter, approvalFilter, planStatusFilter, planNameFilter, token]);
+  }, [page, search, roleFilter, statusFilter, approvalFilter, planStatusFilter, planNameFilter, assignedByAdminFilter, token]);
 
   /* ================= FETCH PENDING APPROVALS ================= */
   const fetchPendingApprovals = useCallback(async () => {
@@ -154,6 +164,7 @@ export default function UsersPage() {
     setApprovalFilter("");
     setPlanStatusFilter("");
     setPlanNameFilter("");
+    setAssignedByAdminFilter("");
     setSearch("");
     setPage(1);
   };
@@ -268,13 +279,56 @@ export default function UsersPage() {
     }
   };
 
+  /* ================= ASSIGN PLAN TO USER ================= */
+  const handleOpenAssignModal = (user) => {
+    setAssignTargetUser(user);
+    const matchingPlans = availablePlans.filter(p => !user?.role || p.role === user.role);
+    const defaultPlan = matchingPlans[0]?._id || availablePlans[0]?._id || "";
+    setSelectedPlanId(defaultPlan);
+    setCustomDurationDays("");
+    setShowAssignModal(true);
+  };
+
+  const handleAssignPlanSubmit = async () => {
+    if (!assignTargetUser || !selectedPlanId || !token) return;
+    setAssigningLoading(true);
+
+    try {
+      const res = await fetch(`${API}/${assignTargetUser._id}/assign-plan`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          planId: selectedPlanId,
+          customDurationDays: customDurationDays ? Number(customDurationDays) : undefined,
+        }),
+      });
+
+      const json = await res.json();
+      if (res.ok && json?.success) {
+        toast.success(json?.message || "Plan assigned successfully!");
+        setShowAssignModal(false);
+        fetchUsers();
+      } else {
+        toast.error(json?.message || "Failed to assign plan");
+      }
+    } catch (error) {
+      console.error("Assign plan error:", error);
+      toast.error("Failed to assign plan");
+    } finally {
+      setAssigningLoading(false);
+    }
+  };
+
   // Stats calculation
   const totalCount = pagination?.total || users.length;
   const activeCount = users.filter((u) => !u.isBlocked).length;
   const blockedCount = users.filter((u) => u.isBlocked).length;
 
   const hasActiveFilters = Boolean(
-    roleFilter || statusFilter || approvalFilter || planStatusFilter || planNameFilter || search
+    roleFilter || statusFilter || approvalFilter || planStatusFilter || planNameFilter || assignedByAdminFilter || search
   );
 
   const allPlanNames = Array.from(
@@ -294,6 +348,12 @@ export default function UsersPage() {
     const inv = sub.invoiceNumber?.toLowerCase() || "";
     return uName.includes(q) || uEmail.includes(q) || uPhone.includes(q) || pName.includes(q) || inv.includes(q);
   });
+
+  const selfSubscriptions = allSubscriptions.filter((s) => !s.assignedByAdmin);
+  const adminSubscriptions = allSubscriptions.filter((s) => s.assignedByAdmin);
+
+  const selfPurchasedRevenue = selfSubscriptions.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
+  const adminGrantedValue = adminSubscriptions.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
 
   return (
     <div className="space-y-6 p-4 sm:p-6 bg-slate-50/50 min-h-screen">
@@ -356,16 +416,49 @@ export default function UsersPage() {
               <Crown className="w-6 h-6 text-amber-300" />
             </div>
             <div className="mt-4">
-              <p className="text-xs text-purple-200 font-semibold">Total Revenue Earned</p>
-              <h2 className="text-3xl sm:text-4xl font-black tracking-tight mt-1 text-white">
+              <p className="text-xs text-purple-200 font-semibold">Total Overall Revenue</p>
+              <h2 className="text-3xl sm:text-4xl font-black tracking-tight mt-0.5 text-white">
                 ₹{totalRevenue.toLocaleString("en-IN")}
               </h2>
+            </div>
+
+            {/* SEPARATE CALCULATIONS FOR USER SELF-PURCHASE vs ADMIN GRANTED */}
+            <div className="grid grid-cols-2 gap-2.5 mt-4 pt-3 border-t border-white/15">
+              
+              {/* 1. SELF-PURCHASED BY USERS */}
+              <div className="bg-white/10 p-3 rounded-2xl border border-white/15 backdrop-blur-sm space-y-1">
+                <div className="flex items-center gap-1.5 text-[11px] text-emerald-300 font-extrabold">
+                  <CreditCard className="w-3.5 h-3.5" />
+                  <span>User Self Paid</span>
+                </div>
+                <p className="text-base sm:text-lg font-black text-white">
+                  ₹{selfPurchasedRevenue.toLocaleString("en-IN")}
+                </p>
+                <p className="text-[10px] text-purple-200 font-medium">
+                  {selfSubscriptions.length} Purchases
+                </p>
+              </div>
+
+              {/* 2. ADMIN GRANTED */}
+              <div className="bg-white/10 p-3 rounded-2xl border border-white/15 backdrop-blur-sm space-y-1">
+                <div className="flex items-center gap-1.5 text-[11px] text-amber-300 font-extrabold">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>Admin Granted</span>
+                </div>
+                <p className="text-base sm:text-lg font-black text-white">
+                  ₹{adminGrantedValue.toLocaleString("en-IN")}
+                </p>
+                <p className="text-[10px] text-purple-200 font-medium">
+                  {adminSubscriptions.length} Granted
+                </p>
+              </div>
+
             </div>
           </div>
 
           <div className="pt-2 border-t border-white/10 flex items-center justify-between">
             <span className="text-xs text-purple-200 font-medium">
-              {allSubscriptions.length} Plan Purchases Recorded
+              {allSubscriptions.length} Total Records Logged
             </span>
             <button
               onClick={() => setShowPurchasersModal(true)}
@@ -497,7 +590,7 @@ export default function UsersPage() {
             </div>
 
             {/* FILTER DROPDOWNS GRID */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
               
               {/* 1. ROLE FILTER */}
               <div>
@@ -602,6 +695,25 @@ export default function UsersPage() {
                 </select>
               </div>
 
+              {/* 6. ADMIN GRANTED PLAN FILTER */}
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 mb-1">
+                  Plan Granted By
+                </label>
+                <select
+                  value={assignedByAdminFilter}
+                  onChange={(e) => {
+                    setAssignedByAdminFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  className="w-full text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-[#8c4bdc]/20 focus:border-[#8c4bdc]"
+                >
+                  <option value="">All Plan Sources</option>
+                  <option value="true">🛡️ Admin Granted</option>
+                  <option value="false">💳 User Purchased (Self)</option>
+                </select>
+              </div>
+
             </div>
 
             {/* SEARCH AND REFRESH ROW */}
@@ -656,6 +768,7 @@ export default function UsersPage() {
               onApprove={handleApprove}
               onReject={handleReject}
               onToggleBlock={handleToggleBlock}
+              onAssignPlan={handleOpenAssignModal}
             />
           )}
 
@@ -869,16 +982,29 @@ export default function UsersPage() {
                               </span>
                             </td>
                             <td className="px-4 py-3">
-                              <span
-                                className={`text-[11px] font-bold px-2 py-0.5 rounded-md inline-flex items-center gap-1 ${
-                                  isSubActive
-                                    ? "bg-purple-100 text-[#8c4bdc]"
-                                    : "bg-slate-100 text-slate-600"
-                                }`}
-                              >
-                                {isSubActive ? "👑" : "⌛"} {sub.planName}
-                              </span>
-                            </td>
+                               <div className="space-y-1">
+                                 <span
+                                   className={`text-[11px] font-bold px-2 py-0.5 rounded-md inline-flex items-center gap-1 ${
+                                     isSubActive
+                                       ? "bg-purple-100 text-[#8c4bdc]"
+                                       : "bg-slate-100 text-slate-600"
+                                   }`}
+                                 >
+                                   {isSubActive ? "👑" : "⌛"} {sub.planName}
+                                 </span>
+                                 <div>
+                                   {sub.assignedByAdmin ? (
+                                     <span className="text-[10px] font-extrabold bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded border border-amber-200 inline-block">
+                                       🛡️ Admin Granted
+                                     </span>
+                                   ) : (
+                                     <span className="text-[10px] font-semibold bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded border border-emerald-200 inline-block">
+                                       💳 User Paid
+                                     </span>
+                                   )}
+                                 </div>
+                               </div>
+                             </td>
                             <td className="px-4 py-3 font-black text-slate-900">
                               {sub.amount > 0 ? `₹${sub.amount.toLocaleString("en-IN")}` : "Free"}
                             </td>
@@ -911,6 +1037,101 @@ export default function UsersPage() {
               </button>
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* ================= ASSIGN PLAN MODAL ================= */}
+      {showAssignModal && assignTargetUser && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 space-y-5 animate-in fade-in zoom-in-95 duration-150 border border-slate-100">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <Crown className="w-5 h-5 text-[#8c4bdc]" />
+                <h3 className="font-extrabold text-slate-900 text-base">Assign / Upgrade Plan Directly</h3>
+              </div>
+              <button
+                onClick={() => setShowAssignModal(false)}
+                className="p-1 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="bg-purple-50 p-4 rounded-2xl border border-purple-100 flex items-center gap-3">
+              <img
+                src={assignTargetUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(assignTargetUser?.name || "User")}&background=8c4bdc&color=fff`}
+                alt={assignTargetUser.name}
+                className="w-11 h-11 rounded-full border-2 border-purple-200 object-cover shrink-0"
+              />
+              <div>
+                <p className="font-bold text-slate-900 text-sm">{assignTargetUser.name || "User"}</p>
+                <p className="text-xs text-slate-500">{assignTargetUser.email} • Role: <span className="font-extrabold text-purple-700 uppercase">{assignTargetUser.role || "user"}</span></p>
+                {assignTargetUser.subscription?.planName ? (
+                  <p className="text-[11px] text-purple-800 font-semibold mt-0.5">
+                    Current Plan: {assignTargetUser.subscription.planName} ({assignTargetUser.subscription.assignedByAdmin ? "🛡️ Admin Granted" : "💳 User Purchased"})
+                  </p>
+                ) : (
+                  <p className="text-[11px] text-slate-400 font-medium mt-0.5">Current Plan: No Active Plan</p>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                  Select Membership Plan to Grant
+                </label>
+                <select
+                  value={selectedPlanId}
+                  onChange={(e) => setSelectedPlanId(e.target.value)}
+                  className="w-full text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none focus:ring-2 focus:ring-[#8c4bdc]"
+                >
+                  <option value="">-- Choose Plan --</option>
+                  {availablePlans.map((p) => (
+                    <option key={p._id} value={p._id}>
+                      👑 {p.name} ({p.role}) - ₹{p.price} / {p.duration || 30} Days
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                  Custom Duration in Days <span className="text-slate-400 font-normal">(Optional, leave empty to use plan default)</span>
+                </label>
+                <input
+                  type="number"
+                  placeholder="e.g. 30, 60, 365"
+                  value={customDurationDays}
+                  onChange={(e) => setCustomDurationDays(e.target.value)}
+                  className="w-full text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-xl p-3 outline-none focus:ring-2 focus:ring-[#8c4bdc]"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 pt-3 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setShowAssignModal(false)}
+                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={!selectedPlanId || assigningLoading}
+                onClick={handleAssignPlanSubmit}
+                className="flex-1 py-2.5 bg-[#8c4bdc] hover:bg-[#7b3ec5] text-white rounded-xl font-bold text-xs transition shadow cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {assigningLoading ? (
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Crown className="w-4 h-4" />
+                )}
+                <span>Assign Plan Now</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

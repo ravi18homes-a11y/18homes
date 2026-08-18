@@ -1,8 +1,9 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
-import { FaWhatsapp, FaUser, FaEdit, FaCog, FaHome, FaHeart, FaBell, FaCheckCircle, FaExclamationTriangle, FaTrashAlt, FaHistory, FaChevronDown } from "react-icons/fa";
+import { FaWhatsapp, FaUser, FaEdit, FaCog, FaHome, FaHeart, FaBell, FaCheckCircle, FaExclamationTriangle, FaTrashAlt, FaHistory, FaChevronDown, FaCommentDots, FaUserTie } from "react-icons/fa";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { IoMdClose } from "react-icons/io";
 import { MdLogin, MdPhone } from "react-icons/md";
@@ -102,6 +103,7 @@ function formatTimeAgo(dateString) {
 const DEFAULT_LOGO = "https://res.cloudinary.com/dxlykgx6w/image/upload/v1785662832/18homes_log_best_real_estate_e6spg7.jpg";
 
 export default function Navbar() {
+  const router = useRouter();
   const { isInstallable, installApp } = usePwa();
   const [open, setOpen] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -116,6 +118,19 @@ export default function Navbar() {
   const [showNotifMenu, setShowNotifMenu] = useState(false);
   const notifMenuRef = useRef(null);
   const databaseUrl = process.env.NEXT_PUBLIC_APP_DATABASE_URL || "http://localhost:5000";
+
+  const handleNotificationClick = (notif) => {
+    if (!notif.read) {
+      markAsRead(notif._id);
+    }
+    setShowNotifMenu(false);
+
+    if (notif.metadata?.conversationId) {
+      router.push(`/dashboard/chats?conversationId=${notif.metadata.conversationId}`);
+    } else if (notif.type === "contact_request") {
+      router.push("/dashboard/dealer/leads");
+    }
+  };
 
   const fetchNotifications = async () => {
     const token = localStorage.getItem("authToken");
@@ -460,7 +475,7 @@ export default function Navbar() {
                     notifications.map((notif) => (
                       <div
                         key={notif._id}
-                        onClick={() => !notif.read && markAsRead(notif._id)}
+                        onClick={() => handleNotificationClick(notif)}
                         className={`p-5 flex gap-4 transition cursor-pointer text-left border-l-4 ${notif.read
                           ? "bg-white hover:bg-slate-50 border-transparent"
                           : "bg-purple-50/30 hover:bg-purple-50/50 border-[#8c4bdc]"
@@ -475,6 +490,14 @@ export default function Navbar() {
                           ) : notif.type === "boost_expiring" ? (
                             <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center">
                               <FaExclamationTriangle className="text-amber-500 text-lg" />
+                            </div>
+                          ) : notif.type === "new_message" ? (
+                            <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center">
+                              <FaCommentDots className="text-indigo-600 text-lg" />
+                            </div>
+                          ) : notif.type === "contact_request" ? (
+                            <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center">
+                              <FaUserTie className="text-amber-600 text-lg" />
                             </div>
                           ) : (
                             <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center">
@@ -496,7 +519,12 @@ export default function Navbar() {
                           <p className="text-xs text-slate-500 mt-1 leading-relaxed break-words">
                             {notif.message}
                           </p>
-                          <span className="text-[10px] text-slate-400 mt-2 block font-medium">
+                          {notif.metadata?.conversationId && (
+                            <span className="inline-block mt-1.5 text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
+                              Click to Chat 💬
+                            </span>
+                          )}
+                          <span className="text-[10px] text-slate-400 mt-1.5 block font-medium">
                             {formatTimeAgo(notif.createdAt)}
                           </span>
                         </div>

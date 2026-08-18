@@ -21,7 +21,8 @@ import {
   Briefcase,
   ShieldCheck,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Trash2
 } from "lucide-react";
 
 const BASE_API_URL = process.env.NEXT_PUBLIC_APP_DATABASE_URL || "http://localhost:5000";
@@ -211,8 +212,8 @@ export default function EditProfile() {
       toast.error("Please select a valid image file");
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("File is too large. Max size is 5MB");
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("File is too large. Max size is 10MB");
       return;
     }
 
@@ -246,6 +247,14 @@ export default function EditProfile() {
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleRemovePhoto = () => {
+    setProfile((prev) => ({ ...prev, avatar: "" }));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+    toast.success("Photo removed. Click Save Changes below to update your profile.");
   };
 
   const handleSubmit = async (e) => {
@@ -464,7 +473,7 @@ export default function EditProfile() {
                   <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
                     <h3 className="text-base font-bold text-slate-800">Profile Picture</h3>
                     <p className="text-xs text-slate-400 mt-0.5 mb-3">
-                      JPG/PNG up to 5MB
+                      JPG/PNG up to 10MB
                     </p>
                     
                     <input
@@ -474,15 +483,29 @@ export default function EditProfile() {
                       className="hidden"
                       accept="image/*"
                     />
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={uploading}
-                      className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer"
-                    >
-                      <Upload className="w-3.5 h-3.5" />
-                      {uploading ? "Uploading..." : "Upload Photo"}
-                    </button>
+                    <div className="flex items-center gap-2 flex-wrap justify-center sm:justify-start">
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploading}
+                        className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer"
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        {uploading ? "Uploading..." : "Upload Photo"}
+                      </button>
+
+                      {profile.avatar && (
+                        <button
+                          type="button"
+                          onClick={handleRemovePhoto}
+                          disabled={uploading}
+                          className="flex items-center gap-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 px-3.5 py-2 rounded-xl text-xs font-bold transition cursor-pointer border border-rose-200 shadow-sm"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Remove Photo</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -744,7 +767,7 @@ export default function EditProfile() {
                 <div className="bg-amber-50/60 p-6 rounded-2xl border border-amber-200 space-y-6">
                   <div className="flex items-center gap-2 border-b border-amber-200 pb-3">
                     <Briefcase className="w-5 h-5 text-amber-600" />
-                    <h2 className="text-lg font-bold text-amber-900">Dealer & Agency Profile</h2>
+                    <h2 className="text-lg font-bold text-amber-900">Dealer & Agency Profile (Only Agency Name and one is required from RERA , GST , PAN , Adhaar )</h2>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -34,6 +34,9 @@ export default function DedicatedAnalyticsPage() {
   const [activeLeadFilter, setActiveLeadFilter] = useState("all");
   const [loading, setLoading] = useState(true);
 
+  const databaseUrl =
+    process.env.NEXT_PUBLIC_APP_DATABASE_URL || "http://localhost:5000";
+
   // Real-time Analytics State initialized with 0
   const [analyticsData, setAnalyticsData] = useState({
     visitorsCount: 0,
@@ -105,9 +108,17 @@ export default function DedicatedAnalyticsPage() {
       if (currentBuilderEmail) queryParams.set("builderEmail", currentBuilderEmail);
 
       const token = localStorage.getItem("authToken");
-      const res = await fetch(`${databaseUrl}/api/properties/analytics/builder?${queryParams.toString()}`, {
-        headers: { Authorization: `Bearer ${token}` }
+
+      // Try local Next.js route first, fallback to databaseUrl
+      let res = await fetch(`/api/analytics/builder?${queryParams.toString()}`, {
+        headers: { Authorization: token ? `Bearer ${token}` : "" }
       });
+
+      if (!res.ok) {
+        res = await fetch(`${databaseUrl}/api/properties/analytics/builder?${queryParams.toString()}`, {
+          headers: { Authorization: token ? `Bearer ${token}` : "" }
+        });
+      }
 
       if (res.ok) {
         const json = await res.json();
@@ -159,6 +170,7 @@ export default function DedicatedAnalyticsPage() {
       }
     } catch (err) {
       console.error("Error calculations in analytics loading:", err);
+      if (isInitial) toast.error("Error loading analytics data");
     } finally {
       if (isInitial) setLoading(false);
     }
@@ -268,8 +280,12 @@ export default function DedicatedAnalyticsPage() {
 
             <div className="flex items-center gap-3">
               <button
-                onClick={() => loadAnalytics(true)}
-                className="bg-white/10 hover:bg-white/20 text-white px-4 py-2.5 rounded-2xl font-bold text-xs transition border border-white/15 flex items-center gap-2"
+                onClick={() => {
+                  toast.success("Analytics data refreshed!");
+                  loadAnalytics(true);
+                }}
+                disabled={loading}
+                className="bg-white/10 hover:bg-white/20 text-white px-4 py-2.5 rounded-2xl font-bold text-xs transition border border-white/15 flex items-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
                 <span>Refresh Data</span>
