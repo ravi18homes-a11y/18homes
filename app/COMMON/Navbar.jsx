@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import { FaWhatsapp, FaUser, FaEdit, FaCog, FaHome, FaHeart, FaBell, FaCheckCircle, FaExclamationTriangle, FaTrashAlt, FaHistory, FaChevronDown, FaCommentDots, FaUserTie } from "react-icons/fa";
 import { GiHamburgerMenu } from "react-icons/gi";
@@ -104,6 +104,7 @@ const DEFAULT_LOGO = "https://res.cloudinary.com/dxlykgx6w/image/upload/v1785662
 
 export default function Navbar() {
   const router = useRouter();
+  const pathname = usePathname();
   const { isInstallable, installApp } = usePwa();
   const [open, setOpen] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -358,13 +359,24 @@ export default function Navbar() {
       <div className="max-w-[1720px] mx-auto flex items-center justify-between lg:px-14 px-4 py-2">
         <div className="flex items-center gap-10">
           {/* Logo */}
-          <Link href="/">
+          <Link
+            href="/"
+            onClick={(e) => {
+              setOpen(false);
+              setShowNotifMenu(false);
+              setShowProfileMenu(false);
+              if (pathname !== "/") {
+                router.push("/");
+              }
+            }}
+            className="cursor-pointer"
+          >
             <Image
               src={navbarLogo}
               alt={navbarLogoAlt}
               width={70}
               height={70}
-              className="object-contain max-w-[70px] max-h-[70px]"
+              className="object-contain max-w-[70px] max-h-[70px] pointer-events-none"
             />
           </Link>
 

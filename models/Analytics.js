@@ -11,6 +11,7 @@ const AnalyticsSchema = new mongoose.Schema(
     userName: { type: String, default: "Guest Visitor" },
     userEmail: { type: String, default: "guest@18homes.in" },
     userPhone: { type: String, default: "+91 98765 43210" },
+    visitorId: { type: String, default: "" },
     durationSec: { type: Number, default: 0 },
     timestamp: { type: Date, default: Date.now },
   },

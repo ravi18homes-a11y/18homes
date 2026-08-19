@@ -9,7 +9,7 @@ function MissionVisson() {
           {/* LEFT — ONE FULL LARGE IMAGE */}
           <div className="w-full">
             <img
-              src="https://res.cloudinary.com/dxlykgx6w/image/upload/v1765113787/18home_nfbc2b.jpg"
+              src="https://res.cloudinary.com/dxlykgx6w/image/upload/v1787163096/WhatsApp_Image_2026-08-16_at_12.42.58_AM_uuvtpm.jpg"
               alt="DJ"
               className="w-full h-full rounded-[40px] object-cover"
             />

@@ -342,11 +342,18 @@ export default function BottomTaskbar() {
         {/* Tab 1: Home */}
         <Link
           href="/"
-          className={`flex flex-col items-center justify-center w-14 h-full transition-colors ${pathname === "/" ? "text-red-600 font-bold" : "text-gray-500"
+          onClick={(e) => {
+            setIsSearchOpen(false);
+            setIsMenuOpen(false);
+            if (pathname !== "/") {
+              router.push("/");
+            }
+          }}
+          className={`flex flex-col items-center justify-center w-14 h-full transition-colors cursor-pointer ${pathname === "/" ? "text-red-600 font-bold" : "text-gray-500"
             }`}
         >
-          <Home className="w-6 h-6 mb-1" />
-          <span className="text-[10px] tracking-tight">Home</span>
+          <Home className="w-6 h-6 mb-1 pointer-events-none" />
+          <span className="text-[10px] tracking-tight pointer-events-none">Home</span>
         </Link>
 
         {/* Tab 2: Sell / Rent (With Free Badge) */}
@@ -666,11 +673,17 @@ export default function BottomTaskbar() {
               {/* Main Navigation Pages */}
               <Link
                 href="/"
-                onClick={() => setIsMenuOpen(false)}
-                className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition text-gray-700 hover:text-red-600 font-semibold"
+                onClick={(e) => {
+                  setIsMenuOpen(false);
+                  setIsSearchOpen(false);
+                  if (pathname !== "/") {
+                    router.push("/");
+                  }
+                }}
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition text-gray-700 hover:text-red-600 font-semibold cursor-pointer"
               >
-                <Home className="w-5 h-5 text-gray-400" />
-                <span>Home</span>
+                <Home className="w-5 h-5 text-gray-400 pointer-events-none" />
+                <span className="pointer-events-none">Home</span>
               </Link>
 
               {/* Membership Page Link (Blue Color Highlighted) */}

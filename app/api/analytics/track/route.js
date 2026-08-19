@@ -17,6 +17,7 @@ export async function POST(req) {
       userName,
       userEmail,
       userPhone,
+      visitorId,
       durationSec,
       timestamp,
     } = body;
@@ -38,6 +39,7 @@ export async function POST(req) {
       userName: userName || "Guest Visitor",
       userEmail: userEmail || "visitor@18homes.in",
       userPhone: userPhone || "+91 98765 43210",
+      visitorId: visitorId || "",
       durationSec: durationSec || 0,
       timestamp: timestamp ? new Date(timestamp) : new Date(),
     });
