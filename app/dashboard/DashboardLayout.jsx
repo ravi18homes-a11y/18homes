@@ -305,6 +305,18 @@ export default function DashboardLayout({ children }) {
       roles: ["builder", "dealer", "admin", "super_admin"], // Enable dealers to access analytics page based on their plan
     },
     {
+      name: "Client Leads",
+      href: "/dashboard/dealer/leads",
+      icon: Users,
+      roles: ["builder", "dealer", "admin", "super_admin"],
+    },
+    {
+      name: "Featured Ads",
+      href: "/dashboard/dealer/featured-ads",
+      icon: Sparkles,
+      roles: ["builder", "dealer", "admin", "super_admin"],
+    },
+    {
       name: "Membership Plans",
       href: "/membership",
       icon: ShieldCheck,
@@ -352,18 +364,7 @@ export default function DashboardLayout({ children }) {
       icon: PlusCircle,
       roles: ["builder", "admin", "super_admin"],
     },
-    {
-      name: "Client Leads",
-      href: "/dashboard/dealer/leads",
-      icon: Users,
-      roles: ["builder", "dealer", "admin", "super_admin"],
-    },
-    {
-      name: "Featured Ads",
-      href: "/dashboard/dealer/featured-ads",
-      icon: Sparkles,
-      roles: ["builder", "dealer", "admin", "super_admin"],
-    },
+    
   ];
 
   if (user?.role === "admin" || user?.role === "super_admin") {
@@ -395,15 +396,25 @@ export default function DashboardLayout({ children }) {
         <div className="flex-shrink-0">
           {/* BRAND LOGO HEADER CARD */}
           <div className="bg-white p-2.5 rounded-2xl mb-5 border border-slate-200/80 shadow-sm flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-white p-0.5">
+            <Link
+              href="/"
+              onClick={(e) => {
+                setSidebarOpen(false);
+                setShowNotifMenu(false);
+                if (pathname !== "/") {
+                  router.push("/");
+                }
+              }}
+              className="flex items-center gap-3 cursor-pointer"
+            >
+              <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-white p-0.5 pointer-events-none">
                 <img
                   src="https://res.cloudinary.com/dxlykgx6w/image/upload/v1785662832/18homes_log_best_real_estate_e6spg7.jpg"
                   alt="18Homes Official Logo"
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain pointer-events-none"
                 />
               </div>
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 flex-1 pointer-events-none">
                 <span className="font-bold text-base tracking-tight text-slate-900 block leading-tight font-sans">
                   18homes
                 </span>

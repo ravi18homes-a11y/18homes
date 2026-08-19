@@ -24,10 +24,38 @@ export async function GET(req) {
 
     const events = await Analytics.find(filter).sort({ timestamp: -1 }).limit(1000);
 
-    const visitors = events.filter((e) => e.eventType === "visitor" || e.eventType === "page_view").length;
+    const totalViews = events.filter((e) => e.eventType === "page_view" || e.eventType === "visitor").length;
     const phoneClicks = events.filter((e) => e.eventType === "phone_click").length;
     const whatsappClicks = events.filter((e) => e.eventType === "whatsapp_click").length;
-    const totalViews = events.filter((e) => e.eventType === "page_view" || e.eventType === "visitor").length;
+
+    const getVisitorKey = (ev) => {
+      const email = (ev.userEmail || "").toLowerCase().trim();
+      const phone = (ev.userPhone || "").trim();
+      const visitorId = (ev.visitorId || "").trim();
+      const userName = (ev.userName || "").trim();
+
+      if (email && email !== "visitor@18homes.in" && email !== "guest@18homes.in") {
+        return email;
+      }
+      if (phone && phone !== "+91 98765 43210" && phone !== "9876543210") {
+        return phone;
+      }
+      if (visitorId) {
+        return visitorId;
+      }
+      if (userName && userName.toLowerCase() !== "guest visitor") {
+        return userName.toLowerCase();
+      }
+      return email || phone || "anonymous_guest";
+    };
+
+    // Calculate unique visitors
+    const uniqueVisitorKeys = new Set();
+    events.filter((e) => e.eventType === "page_view" || e.eventType === "visitor").forEach((ev) => {
+      const key = getVisitorKey(ev);
+      if (key) uniqueVisitorKeys.add(key);
+    });
+    const visitors = uniqueVisitorKeys.size;
 
     const timeEvents = events.filter((e) => e.eventType === "time_spent" && e.durationSec > 0);
     let avgSec = 0;

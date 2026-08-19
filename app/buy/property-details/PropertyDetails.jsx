@@ -429,6 +429,15 @@ const PropertyDetailsPage = () => {
       const ownerEmail = property.owner?.email || "";
       const currentUserId = currentUser._id || currentUser.id || "";
 
+      let visitorId = "";
+      if (typeof window !== "undefined") {
+        visitorId = localStorage.getItem("18homes_visitor_id");
+        if (!visitorId) {
+          visitorId = "vis_" + Date.now() + "_" + Math.random().toString(36).substring(2, 9);
+          localStorage.setItem("18homes_visitor_id", visitorId);
+        }
+      }
+
       const payload = {
         id: Date.now() + "_" + Math.random().toString(36).substr(2, 5),
         eventType, // "page_view", "view_contact", "phone_click", "whatsapp_click", "time_spent"
@@ -437,6 +446,7 @@ const PropertyDetailsPage = () => {
         builderId: String(ownerId),
         builderEmail: String(ownerEmail),
         userId: String(currentUserId),
+        visitorId: visitorId,
         city: property.address?.city || property.address?.locality || property.location || "Noida",
         flatUnit: property.flatNo || property.unitNo || property.title || "A-302",
         userName: currentUser.name || "Guest Visitor",

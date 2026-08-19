@@ -65,16 +65,19 @@ export default function AdminSidebar({
       >
         {/* LOGO */}
         <div className="flex items-center justify-between sm:justify-center p-5 border-b border-green-600">
-          <Link href="/" className="flex items-center gap-3">
+          <Link
+            href="/"
+            onClick={() => setIsMobileOpen(false)}
+            className="flex items-center gap-3 cursor-pointer"
+          >
             <Image
               src="https://res.cloudinary.com/dxlykgx6w/image/upload/v1785662832/18homes_log_best_real_estate_e6spg7.jpg"
               alt="18Homes"
               width={40}
               height={40}
               priority
-              className="rounded-[10px] sm:rounded-[16px] sm:w-[80px] sm:h-[80px]"
+              className="rounded-[10px] sm:rounded-[16px] sm:w-[80px] sm:h-[80px] pointer-events-none"
             />
-
           </Link>
 
           {/* Close button for mobile */}

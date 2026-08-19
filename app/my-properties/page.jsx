@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { Edit, Trash2, Home, MapPin, Loader2, X } from "lucide-react";
+import { Edit, Trash2, Home, MapPin, Loader2, X, Search, ArrowUpDown, RotateCcw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Navbar from "../COMMON/Navbar";
 import Footer from "../COMMON/Footer";
@@ -29,6 +29,11 @@ export default function MyPropertiesPage() {
   const [deletingId, setDeletingId] = useState(null);
   const [user, setUser] = useState(null);
   const router = useRouter();
+
+  // Search & Filter States
+  const [searchTerm, setSearchTerm] = useState("");
+  const [purposeFilter, setPurposeFilter] = useState("all"); // "all", "sell", "rent"
+  const [sortOrder, setSortOrder] = useState("latest"); // "latest", "older"
 
   const databaseUrl = process.env.NEXT_PUBLIC_APP_DATABASE_URL || "http://localhost:5000";
 
@@ -285,6 +290,69 @@ export default function MyPropertiesPage() {
     return `₹${(numPrice / 100000).toFixed(2)} Lac`;
   };
 
+  const filteredProperties = properties
+    .filter((property) => {
+      // 1. Purpose filter (Sell / Rent / All)
+      if (purposeFilter !== "all") {
+        const rawPurpose = String(
+          property.purpose ||
+          property.listingType ||
+          property.propertyFor ||
+          property.status ||
+          ""
+        ).toLowerCase();
+
+        if (purposeFilter === "sell") {
+          if (rawPurpose.includes("rent")) return false;
+        } else if (purposeFilter === "rent") {
+          if (!rawPurpose.includes("rent")) return false;
+        }
+      }
+
+      // 2. Search term filter
+      if (searchTerm.trim() !== "") {
+        const query = searchTerm.toLowerCase().trim();
+        const title = (property.title || "").toLowerCase();
+        const address = typeof property.address === "object"
+          ? `${property.address?.locality || ""} ${property.address?.city || ""} ${property.address?.state || ""}`.toLowerCase()
+          : (property.address || property.location || "").toLowerCase();
+        const priceStr = String(property.price || property.priceValue || property.priceText || "").toLowerCase();
+        const propType = (property.propertyType || property.category || "").toLowerCase();
+        const pId = String(property._id || property.id || "").toLowerCase();
+
+        const matchesSearch =
+          title.includes(query) ||
+          address.includes(query) ||
+          priceStr.includes(query) ||
+          propType.includes(query) ||
+          pId.includes(query);
+
+        if (!matchesSearch) return false;
+      }
+
+      return true;
+    })
+    .sort((a, b) => {
+      const getTimestamp = (item) => {
+        if (item.createdAt) return new Date(item.createdAt).getTime();
+        if (item.createdAtDate) return new Date(item.createdAtDate).getTime();
+        if (item.updatedAt) return new Date(item.updatedAt).getTime();
+        if (item._id && typeof item._id === "string" && item._id.length === 24) {
+          return parseInt(item._id.substring(0, 8), 16) * 1000;
+        }
+        return 0;
+      };
+
+      const dateA = getTimestamp(a);
+      const dateB = getTimestamp(b);
+
+      if (sortOrder === "latest") {
+        return dateB - dateA;
+      } else {
+        return dateA - dateB;
+      }
+    });
+
   if (loading) {
     return (
       <DashboardLayout>
@@ -298,18 +366,94 @@ export default function MyPropertiesPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
             <div>
               <h1 className="text-3xl font-bold text-gray-800">My Properties</h1>
-              <p className="text-gray-600 mt-2">Manage the properties you have listed</p>
+              <p className="text-gray-600 mt-1">Manage the properties you have listed</p>
             </div>
             <Link
               href="/sell"
-              className="px-6 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors"
+              className="self-start sm:self-auto px-6 py-2.5 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors flex items-center justify-center shadow-sm"
             >
               Post New Property
             </Link>
           </div>
+
+          {/* Search Box, Purpose Filter & Sort Order Controls */}
+          {properties.length > 0 && (
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+              {/* Search Box */}
+              <div className="relative flex-1">
+                <Search className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search by title, location, price, property type..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all"
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
+                    title="Clear search"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Purpose Filter (All / Sell / Rent) */}
+                <div className="flex items-center bg-gray-100 p-1 rounded-lg border border-gray-200 text-sm font-medium">
+                  <button
+                    onClick={() => setPurposeFilter("all")}
+                    className={`px-4 py-1.5 rounded-md transition-all ${
+                      purposeFilter === "all"
+                        ? "bg-white text-red-600 shadow-sm font-semibold"
+                        : "text-gray-600 hover:text-gray-900"
+                    }`}
+                  >
+                    All
+                  </button>
+                  <button
+                    onClick={() => setPurposeFilter("sell")}
+                    className={`px-4 py-1.5 rounded-md transition-all ${
+                      purposeFilter === "sell"
+                        ? "bg-white text-red-600 shadow-sm font-semibold"
+                        : "text-gray-600 hover:text-gray-900"
+                    }`}
+                  >
+                    Sell
+                  </button>
+                  <button
+                    onClick={() => setPurposeFilter("rent")}
+                    className={`px-4 py-1.5 rounded-md transition-all ${
+                      purposeFilter === "rent"
+                        ? "bg-white text-red-600 shadow-sm font-semibold"
+                        : "text-gray-600 hover:text-gray-900"
+                    }`}
+                  >
+                    Rent
+                  </button>
+                </div>
+
+                {/* Sort Order (Latest / Older) */}
+                <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700">
+                  <ArrowUpDown className="w-4 h-4 text-gray-500" />
+                  <span className="text-xs text-gray-400 font-medium hidden sm:inline">Sort:</span>
+                  <select
+                    value={sortOrder}
+                    onChange={(e) => setSortOrder(e.target.value)}
+                    className="bg-transparent font-medium text-gray-800 focus:outline-none cursor-pointer"
+                  >
+                    <option value="latest">Latest</option>
+                    <option value="older">Older</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
 
           {properties.length === 0 ? (
             <div className="bg-white rounded-xl shadow-sm p-12 text-center border border-gray-100">
@@ -325,9 +469,28 @@ export default function MyPropertiesPage() {
                 Post Your First Property
               </Link>
             </div>
+          ) : filteredProperties.length === 0 ? (
+            <div className="bg-white rounded-xl shadow-sm p-12 text-center border border-gray-100">
+              <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Search className="w-8 h-8 text-red-500" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">No Matching Properties</h3>
+              <p className="text-gray-500 mb-6">No properties match your current search or filter criteria.</p>
+              <button
+                onClick={() => {
+                  setSearchTerm("");
+                  setPurposeFilter("all");
+                  setSortOrder("latest");
+                }}
+                className="inline-flex items-center gap-2 px-6 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors shadow-sm"
+              >
+                <RotateCcw className="w-4 h-4" />
+                Reset Filters
+              </button>
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {properties.map((property) => (
+              {filteredProperties.map((property) => (
                 <div key={property._id || property.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow flex flex-col">
                   <div className="relative h-48 bg-gray-200">
                     {property.isSold && (

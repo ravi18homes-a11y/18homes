@@ -48,6 +48,7 @@ export default function DedicatedAnalyticsPage() {
     mostInterestedCity: "N/A",
   });
 
+  const [rawEvents, setRawEvents] = useState([]);
   const [leadLogs, setLeadLogs] = useState([]);
   const [categorizedLogs, setCategorizedLogs] = useState({
     visitors: [],
@@ -136,20 +137,44 @@ export default function DedicatedAnalyticsPage() {
           });
 
           const ownPropertyEvents = data.events || [];
+          setRawEvents(ownPropertyEvents);
+
+          const getVisitorKey = (ev) => {
+            const email = (ev.userEmail || "").toLowerCase().trim();
+            const phone = (ev.userPhone || "").trim();
+            const visitorId = (ev.visitorId || "").trim();
+            const userName = (ev.userName || "").trim();
+
+            if (email && email !== "visitor@18homes.in" && email !== "guest@18homes.in") {
+              return email;
+            }
+            if (phone && phone !== "+91 98765 43210" && phone !== "9876543210") {
+              return phone;
+            }
+            if (visitorId) {
+              return visitorId;
+            }
+            if (userName && userName.toLowerCase() !== "guest visitor") {
+              return userName.toLowerCase();
+            }
+            return email || phone || "anonymous_guest";
+          };
 
           const getUniqueUserLogs = (eventList) => {
-            const result = [];
-            const seen = new Set();
+            const userMap = new Map();
             eventList.forEach((ev) => {
-              const key = (ev.userEmail || ev.userPhone || ev.userName || ev.id || "").toLowerCase();
-              if (key && !seen.has(key)) {
-                seen.add(key);
-                result.push(ev);
-              } else if (!key) {
-                result.push(ev);
+              const key = getVisitorKey(ev);
+              if (!userMap.has(key)) {
+                userMap.set(key, { ...ev, viewCount: 1 });
+              } else {
+                const existing = userMap.get(key);
+                existing.viewCount = (existing.viewCount || 1) + 1;
+                if (ev.timestamp && (!existing.timestamp || new Date(ev.timestamp) > new Date(existing.timestamp))) {
+                  existing.timestamp = ev.timestamp;
+                }
               }
             });
-            return result;
+            return Array.from(userMap.values());
           };
 
           const visitorLogs = getUniqueUserLogs(ownPropertyEvents.filter((e) => e.eventType === "visitor" || e.eventType === "page_view"));
@@ -195,9 +220,107 @@ export default function DedicatedAnalyticsPage() {
 
   const modalLogs = getFilteredLogsForModal();
 
+  const getVisitorKey = (ev) => {
+    const email = (ev.userEmail || "").toLowerCase().trim();
+    const phone = (ev.userPhone || "").trim();
+    const visitorId = (ev.visitorId || "").trim();
+    const userName = (ev.userName || "").trim();
+
+    if (email && email !== "visitor@18homes.in" && email !== "guest@18homes.in") {
+      return email;
+    }
+    if (phone && phone !== "+91 98765 43210" && phone !== "9876543210") {
+      return phone;
+    }
+    if (visitorId) {
+      return visitorId;
+    }
+    if (userName && userName.toLowerCase() !== "guest visitor") {
+      return userName.toLowerCase();
+    }
+    return email || phone || "anonymous_guest";
+  };
+
+  const getPropertyViewGroups = () => {
+    const viewsList = rawEvents.filter((e) => e.eventType === "visitor" || e.eventType === "page_view" || !e.eventType);
+    const groupsMap = new Map();
+
+    viewsList.forEach((ev) => {
+      const propId = ev.propertyId || ev.property_id || (typeof ev.property === "object" ? (ev.property?._id || ev.property?.id) : ev.property) || "Unknown Property";
+      const title = ev.flatUnit || ev.propertyTitle || "Property Listing";
+      const key = `${propId}_${title}`.toLowerCase();
+
+      if (!groupsMap.has(key)) {
+        groupsMap.set(key, {
+          propertyId: propId,
+          title: title,
+          city: ev.city || "Noida",
+          totalViews: 0,
+          uniqueVisitorsSet: new Set(),
+          uniqueBuyersMap: new Map(),
+          recentLogs: [],
+        });
+      }
+
+      const group = groupsMap.get(key);
+      group.totalViews += 1;
+      group.recentLogs.push(ev);
+
+      const userKey = getVisitorKey(ev);
+      if (userKey) {
+        group.uniqueVisitorsSet.add(userKey);
+        if (!group.uniqueBuyersMap.has(userKey)) {
+          group.uniqueBuyersMap.set(userKey, {
+            userName: ev.userName || "Guest Visitor",
+            userPhone: ev.userPhone || "",
+            userEmail: ev.userEmail || "",
+            timestamp: ev.timestamp,
+            views: 1,
+          });
+        } else {
+          const buyer = group.uniqueBuyersMap.get(userKey);
+          buyer.views += 1;
+          if (ev.timestamp && (!buyer.timestamp || new Date(buyer.timestamp) > new Date(buyer.timestamp))) {
+            buyer.timestamp = ev.timestamp;
+          }
+        }
+      }
+    });
+
+    return Array.from(groupsMap.values()).map((g) => ({
+      ...g,
+      uniqueVisitorsCount: g.uniqueVisitorsSet.size,
+      uniqueBuyersList: Array.from(g.uniqueBuyersMap.values()),
+    }));
+  };
+
+  const propertyViewGroups = getPropertyViewGroups();
+
   const handleExportCSV = () => {
+    if (selectedMetricModal === "property_views") {
+      if (!propertyViewGroups || propertyViewGroups.length === 0) return;
+      const headers = ["Property Title", "Property ID", "City", "Total Views", "Unique Buyers Count"];
+      const rows = propertyViewGroups.map((g) => [
+        `"${g.title}"`,
+        `"${g.propertyId}"`,
+        `"${g.city}"`,
+        `"${g.totalViews}"`,
+        `"${g.uniqueVisitorsCount}"`,
+      ]);
+
+      const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `property_views_breakdown_${Date.now()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      return;
+    }
+
     if (!modalLogs || modalLogs.length === 0) return;
-    const headers = ["User Name", "Phone", "Email", "Property Title", "Flat/Unit", "City", "Event Type", "Date/Time"];
+    const headers = ["User Name", "Phone", "Email", "Property Title", "Flat/Unit", "City", "Event Type", "Views Count", "Date/Time"];
     const rows = modalLogs.map((log) => [
       `"${log.userName || 'Guest'}"`,
       `"${log.userPhone || 'N/A'}"`,
@@ -206,6 +329,7 @@ export default function DedicatedAnalyticsPage() {
       `"${log.flatUnit || 'N/A'}"`,
       `"${log.city || 'N/A'}"`,
       `"${log.eventType || 'visitor'}"`,
+      `"${log.viewCount || 1}"`,
       `"${log.timestamp ? new Date(log.timestamp).toLocaleString() : 'N/A'}"`,
     ]);
 
@@ -373,7 +497,7 @@ export default function DedicatedAnalyticsPage() {
                   Total Visitors
                 </p>
                 <h3 className="text-3xl font-extrabold text-slate-900 mt-1">
-                  {canAccessVisitors ? analyticsData.visitorsCount : "🔒 Locked"}
+                  {canAccessVisitors ? (categorizedLogs.visitors.length || analyticsData.visitorsCount || 0) : "🔒 Locked"}
                 </h3>
                 <p className="text-[11px] text-slate-400 mt-2 font-medium">
                   Unique users who viewed your property listings
@@ -469,7 +593,7 @@ export default function DedicatedAnalyticsPage() {
                     toast.error("Upgrade your plan to Platinum or higher to view property views analytics!");
                     return;
                   }
-                  setSelectedMetricModal("visitors");
+                  setSelectedMetricModal("property_views");
                 }}
                 className={`bg-white p-6 rounded-3xl border shadow-sm transition relative overflow-hidden ${
                   canAccessViews
@@ -729,10 +853,14 @@ export default function DedicatedAnalyticsPage() {
             <div className="p-6 bg-slate-900 text-white flex items-center justify-between">
               <div>
                 <span className="text-[10px] uppercase tracking-wider font-extrabold text-purple-400 block mb-0.5">
-                  Detailed Buyer Logs
+                  Detailed Analytics Logs
                 </span>
                 <h3 className="text-xl font-extrabold capitalize">
-                  {selectedMetricModal === "visitors" ? "Visitors & Property Views" : `${selectedMetricModal} Inquiries`}
+                  {selectedMetricModal === "visitors"
+                    ? "Unique Visitors Activity"
+                    : selectedMetricModal === "property_views"
+                    ? "Property Views Breakdown"
+                    : `${selectedMetricModal} Inquiries`}
                 </h3>
               </div>
 
@@ -755,7 +883,123 @@ export default function DedicatedAnalyticsPage() {
             </div>
 
             <div className="p-6 overflow-y-auto flex-1">
-              {modalLogs.length === 0 ? (
+              {selectedMetricModal === "property_views" ? (
+                propertyViewGroups.length === 0 ? (
+                  <div className="py-12 text-center">
+                    <div className="w-12 h-12 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <Building2 className="w-6 h-6" />
+                    </div>
+                    <h4 className="font-bold text-slate-700">No property views recorded yet.</h4>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Property view counts will appear here as soon as buyers view your property pages.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {propertyViewGroups.map((group, idx) => {
+                      const targetUrl = group.propertyId && group.propertyId !== "Unknown Property"
+                        ? `/buy/property-details?id=${group.propertyId}`
+                        : `/buy?search=${encodeURIComponent(group.title !== "Property Listing" ? group.title : "")}`;
+
+                      return (
+                        <div key={group.propertyId || idx} className="bg-slate-50 border border-slate-200 p-5 rounded-2xl space-y-4">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-3">
+                            <div>
+                              <Link
+                                href={targetUrl}
+                               
+                                rel="noopener noreferrer"
+                                className="font-bold text-slate-900 text-lg hover:text-purple-600 transition flex items-center gap-2 group"
+                                title="View Property Page"
+                              >
+                                <Building2 className="w-5 h-5 text-purple-600 group-hover:scale-110 transition-transform flex-shrink-0" />
+                                <span className="underline underline-offset-2">{group.title}</span>
+                              </Link>
+                              <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-1">
+                                <MapPin className="w-3.5 h-3.5 text-rose-500" />
+                                <span>{group.city}</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 self-start sm:self-auto">
+                              <span className="text-xs font-extrabold bg-purple-100 text-purple-800 px-3.5 py-1.5 rounded-full flex items-center gap-1.5 border border-purple-200">
+                                <Eye className="w-4 h-4 text-purple-600" />
+                                {group.totalViews} Total Views
+                              </span>
+                              <span className="text-xs font-extrabold bg-blue-100 text-blue-800 px-3.5 py-1.5 rounded-full flex items-center gap-1.5 border border-blue-200">
+                                <Users className="w-4 h-4 text-blue-600" />
+                                {group.uniqueVisitorsCount} Unique Buyers
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Buyers Details Grid */}
+                          <div>
+                            <span className="font-extrabold text-slate-700 text-xs block mb-2.5 uppercase tracking-wider">
+                              Buyers Who Viewed This Property ({group.uniqueBuyersList.length || group.recentLogs.length}):
+                            </span>
+                            {group.uniqueBuyersList.length > 0 ? (
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                                {group.uniqueBuyersList.map((buyer, bIdx) => (
+                                  <div key={bIdx} className="bg-white p-3 rounded-xl border border-slate-200 flex flex-col justify-between space-y-2 hover:border-purple-300 transition">
+                                    <div className="flex items-center justify-between">
+                                      <span className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                                        <Users className="w-3.5 h-3.5 text-slate-400" />
+                                        {buyer.userName}
+                                      </span>
+                                      <div className="flex items-center gap-1.5">
+                                        {buyer.views > 1 && (
+                                          <span className="text-[10px] font-extrabold bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 rounded-full">
+                                            {buyer.views} Views
+                                          </span>
+                                        )}
+                                        <span className="text-[9px] font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">
+                                          {buyer.timestamp ? new Date(buyer.timestamp).toLocaleString() : "Recent"}
+                                        </span>
+                                      </div>
+                                    </div>
+
+                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-slate-600 pt-1 border-t border-slate-100">
+                                      {buyer.userPhone ? (
+                                        <div className="flex items-center gap-1 text-emerald-700 font-semibold">
+                                          <Phone className="w-3 h-3 text-emerald-600" />
+                                          <span>{buyer.userPhone}</span>
+                                        </div>
+                                      ) : null}
+                                      {buyer.userEmail ? (
+                                        <div className="flex items-center gap-1 text-blue-700 font-semibold">
+                                          <Mail className="w-3 h-3 text-blue-600" />
+                                          <span>{buyer.userEmail}</span>
+                                        </div>
+                                      ) : null}
+                                      {!buyer.userPhone && !buyer.userEmail && (
+                                        <span className="text-slate-400 italic">No direct contact shared (Guest view)</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                                {group.recentLogs.map((vLog, vIdx) => (
+                                  <div key={vIdx} className="bg-white p-3 rounded-xl border border-slate-200 flex items-center justify-between text-xs">
+                                    <div>
+                                      <span className="font-bold text-slate-800 block">{vLog.userName || "Guest Visitor"}</span>
+                                      <span className="text-[10px] text-slate-400">{vLog.userPhone || vLog.userEmail || "Guest view"}</span>
+                                    </div>
+                                    <span className="text-[10px] font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">
+                                      {vLog.timestamp ? new Date(vLog.timestamp).toLocaleString() : "Recent"}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )
+              ) : modalLogs.length === 0 ? (
                 <div className="py-12 text-center">
                   <div className="w-12 h-12 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-3">
                     <FileText className="w-6 h-6" />
@@ -776,16 +1020,37 @@ export default function DedicatedAnalyticsPage() {
                             {log.timestamp ? new Date(log.timestamp).toLocaleString() : "Recent"}
                           </span>
                         </div>
-                        <span className="text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-purple-100 text-purple-800">
-                          {log.eventType || "visitor"}
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          {log.viewCount && log.viewCount > 1 && (
+                            <span className="text-[10px] font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200">
+                              {log.viewCount} Views
+                            </span>
+                          )}
+                          <span className="text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-purple-100 text-purple-800">
+                            {log.eventType || "visitor"}
+                          </span>
+                        </div>
                       </div>
 
                       <div className="space-y-1.5 text-xs text-slate-600 bg-white p-3 rounded-xl border border-slate-200/60">
-                        <div className="flex items-center gap-2">
-                          <Building2 className="w-3.5 h-3.5 text-purple-600" />
-                          <span className="font-semibold text-slate-800">{log.flatUnit || log.propertyTitle || "N/A"}</span>
-                        </div>
+                        {(() => {
+                          const propId = log.propertyId || log.property_id || (typeof log.property === "object" ? (log.property?._id || log.property?.id) : log.property);
+                          const titleText = log.flatUnit || log.propertyTitle || "N/A";
+                          const targetUrl = propId ? `/buy/property-details?id=${propId}` : `/buy?search=${encodeURIComponent(titleText !== "N/A" ? titleText : "")}`;
+
+                          return (
+                            <Link
+                              href={targetUrl}
+                             
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 text-purple-700 hover:text-purple-900 transition-colors group"
+                              title="View Property Details"
+                            >
+                              <Building2 className="w-3.5 h-3.5 text-purple-600 group-hover:scale-110 transition-transform flex-shrink-0" />
+                              <span className="font-semibold underline underline-offset-2 line-clamp-1">{titleText}</span>
+                            </Link>
+                          );
+                        })()}
                         <div className="flex items-center gap-2">
                           <MapPin className="w-3.5 h-3.5 text-rose-500" />
                           <span>{log.city || "Noida"}</span>
