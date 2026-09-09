@@ -36,7 +36,7 @@ export default function HeroSlider({ data }) {
 
   return (
     <section
-      className="relative max-w-[1720px] mx-auto w-full h-[90vh]"
+      className="relative max-w-[1720px] mx-auto w-full h-[70vh] sm:h-[90vh]"
       style={sectionBg ? { backgroundColor: sectionBg } : {}}
       suppressHydrationWarning
     >

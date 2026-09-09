@@ -20,6 +20,7 @@ import {
   Heart,
   History,
   PlusCircle,
+  Settings,
 } from "lucide-react";
 
 export default function AdminSidebar({
@@ -152,6 +153,14 @@ export default function AdminSidebar({
             active={pathname.startsWith("/admin/featured-ads")}
             icon={<Building2 size={18} />}
             label="Featured Agent Ads"
+            isCollapsed={isCollapsed}
+          />
+
+          <NavItem
+            href="/admin/settings"
+            active={pathname.startsWith("/admin/settings")}
+            icon={<Settings size={18} />}
+            label="System Settings"
             isCollapsed={isCollapsed}
           />
 

@@ -206,7 +206,7 @@ const PropertyDetailsPage = () => {
   };
 
   const DEFAULT_IMAGE =
-    "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200";
+    "https://res.cloudinary.com/domwj0m7s/image/upload/v1785084052/ChatGPT_Image_Jul_26_2026_10_10_07_PM_uuqc8u.png";
 
   const validImages = (property?.images || []).filter(
     (img) => img && !img.startsWith("blob:") && img.trim() !== "",
@@ -306,7 +306,7 @@ const PropertyDetailsPage = () => {
                   bedrooms: transformedProperty.bedrooms,
                   bathrooms: transformedProperty.bathrooms,
                   area: transformedProperty.area,
-                  image: transformedProperty.images?.[0] || transformedProperty.image || "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200",
+                  image: transformedProperty.images?.[0] || transformedProperty.image || "https://res.cloudinary.com/domwj0m7s/image/upload/v1785084052/ChatGPT_Image_Jul_26_2026_10_10_07_PM_uuqc8u.png",
                   type: transformedProperty.type,
                   status: transformedProperty.status,
                   visitedAt: new Date().toISOString()
