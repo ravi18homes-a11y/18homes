@@ -30,6 +30,7 @@ export default function StandaloneMembershipPage() {
   const [currentSub, setCurrentSub] = useState(null);
   const [paymentHistory, setPaymentHistory] = useState([]);
   const [payingPlanId, setPayingPlanId] = useState(null);
+  const [isPaymentEnabled, setIsPaymentEnabled] = useState(true);
 
   const databaseUrl =
     process.env.NEXT_PUBLIC_APP_DATABASE_URL || "http://localhost:5000";
@@ -51,6 +52,19 @@ export default function StandaloneMembershipPage() {
 
   const fetchData = async () => {
     try {
+      // Fetch system payment mode
+      try {
+        const settingRes = await fetch(`${databaseUrl}/api/settings/payment-mode`);
+        if (settingRes.ok) {
+          const settingData = await settingRes.json();
+          if (settingData.success && settingData.data) {
+            setIsPaymentEnabled(settingData.data.isPaymentEnabled);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching payment mode:", err);
+      }
+
       const token = localStorage.getItem("authToken");
       if (!token) {
         // Fetch plans publicly even if not logged in
@@ -114,6 +128,11 @@ export default function StandaloneMembershipPage() {
   }, []);
 
   const handlePurchase = async (plan) => {
+    if (!isPaymentEnabled) {
+      toast.success("Free Direct Access Mode is Active! All premium features are unlocked for free.");
+      return;
+    }
+
     if (plan.price === 0) {
       toast.info("Free plan is active by default.");
       return;
@@ -288,6 +307,26 @@ export default function StandaloneMembershipPage() {
 
       <main className="flex-grow max-w-7xl mt-[80px] mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full space-y-10">
         
+        {/* FREE ACCESS MODE ALERT BANNER */}
+        {!isPaymentEnabled && (
+          <div className="bg-emerald-600 text-white rounded-3xl p-6 shadow-lg border border-emerald-400 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                <Sparkles className="w-6 h-6 text-white animate-pulse" />
+              </div>
+              <div>
+                <h3 className="text-lg font-black">Free Direct Access Mode Active! 🎉</h3>
+                <p className="text-xs text-emerald-100 mt-0.5">
+                  Payment system is currently turned OFF by Admin. You do not need to buy any plan! All property listings, project posts, boosts, and leads are <strong>100% FREE</strong> for all user roles.
+                </p>
+              </div>
+            </div>
+            <span className="bg-white text-emerald-800 font-extrabold text-xs px-4 py-2 rounded-xl whitespace-nowrap shadow-sm">
+              Unlimited Access Unlocked
+            </span>
+          </div>
+        )}
+
         {/* TOP BANNER / ACCOUNT SUMMARY CARD */}
         {user && (user.role === "admin" || user.role === "super_admin") ? (
           <div className="bg-gradient-to-r from-purple-950 via-indigo-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden border border-purple-500/30">
@@ -577,6 +616,14 @@ export default function StandaloneMembershipPage() {
                         className="w-full bg-slate-100 text-slate-500 py-3 rounded-2xl text-xs font-black uppercase tracking-wider cursor-default"
                       >
                         Default Tier
+                      </button>
+                    ) : !isPaymentEnabled ? (
+                      <button
+                        disabled
+                        className="w-full bg-emerald-100 text-emerald-800 py-3 rounded-2xl text-xs font-black uppercase tracking-wider cursor-default flex items-center justify-center gap-1.5"
+                      >
+                        <Sparkles className="w-4 h-4 text-emerald-600" />
+                        <span>Free Access Active</span>
                       </button>
                     ) : (
                       <button

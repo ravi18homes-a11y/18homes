@@ -57,6 +57,28 @@ function formatMessageTime(dateString) {
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
+function formatPropertyPrice(prop) {
+  if (!prop) return "Price N/A";
+  if (prop.priceText && String(prop.priceText).trim() !== "") {
+    const text = String(prop.priceText).trim();
+    return text.includes("₹") ? text : `₹ ${text}`;
+  }
+
+  const rawPrice = prop.priceValue !== undefined && prop.priceValue !== null ? prop.priceValue : prop.price;
+  if (typeof rawPrice === "object" && rawPrice !== null && rawPrice.value) {
+    return `₹ ${rawPrice.value} ${rawPrice.unit || ""}`;
+  }
+
+  const numPrice = Number(rawPrice);
+  if (!isNaN(numPrice) && numPrice > 0) {
+    if (numPrice >= 10000000) return `₹ ${(numPrice / 10000000).toFixed(2)} Cr`;
+    if (numPrice >= 100000) return `₹ ${(numPrice / 100000).toFixed(2)} Lac`;
+    return `₹ ${numPrice.toLocaleString("en-IN")}`;
+  }
+
+  return "Price N/A";
+}
+
 export default function DashboardChatsPage() {
   const [currentUser, setCurrentUser] = useState(null);
   const [conversations, setConversations] = useState([]);
@@ -313,14 +335,28 @@ export default function DashboardChatsPage() {
     if (!conv || !currentUser) return null;
     const currentUserId = currentUser._id || currentUser.id;
     const buyerId = conv.buyer?._id || conv.buyer;
+    const isAdmin = currentUser.role === "admin" || currentUser.role === "super_admin";
+
+    if (isAdmin) {
+      const isDealerAdmin = String(conv.dealer?._id || conv.dealer) === String(currentUserId);
+      return {
+        isAdminView: true,
+        buyer: conv.buyer,
+        dealer: conv.dealer,
+        isForAdmin: isDealerAdmin,
+        user: isDealerAdmin ? conv.buyer : conv.dealer,
+      };
+    }
 
     if (String(buyerId) === String(currentUserId)) {
       return {
+        isAdminView: false,
         user: conv.dealer,
         roleLabel: "Property Owner / Dealer",
       };
     } else {
       return {
+        isAdminView: false,
         user: conv.buyer,
         roleLabel: "Property Inquirer / Buyer",
       };
@@ -337,12 +373,15 @@ export default function DashboardChatsPage() {
 
   // Filter conversations
   const filteredConversations = conversations.filter((conv) => {
-    const partnerInfo = getOtherParticipant(conv);
-    const partnerName = partnerInfo?.user?.name || "";
+    const buyerName = conv.buyer?.name || "";
+    const dealerName = conv.dealer?.name || "";
     const propertyTitle = conv.property?.title || "";
+    const query = searchQuery.toLowerCase();
+
     const matchesSearch =
-      partnerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      propertyTitle.toLowerCase().includes(searchQuery.toLowerCase());
+      buyerName.toLowerCase().includes(query) ||
+      dealerName.toLowerCase().includes(query) ||
+      propertyTitle.toLowerCase().includes(query);
 
     if (!matchesSearch) return false;
     if (statusFilter === "all") return true;
@@ -491,14 +530,40 @@ export default function DashboardChatsPage() {
 
                       {/* Info & Snippet */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-1">
-                          <h4 className="font-bold text-xs text-slate-900 truncate">
-                            {partner?.name || "User"}
-                          </h4>
-                          <span className="text-[10px] text-slate-400 font-medium flex-shrink-0">
-                            {formatTimeAgo(conv.lastMessageAt || conv.updatedAt)}
-                          </span>
-                        </div>
+                        {currentUser?.role === "admin" || currentUser?.role === "super_admin" ? (
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between gap-1">
+                              <div className="font-bold text-xs text-slate-900 truncate flex items-center gap-1">
+                                <span className="text-slate-900 font-extrabold truncate">{conv.buyer?.name || "Buyer"}</span>
+                                <span className="text-indigo-500 font-black text-[10px] flex-shrink-0">↔</span>
+                                <span className="text-indigo-700 font-bold truncate">{conv.dealer?.name || "Owner/Dealer"}</span>
+                              </div>
+                              <span className="text-[10px] text-slate-400 font-medium flex-shrink-0">
+                                {formatTimeAgo(conv.lastMessageAt || conv.updatedAt)}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              {partnerInfo?.isForAdmin ? (
+                                <span className="bg-purple-100 text-purple-800 text-[9px] font-extrabold px-1.5 py-0.5 rounded border border-purple-200">
+                                  👑 Direct Inquiry for Admin
+                                </span>
+                              ) : (
+                                <span className="bg-indigo-50 text-indigo-700 text-[9px] font-bold px-1.5 py-0.5 rounded border border-indigo-100">
+                                  👤 Buyer ({conv.buyer?.name || "Buyer"}) ↔ Dealer ({conv.dealer?.name || "Dealer"})
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-between gap-1">
+                            <h4 className="font-bold text-xs text-slate-900 truncate">
+                              {partner?.name || "User"}
+                            </h4>
+                            <span className="text-[10px] text-slate-400 font-medium flex-shrink-0">
+                              {formatTimeAgo(conv.lastMessageAt || conv.updatedAt)}
+                            </span>
+                          </div>
+                        )}
 
                         {/* Property Badge */}
                         <div className="flex items-center gap-1 text-[11px] text-blue-600 font-medium mt-0.5 truncate">
@@ -625,10 +690,53 @@ export default function DashboardChatsPage() {
                       <span>Inbox</span>
                     </button>
 
-                    {/* Partner Avatar */}
+                    {/* Partner Avatar & Info Header */}
                     {(() => {
                       const partnerInfo = getOtherParticipant(selectedConv);
                       const partner = partnerInfo?.user;
+                      const isAdmin = currentUser?.role === "admin" || currentUser?.role === "super_admin";
+                      const buyer = selectedConv.buyer;
+                      const dealer = selectedConv.dealer;
+
+                      if (isAdmin) {
+                        return (
+                          <>
+                            <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-2xl overflow-hidden bg-slate-200 border border-slate-200 flex-shrink-0 shadow-xs">
+                              <Image
+                                src={buyer?.avatar || dealer?.avatar || DEFAULT_AVATAR}
+                                alt="Participants"
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <h3 className="font-extrabold text-xs sm:text-sm text-slate-900 truncate">
+                                  <span>{buyer?.name || "Buyer"}</span>
+                                  <span className="text-indigo-600 mx-1">↔</span>
+                                  <span className="text-indigo-800">{dealer?.name || "Dealer"}</span>
+                                </h3>
+                                {partnerInfo?.isForAdmin ? (
+                                  <span className="text-[9px] font-bold uppercase tracking-wider bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded-md border border-purple-200">
+                                    👑 Sent to Admin
+                                  </span>
+                                ) : (
+                                  <span className="text-[9px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded-md border border-indigo-100">
+                                    👥 User-to-User
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-3 text-slate-500 text-[10px] sm:text-[11px] mt-0.5 truncate">
+                                <span>Buyer: <strong className="text-slate-700">{buyer?.name}</strong> ({buyer?.phone || buyer?.email || "N/A"})</span>
+                                <span className="hidden md:inline">|</span>
+                                <span className="hidden md:inline">Dealer: <strong className="text-slate-700">{dealer?.name}</strong> ({dealer?.phone || dealer?.email || "N/A"})</span>
+                              </div>
+                            </div>
+                          </>
+                        );
+                      }
+
                       return (
                         <>
                           <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-2xl overflow-hidden bg-slate-200 border border-slate-200 flex-shrink-0 shadow-xs">
@@ -691,7 +799,7 @@ export default function DashboardChatsPage() {
                           {selectedConv.property.title}
                         </p>
                         <p className="text-[10px] text-emerald-600 font-bold mt-0.5">
-                          ₹{selectedConv.property.price?.toLocaleString() || "Price N/A"}
+                          {formatPropertyPrice(selectedConv.property)}
                         </p>
                       </div>
                       <Link

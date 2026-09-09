@@ -42,6 +42,24 @@ export default function MyPropertiesPage() {
   const [boostPlan, setBoostPlan] = useState("7days");
   const [boostPlans, setBoostPlans] = useState([]);
   const [boosting, setBoosting] = useState(false);
+  const [isPaymentEnabled, setIsPaymentEnabled] = useState(true);
+
+  useEffect(() => {
+    const checkPaymentMode = async () => {
+      try {
+        const res = await fetch(`${databaseUrl}/api/settings/payment-mode`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.data) {
+            setIsPaymentEnabled(data.data.isPaymentEnabled);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching payment mode:", err);
+      }
+    };
+    checkPaymentMode();
+  }, [databaseUrl]);
 
   useEffect(() => {
     try {
@@ -633,7 +651,13 @@ export default function MyPropertiesPage() {
                 disabled={boosting}
                 className="flex-1 py-2.5 bg-purple-600 text-white rounded-xl hover:bg-purple-700 font-bold transition flex items-center justify-center gap-2 shadow-lg shadow-purple-600/20"
               >
-                {boosting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Pay Now"}
+                {boosting ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : !isPaymentEnabled ? (
+                  "Boost Now (Free)"
+                ) : (
+                  "Pay Now"
+                )}
               </button>
             </div>
           </div>

@@ -333,9 +333,9 @@ export default function BottomTaskbar() {
 
       {/* Main Taskbar Container (Visible only below sm screens) */}
       <div
-        className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-[999] flex items-center justify-around sm:hidden shadow-lg"
+        className="fixed bottom-0 left-0 right-0 bg-[#030ee8] border-t border-gray-200 z-[999] flex items-center justify-around sm:hidden shadow-lg"
         style={{
-          paddingBottom: "calc(env(safe-area-inset-bottom) + 6px)",
+          paddingBottom: "calc(env(safe-area-inset-bottom) + 0px)",
           height: "calc(60px + env(safe-area-inset-bottom))",
         }}
       >
@@ -349,7 +349,7 @@ export default function BottomTaskbar() {
               router.push("/");
             }
           }}
-          className={`flex flex-col items-center justify-center w-14 h-full transition-colors cursor-pointer ${pathname === "/" ? "text-red-600 font-bold" : "text-gray-500"
+          className={`flex flex-col items-center justify-center w-14 h-full transition-colors cursor-pointer ${pathname === "/" ? "text-[#f30d0d] font-bold" : "text-[white]"
             }`}
         >
           <Home className="w-6 h-6 mb-1 pointer-events-none" />
@@ -359,7 +359,7 @@ export default function BottomTaskbar() {
         {/* Tab 2: Sell / Rent (With Free Badge) */}
         <Link
           href="/sell"
-          className={`flex flex-col items-center justify-center w-16 h-full relative transition-colors ${pathname === "/sell" ? "text-red-600 font-bold" : "text-gray-500"
+          className={`flex flex-col items-center justify-center w-16 h-full relative transition-colors ${pathname === "/sell" ? "text-[#f30d0d] font-bold" : "text-[white]"
             }`}
         >
           <span className="absolute -top-3.5 bg-green-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase leading-none shadow">
@@ -372,7 +372,7 @@ export default function BottomTaskbar() {
         {/* Tab 3: Search (Center) */}
         <button
           onClick={() => setIsSearchOpen(true)}
-          className={`flex flex-col items-center justify-center w-14 h-full transition-colors ${isSearchOpen ? "text-red-600 font-bold" : "text-gray-500"
+          className={`flex flex-col items-center justify-center w-14 h-full transition-colors ${isSearchOpen ? "text-[#f30d0d] font-bold" : "text-[white]"
             }`}
         >
           <Search className="w-6 h-6 mb-1" />
@@ -382,7 +382,7 @@ export default function BottomTaskbar() {
         {/* Tab 4: Buy */}
         <Link
           href="/buy"
-          className={`flex flex-col items-center justify-center w-14 h-full transition-colors ${pathname === "/buy" ? "text-red-600 font-bold" : "text-gray-500"
+          className={`flex flex-col items-center justify-center w-14 h-full transition-colors ${pathname === "/buy" ? "text-[#f30d0d] font-bold" : "text-[white]"
             }`}
         >
           <Building className="w-6 h-6 mb-1" />
@@ -392,7 +392,7 @@ export default function BottomTaskbar() {
         {/* Tab 5: Menu */}
         <button
           onClick={() => setIsMenuOpen(true)}
-          className={`flex flex-col items-center justify-center w-14 h-full transition-colors ${isMenuOpen ? "text-red-600 font-bold" : "text-gray-500"
+          className={`flex flex-col items-center justify-center w-14 h-full transition-colors ${isMenuOpen ? "text-[#f30d0d] font-bold" : "text-[white]"
             }`}
         >
           <Menu className="w-6 h-6 mb-1" />
@@ -687,7 +687,7 @@ export default function BottomTaskbar() {
               </Link>
 
               {/* Membership Page Link (Blue Color Highlighted) */}
-              <Link
+              {/* <Link
                 href="/membership"
                 onClick={() => setIsMenuOpen(false)}
                 className="flex items-center justify-between p-3 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200/80 transition font-bold my-1 shadow-xs"
@@ -699,7 +699,7 @@ export default function BottomTaskbar() {
                 <span className="bg-blue-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">
                   PRO
                 </span>
-              </Link>
+              </Link> */}
 
               {/* PWA App Install Button */}
               <button

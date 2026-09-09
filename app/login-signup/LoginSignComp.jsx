@@ -755,7 +755,7 @@ export default function AuthPage() {
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                    Password <span className="text-rose-500">*</span>
+                   18homes Password <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative">
                     <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />

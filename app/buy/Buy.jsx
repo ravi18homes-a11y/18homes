@@ -1010,7 +1010,7 @@ const BuyPage = () => {
             </button>
           </div>
 
-          <h2 className="text-2xl font-bold text-gray-800">
+          {/* <h2 className="text-2xl font-bold text-gray-800">
             {loading ? (
               <span className="flex items-center gap-2">
                 <Loader2 className="w-6 h-6 animate-spin" />
@@ -1023,7 +1023,7 @@ const BuyPage = () => {
             ) : (
               `${filteredProperties.length} Properties Available`
             )}
-          </h2>
+          </h2> */}
         </div>
 
         {/* Loading State */}

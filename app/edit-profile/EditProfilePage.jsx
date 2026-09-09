@@ -399,10 +399,10 @@ export default function EditProfile() {
           <span>Back to previous page</span>
         </button>
 
-        <div className="bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden">
+        <div className="bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col">
           
           {/* Header Band */}
-          <div className="bg-gradient-to-r from-[#8c4bdc] via-[#7b3ac5] to-[#c04b7e] px-8 py-10 text-white relative">
+          <div className="bg-gradient-to-r from-[#8c4bdc] via-[#7b3ac5] to-[#c04b7e] px-8 py-10 text-white relative flex-shrink-0">
             <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-3 mb-2">
@@ -447,8 +447,9 @@ export default function EditProfile() {
             </div>
           </div>
 
-          <div className="p-6 md:p-10">
-            <form onSubmit={handleSubmit} className="space-y-10">
+          <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+            {/* Scrollable Form Inputs Area */}
+            <div className="p-6 md:p-10 space-y-10 overflow-y-auto max-h-[calc(100vh-300px)] md:max-h-[calc(100vh-340px)] min-h-[350px] flex-1">
               
               {/* Profile Image & Account Role Selection */}
               <div className="grid md:grid-cols-12 gap-8 pb-8 border-b border-slate-100 items-center">
@@ -979,28 +980,28 @@ export default function EditProfile() {
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Form Action Buttons */}
-              <div className="flex items-center justify-end gap-4 border-t border-slate-100 pt-8 mt-6">
-                <button
-                  type="button"
-                  onClick={() => router.back()}
-                  className="px-6 py-3 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl font-semibold transition cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving || uploading}
-                  className="flex items-center justify-center gap-2 bg-gradient-to-r from-[#8c4bdc] to-[#c04b7e] hover:from-[#7b3ac5] hover:to-[#ae3a6d] text-white px-8 py-3.5 rounded-xl font-bold transition shadow-md hover:shadow-lg disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
-                >
-                  {saving && <Loader2 className="w-5 h-5 animate-spin" />}
-                  {saving ? "Saving Changes..." : "Save Profile & Details"}
-                </button>
-              </div>
+            {/* Fixed Action Buttons at bottom of card */}
+            <div className="flex items-center justify-end gap-4 border-t border-slate-100 p-4 md:px-10 py-4 bg-white flex-shrink-0 rounded-b-3xl shadow-[0_-4px_20px_rgba(0,0,0,0.04)]">
+              <button
+                type="button"
+                onClick={() => router.back()}
+                className="px-6 py-3 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl font-semibold transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={saving || uploading}
+                className="flex items-center justify-center gap-2 bg-gradient-to-r from-[#8c4bdc] to-[#c04b7e] hover:from-[#7b3ac5] hover:to-[#ae3a6d] text-white px-4 py-3.5 rounded-xl font-bold transition shadow-md hover:shadow-lg disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
+              >
+                {saving && <Loader2 className="w-5 h-5 animate-spin" />}
+                {saving ? "Saving Changes..." : "Save Profile & Details"}
+              </button>
+            </div>
 
-            </form>
-          </div>
+          </form>
         </div>
       </div>
     </div>
