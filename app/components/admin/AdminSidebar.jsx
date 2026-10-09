@@ -21,6 +21,7 @@ import {
   History,
   PlusCircle,
   Settings,
+  Activity,
 } from "lucide-react";
 
 export default function AdminSidebar({
@@ -97,6 +98,14 @@ export default function AdminSidebar({
             active={pathname === "/admin"}
             icon={<LayoutDashboard size={18} />}
             label="Dashboard"
+            isCollapsed={isCollapsed}
+          />
+
+          <NavItem
+            href="/admin/analytics"
+            active={pathname.startsWith("/admin/analytics")}
+            icon={<Activity size={18} />}
+            label="Behavior Analytics"
             isCollapsed={isCollapsed}
           />
 

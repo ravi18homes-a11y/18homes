@@ -28,6 +28,7 @@ import {
   Building2,
   Award,
   Download,
+  LayoutDashboard,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { usePwa } from "@/components/PwaProvider";
@@ -937,8 +938,22 @@ export default function BottomTaskbar() {
                 </Link>
               ))}
 
-
-
+              {/* Dashboard Button (Redirects to Dashboard if logged in, otherwise Login page) */}
+              <Link
+                href={isLoggedIn ? (user?.role === "admin" ? "/admin" : "/dashboard") : "/login-signup"}
+                onClick={() => setIsMenuOpen(false)}
+                className="flex items-center justify-between p-3 rounded-xl bg-purple-50 hover:bg-purple-100 transition text-[#8c4bdc] font-bold border border-purple-100 mt-2"
+              >
+                <div className="flex items-center gap-3">
+                  <LayoutDashboard className="w-5 h-5 text-[#8c4bdc]" />
+                  <span>Dashboard</span>
+                </div>
+                {isLoggedIn && (
+                  <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-purple-200/80 text-purple-800">
+                    {user?.role || "User"}
+                  </span>
+                )}
+              </Link>
             </div>
 
             {/* Bottom Section (Log In / Log Out) */}

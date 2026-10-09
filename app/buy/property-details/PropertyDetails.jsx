@@ -34,6 +34,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import ChatModal from "../../components/ChatModal";
+import { tracker } from "@/lib/tracker";
 
 const AMENITY_ICONS = {
   "garden": { label: "Garden", icon: <Trees className="w-10 h-10 text-[#ff6c00] flex-shrink-0" /> },
@@ -186,6 +187,19 @@ const PropertyDetailsPage = () => {
       } else {
         const data = await res.json();
         toast.success(data.message || (nextState ? "Added to wishlist" : "Removed from wishlist"));
+
+        tracker.trackEvent(nextState ? "property_save" : "property_unsave", {
+          propertyId: String(property?._id || property?.id || id || ""),
+          propertyDetails: {
+            title: property?.title || "Property Listing",
+            propertyType: property?.propertyType || "flat",
+            location: property?.address?.city || property?.location || "Noida",
+            price: property?.price || 0,
+            priceText: property?.priceText || "",
+            bhk: property?.bedrooms ? `${property.bedrooms} BHK` : "",
+          },
+        });
+
         if (nextState) {
           confetti({
             particleCount: 120,
@@ -455,6 +469,28 @@ const PropertyDetailsPage = () => {
         timestamp: new Date().toISOString(),
         durationSec: extraData.durationSec || 0,
       };
+
+      // Send to centralized first-party behavior tracker
+      const normalizedEventType =
+        eventType === "page_view"
+          ? "property_view"
+          : eventType === "phone_click"
+          ? "call_click"
+          : eventType;
+
+      tracker.trackEvent(normalizedEventType, {
+        propertyId: String(property._id || property.id || ""),
+        propertyDetails: {
+          title: property.title || "Property Listing",
+          propertyType: property.propertyType || "flat",
+          location: property.address?.city || property.address?.locality || property.location || "Noida",
+          price: property.price || 0,
+          priceText: property.priceText || "",
+          bhk: property.bedrooms ? `${property.bedrooms} BHK` : "",
+          ownerId: String(ownerId),
+        },
+        metadata: extraData,
+      });
 
       if (databaseUrl) {
         fetch(`${databaseUrl}/api/properties/analytics/track`, {
