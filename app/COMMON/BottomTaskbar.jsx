@@ -939,7 +939,7 @@ export default function BottomTaskbar() {
               ))}
 
               {/* Dashboard Button (Redirects to Dashboard if logged in, otherwise Login page) */}
-              <Link
+              <Link 
                 href={isLoggedIn ? (user?.role === "admin" ? "/admin" : "/dashboard") : "/login-signup"}
                 onClick={() => setIsMenuOpen(false)}
                 className="flex items-center justify-between p-3 rounded-xl bg-purple-50 hover:bg-purple-100 transition text-[#8c4bdc] font-bold border border-purple-100 mt-2"
