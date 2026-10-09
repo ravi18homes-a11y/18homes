@@ -8,7 +8,7 @@ import {
   Building,
   Phone,
   MessageCircle,
-  MapPin,
+  MapPin, 
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
