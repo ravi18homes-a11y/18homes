@@ -20,7 +20,12 @@ import {
   Loader2,
   ExternalLink,
   Home,
-  Crown
+  Crown,
+  Activity,
+  Sparkles,
+  Globe,
+  Eye,
+  PhoneCall,
 } from "lucide-react";
 
 export default function AdminUserDetailPage() {
@@ -30,6 +35,11 @@ export default function AdminUserDetailPage() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [blocking, setBlocking] = useState(false);
+
+  // Behavioral Analytics & Timeline State
+  const [analyticsData, setAnalyticsData] = useState(null);
+  const [userTimeline, setUserTimeline] = useState([]);
+  const [timelineLoading, setTimelineLoading] = useState(false);
 
   // Resolved Saved Properties & Listed Properties
   const [savedPropertiesList, setSavedPropertiesList] = useState([]);
@@ -61,7 +71,26 @@ export default function AdminUserDetailPage() {
   };
 
   useEffect(() => {
-    if (id) fetchUser();
+    if (id) {
+      fetchUser();
+
+      // Fetch tracking behavior analytics & timeline
+      fetch(`/api/tracking/admin/interests?userId=${id}`)
+        .then((r) => r.json())
+        .then((json) => {
+          if (json?.success && json?.data) setAnalyticsData(json.data);
+        })
+        .catch((err) => console.error("Analytics fetch error:", err));
+
+      setTimelineLoading(true);
+      fetch(`/api/tracking/admin/timeline?userId=${id}&limit=25`)
+        .then((r) => r.json())
+        .then((json) => {
+          if (json?.success && json?.data) setUserTimeline(json.data.events || []);
+        })
+        .catch((err) => console.error("Timeline fetch error:", err))
+        .finally(() => setTimelineLoading(false));
+    }
   }, [id]);
 
   /* ================= FETCH & RESOLVE SAVED PROPERTIES ================= */
@@ -598,6 +627,100 @@ export default function AdminUserDetailPage() {
           </div>
         ) : (
           <p className="text-xs text-slate-400 font-medium italic">No posted property listings found for this user.</p>
+        )}
+      </Section>
+
+      {/* ================= USER TRACKING & BEHAVIOR ANALYTICS ================= */}
+      <Section title="Visitor Telemetry & Behavioral Interest Signals" icon={<Activity className="w-5 h-5 text-purple-600" />}>
+        {analyticsData ? (
+          <div className="space-y-4">
+            <Grid>
+              <Field label="Visitor Identifier" value={analyticsData.visitorId || "Linked Account"} />
+              <Field label="Total Sessions / Visits" value={analyticsData.totalSessions || 1} />
+              <Field label="Total Page Views" value={analyticsData.totalPageViews || 0} />
+              <Field
+                label="Interest Score & Level"
+                value={`${analyticsData.interestSignals?.score || 0} pts (${analyticsData.interestSignals?.engagementLevel || "Low"})`}
+              />
+            </Grid>
+
+            {/* Interest Dimensions */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+              <div className="bg-purple-50/70 p-4 rounded-2xl border border-purple-100 space-y-1.5">
+                <span className="text-[11px] font-extrabold text-purple-700 uppercase tracking-wider flex items-center gap-1">
+                  <MapPin className="w-3.5 h-3.5" />
+                  <span>Preferred Locations</span>
+                </span>
+                <p className="font-extrabold text-slate-900 text-sm">
+                  {analyticsData.interestSignals?.preferredLocations?.map((l) => l.location).join(", ") || "None yet"}
+                </p>
+              </div>
+
+              <div className="bg-blue-50/70 p-4 rounded-2xl border border-blue-100 space-y-1.5">
+                <span className="text-[11px] font-extrabold text-blue-700 uppercase tracking-wider flex items-center gap-1">
+                  <Building2 className="w-3.5 h-3.5" />
+                  <span>Preferred Property Type</span>
+                </span>
+                <p className="font-extrabold text-slate-900 text-sm capitalize">
+                  {analyticsData.interestSignals?.preferredPropertyTypes?.map((t) => t.type).join(", ") || "None yet"}
+                </p>
+              </div>
+
+              <div className="bg-emerald-50/70 p-4 rounded-2xl border border-emerald-100 space-y-1.5">
+                <span className="text-[11px] font-extrabold text-emerald-700 uppercase tracking-wider flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Preferred BHK</span>
+                </span>
+                <p className="font-extrabold text-slate-900 text-sm">
+                  {analyticsData.interestSignals?.preferredBhk?.map((b) => b.bhk).join(", ") || "Not determined"}
+                </p>
+              </div>
+            </div>
+
+            {/* Acquisition attribution */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
+              <Field
+                label="First-Touch Channel"
+                value={analyticsData.firstTouchSource?.channel || analyticsData.firstTouchSource?.utm_source || "Direct"}
+              />
+              <Field
+                label="Acquisition Campaign"
+                value={analyticsData.latestSource?.utm_campaign || analyticsData.firstTouchSource?.utm_campaign || "Direct / Organic"}
+              />
+              <Field
+                label="Initial Landing Page"
+                value={analyticsData.firstTouchSource?.landingPage || "/"}
+              />
+            </div>
+          </div>
+        ) : (
+          <p className="text-xs text-slate-400 italic font-medium">No tracking telemetry recorded for this user yet.</p>
+        )}
+      </Section>
+
+      {/* ================= USER ACTIVITY TIMELINE ================= */}
+      <Section title="User Activity & Behavior Timeline" icon={<Clock className="w-5 h-5 text-indigo-600" />}>
+        {timelineLoading ? (
+          <div className="p-8 text-center text-slate-500 font-medium flex items-center justify-center gap-2">
+            <Loader2 className="w-5 h-5 text-indigo-600 animate-spin" />
+            <span>Loading timeline events...</span>
+          </div>
+        ) : userTimeline.length > 0 ? (
+          <div className="relative pl-6 space-y-4 before:content-[''] before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
+            {userTimeline.map((ev, i) => (
+              <div key={i} className="relative flex items-start gap-4">
+                <span className="absolute -left-6 top-1 w-4 h-4 rounded-full bg-white border-2 border-indigo-600" />
+                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100 flex-1">
+                  <p className="text-xs font-extrabold text-slate-900">{ev.description}</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    {new Date(ev.createdAt).toLocaleString()} · Path: {ev.source?.path || "/"}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-slate-400 font-medium italic">No activity timeline events recorded for this user.</p>
         )}
       </Section>
 

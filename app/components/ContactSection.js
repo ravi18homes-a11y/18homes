@@ -2,11 +2,13 @@
 
 import Image from "next/image";
 import "./contactpop.css";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { FiCheckCircle, FiSend, FiPhoneCall, FiMail, FiMapPin, FiShield, FiUser, FiSmartphone } from "react-icons/fi";
 import { toast } from "react-hot-toast";
+import { tracker } from "@/lib/tracker";
 
 export default function ContactSection({ data }) {
+  const formStartedRef = useRef(false);
   const title = data?.title || "Please tell us your requirements";
   const image =
     data?.image ||
@@ -29,6 +31,14 @@ export default function ContactSection({ data }) {
     setMessage("");
     // Prevent only spaces
     if (value.trim() === "" && value.length > 0) return;
+
+    if (!formStartedRef.current) {
+      formStartedRef.current = true;
+      tracker.trackEvent("lead_form_start", {
+        metadata: { formName: "homepage_contact" },
+      });
+    }
+
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -69,6 +79,18 @@ export default function ContactSection({ data }) {
       });
       const resData = await res.json();
       if (resData.success) {
+        tracker.trackEvent("lead_submit", {
+          metadata: {
+            formName: "homepage_contact",
+            flatType: form.website || "N/A",
+          },
+        });
+        tracker.identify(form.email || form.phone, {
+          name: form.name,
+          email: form.email,
+          phone: form.phone,
+        });
+
         toast.success("Thank you! Message sent successfully.");
         setForm({
           name: "",

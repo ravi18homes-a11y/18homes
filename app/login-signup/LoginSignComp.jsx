@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
+import { tracker } from "@/lib/tracker";
 
 export default function AuthPage() {
   const router = useRouter();
@@ -182,6 +183,17 @@ export default function AuthPage() {
           text: `An OTP has been sent to ${formData.email}. Please enter the 6-digit OTP code below to verify your account.`,
         });
         return;
+      }
+
+      tracker.trackEvent("signup", {
+        metadata: { role: selectedRole, email: formData.email },
+      });
+      if (data.data?.user?._id || data.data?.user?.id) {
+        tracker.identify(data.data.user._id || data.data.user.id, {
+          name: data.data.user.name || formData.name,
+          email: data.data.user.email || formData.email,
+          phone: data.data.user.phone || formData.phone,
+        });
       }
 
       toast.success(
@@ -356,6 +368,17 @@ export default function AuthPage() {
       const loggedUser = data.data.user;
       localStorage.setItem("authToken", data.data.token);
       localStorage.setItem("userData", JSON.stringify(loggedUser));
+
+      if (loggedUser && (loggedUser._id || loggedUser.id)) {
+        tracker.identify(loggedUser._id || loggedUser.id, {
+          name: loggedUser.name,
+          email: loggedUser.email,
+          phone: loggedUser.phone,
+        });
+        tracker.trackEvent("login", {
+          metadata: { role: loggedUser.role },
+        });
+      }
 
       // Fetch fresh profile with planRules to see if they are dealer/builder on Free tier
       const databaseUrl = process.env.NEXT_PUBLIC_APP_DATABASE_URL || "http://localhost:5000";

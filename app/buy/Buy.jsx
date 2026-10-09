@@ -22,6 +22,7 @@ import {
 import { toast } from "react-hot-toast";
 import confetti from "canvas-confetti";
 import FeaturedAgentsWidget from "../../components/FeaturedAgentsWidget";
+import { tracker } from "@/lib/tracker";
 
 const DEFAULT_IMAGE =
   "https://res.cloudinary.com/domwj0m7s/image/upload/v1785084052/ChatGPT_Image_Jul_26_2026_10_10_07_PM_uuqc8u.png";
@@ -223,6 +224,26 @@ const BuyPage = () => {
 
         const data = await response.json();
         console.log("API Response:", data);
+
+        // Track search & filter action if query or filters are active
+        if (searchQuery || filters.city || filters.propertyType !== "all" || filters.minPrice || filters.maxPrice || filters.bedrooms !== "any") {
+          tracker.trackEvent("property_search", {
+            searchDetails: {
+              query: searchQuery || "",
+              filters: {
+                city: filters.city || "",
+                propertyType: filters.propertyType !== "all" ? filters.propertyType : "",
+                bedrooms: filters.bedrooms !== "any" ? filters.bedrooms : "",
+                minPrice: filters.minPrice || "",
+                maxPrice: filters.maxPrice || "",
+              },
+              sortBy: filters.sortBy || "relevance",
+            },
+            metadata: {
+              resultCount: data.data?.properties?.length || 0,
+            },
+          });
+        }
 
         if (data.success && data.data && Array.isArray(data.data.properties)) {
           const transformedProperties = data.data.properties.map((prop) => {

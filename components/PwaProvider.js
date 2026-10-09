@@ -18,11 +18,13 @@ export default function PwaProvider({ children }) {
   const [showInstallPopup, setShowInstallPopup] = useState(false);
 
   useEffect(() => {
+    let handleControllerChange = null;
+
     // 1. Register service worker
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       // Reload page when the service worker is updated and takes control
       let refreshing = false;
-      const handleControllerChange = () => {
+      handleControllerChange = () => {
         if (!refreshing) {
           refreshing = true;
           window.location.reload();
@@ -91,7 +93,7 @@ export default function PwaProvider({ children }) {
       window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
       window.removeEventListener("pwa-installable", handleCustomPwaInstallable);
       window.removeEventListener("appinstalled", handleAppInstalled);
-      if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+      if (typeof window !== "undefined" && "serviceWorker" in navigator && handleControllerChange) {
         navigator.serviceWorker.removeEventListener("controllerchange", handleControllerChange);
       }
     };

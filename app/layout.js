@@ -6,6 +6,7 @@ import { Poppins } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import Script from "next/script";
 import PwaProvider from "@/components/PwaProvider";
+import TrackingProvider from "@/components/TrackingProvider";
 
 export const metadata = {
   title: "18 Homes - Best Property for Sale and Rent in NCR",
@@ -81,9 +82,11 @@ export default function RootLayout({ children }) {
           `}
         </Script>
         <Toaster position="top-right" reverseOrder={false} />
-        <PwaProvider>
-          {children}
-        </PwaProvider>
+        <TrackingProvider>
+          <PwaProvider>
+            {children}
+          </PwaProvider>
+        </TrackingProvider>
         <FloatingActions />
         <BottomTaskbar />
       </body>

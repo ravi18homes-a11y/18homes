@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import { FaFacebook, FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { IoCall } from "react-icons/io5";
 import { IoChatbubbleEllipses, IoChevronDown } from "react-icons/io5";
+import { tracker } from "@/lib/tracker";
 
 export default function FloatingActions() {
   const [isOpen, setIsOpen] = useState(false);
@@ -213,7 +214,18 @@ export default function FloatingActions() {
           }`}
         >
           {links.map((link, idx) => (
-            <Link key={idx} href={link.href} className={link.className}>
+            <Link
+              key={idx}
+              href={link.href}
+              className={link.className}
+              onClick={() => {
+                if (link.href.startsWith("tel:")) {
+                  tracker.trackEvent("call_click", { metadata: { source: "floating_button" } });
+                } else if (link.href.includes("wa.me")) {
+                  tracker.trackEvent("whatsapp_click", { metadata: { source: "floating_button" } });
+                }
+              }}
+            >
               {link.icon}
             </Link>
           ))}
