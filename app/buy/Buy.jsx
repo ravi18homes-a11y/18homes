@@ -114,7 +114,7 @@ const BuyPage = () => {
 
   const normalizeString = (value) =>
     typeof value === "string" ? value.trim().toLowerCase() : value;
-
+  // test
   useEffect(() => {
     const queryFilters = { ...INITIAL_FILTERS };
     const params = new URLSearchParams(searchQueryString);
