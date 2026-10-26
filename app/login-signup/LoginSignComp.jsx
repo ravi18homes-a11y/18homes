@@ -67,7 +67,7 @@ export default function AuthPage() {
   const rolesConfig = [
     {
       id: "user",
-      title: "Normal User",
+      title: "Only for Buyer",
       subtitle: "Buy & View Properties",
       icon: User,
       color: "from-blue-500 to-indigo-600",
@@ -405,9 +405,9 @@ export default function AuthPage() {
         const freshUserStr = localStorage.getItem("userData");
         let freshUser = loggedUser;
         if (freshUserStr) {
-          try { freshUser = JSON.parse(freshUserStr); } catch (e) {}
+          try { freshUser = JSON.parse(freshUserStr); } catch (e) { }
         }
-        
+
         const isDealerOrBuilder = ["dealer", "builder"].includes(freshUser.role);
         const hasNoPaidPlan = isDealerOrBuilder && (freshUser.planName === "Free" || !freshUser.subscription);
 
@@ -453,14 +453,14 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 flex flex-col justify-center items-center p-4 sm:p-6 md:p-10 relative overflow-hidden">
-      
+
       {/* Background Decorative Blur Orbs */}
       <div className="absolute top-10 left-10 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl pointer-events-none"></div>
       <div className="absolute bottom-10 right-10 w-96 h-96 bg-pink-600/20 rounded-full blur-3xl pointer-events-none"></div>
 
       {/* Main Container */}
       <div className="w-full max-w-5xl bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-white/20 grid lg:grid-cols-12 relative z-10">
-        
+
         {/* Left Side Banner (5 cols) */}
         <div className="lg:col-span-5 order-1 bg-gradient-to-br from-[#8c4bdc] via-[#7b3ac5] to-[#c04b7e] p-8 md:p-10 text-white flex flex-col justify-between relative overflow-hidden">
           <button
@@ -509,7 +509,7 @@ export default function AuthPage() {
 
         {/* Right Side Form (7 cols) */}
         <div className="lg:col-span-7 p-6 sm:p-8 md:p-10 flex flex-col justify-between bg-white">
-          
+
           {isOtpStep ? (
             <div>
               <button
@@ -540,11 +540,10 @@ export default function AuthPage() {
               {/* Alert Message Banner */}
               {message.text && (
                 <div
-                  className={`mb-6 p-4 rounded-xl flex items-start gap-3 border text-sm ${
-                    message.type === "success"
+                  className={`mb-6 p-4 rounded-xl flex items-start gap-3 border text-sm ${message.type === "success"
                       ? "bg-emerald-50 border-emerald-200 text-emerald-800"
                       : "bg-rose-50 border-rose-200 text-rose-800"
-                  }`}
+                    }`}
                 >
                   {message.type === "success" ? (
                     <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
@@ -603,8 +602,8 @@ export default function AuthPage() {
                   {resendCooldown > 0
                     ? `Resend in ${resendCooldown}s`
                     : resendLoading
-                    ? "Resending..."
-                    : "Resend OTP"}
+                      ? "Resending..."
+                      : "Resend OTP"}
                 </button>
               </div>
             </div>
@@ -618,11 +617,10 @@ export default function AuthPage() {
                     setIsLogin(true);
                     setMessage({ type: "", text: "" });
                   }}
-                  className={`flex-1 py-3 text-sm font-bold rounded-xl transition duration-200 cursor-pointer ${
-                    isLogin
+                  className={`flex-1 py-3 text-sm font-bold rounded-xl transition duration-200 cursor-pointer ${isLogin
                       ? "bg-white text-[#8c4bdc] shadow-md"
                       : "text-slate-500 hover:text-slate-800"
-                  }`}
+                    }`}
                 >
                   Sign In
                 </button>
@@ -632,11 +630,10 @@ export default function AuthPage() {
                     setIsLogin(false);
                     setMessage({ type: "", text: "" });
                   }}
-                  className={`flex-1 py-3 text-sm font-bold rounded-xl transition duration-200 cursor-pointer ${
-                    !isLogin
+                  className={`flex-1 py-3 text-sm font-bold rounded-xl transition duration-200 cursor-pointer ${!isLogin
                       ? "bg-[#8c4bdc] text-white shadow-md"
                       : "text-slate-500 hover:text-slate-800"
-                  }`}
+                    }`}
                 >
                   Create Account
                 </button>
@@ -656,11 +653,10 @@ export default function AuthPage() {
               {/* Alert Message Banner */}
               {message.text && (
                 <div
-                  className={`mb-6 p-4 rounded-xl flex items-start gap-3 border text-sm ${
-                    message.type === "success"
+                  className={`mb-6 p-4 rounded-xl flex items-start gap-3 border text-sm ${message.type === "success"
                       ? "bg-emerald-50 border-emerald-200 text-emerald-800"
                       : "bg-rose-50 border-rose-200 text-rose-800"
-                  }`}
+                    }`}
                 >
                   {message.type === "success" ? (
                     <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
@@ -685,11 +681,10 @@ export default function AuthPage() {
                         <div
                           key={r.id}
                           onClick={() => setSelectedRole(r.id)}
-                          className={`p-3.5 rounded-2xl border-2 transition duration-200 cursor-pointer flex flex-col justify-between ${
-                            isSelected
+                          className={`p-3.5 rounded-2xl border-2 transition duration-200 cursor-pointer flex flex-col justify-between ${isSelected
                               ? "border-[#8c4bdc] bg-purple-50/50 shadow-md ring-2 ring-[#8c4bdc]/20"
                               : "border-slate-200 hover:border-slate-300 bg-slate-50/50"
-                          }`}
+                            }`}
                         >
                           <div className="flex items-center justify-between mb-2">
                             <div
@@ -778,7 +773,7 @@ export default function AuthPage() {
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                   18homes Password <span className="text-rose-500">*</span>
+                    18homes Password <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative">
                     <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />

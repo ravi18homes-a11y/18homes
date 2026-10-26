@@ -11,6 +11,7 @@ import HomeServices from "./components/HomeService";
 import InstrumentsSection from "./components/InstrumentsSection";
 import Testimonials from "./components/Testimonials";
 import EmiCalculator from "./components/EmiCalculator";
+import HomeContactModal from "./components/HomeContactModal";
 import { getHomepageData } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
@@ -74,6 +75,7 @@ export default async function Home() {
         <ContactSection data={data?.contact} />
         <EmiCalculator />
         <Footer />
+        <HomeContactModal data={data?.contact} />
       </div>
     </main>
   );
