@@ -99,33 +99,6 @@ export default function PwaProvider({ children }) {
     };
   }, []);
 
-  // 4. Timer logic for homepage popup
-  useEffect(() => {
-    if (!isInstallable) return;
-
-    // Check if the user is on the homepage (pathname === "/")
-    if (window.location.pathname !== "/") return;
-
-    // Check if user has already dismissed the popup recently (24 hours cooldown)
-    try {
-      const dismissedAt = localStorage.getItem("pwa-popup-dismissed-at");
-      if (dismissedAt) {
-        const timePassed = Date.now() - parseInt(dismissedAt, 10);
-        const COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24 hours
-        if (timePassed < COOLDOWN_MS) {
-          return;
-        }
-      }
-    } catch (e) {
-      console.error(e);
-    }
-
-    const timer = setTimeout(() => {
-      setShowInstallPopup(true);
-    }, 5000); // 5 seconds
-
-    return () => clearTimeout(timer);
-  }, [isInstallable]);
 
   const installApp = async () => {
     const promptObj = deferredPrompt || (typeof window !== "undefined" ? window.deferredPrompt : null);

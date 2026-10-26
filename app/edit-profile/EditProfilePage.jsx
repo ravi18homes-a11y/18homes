@@ -4,15 +4,15 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
-import { 
-  User, 
-  Phone, 
-  Mail, 
-  Home, 
-  MapPin, 
-  Building, 
-  Upload, 
-  Loader2, 
+import {
+  User,
+  Phone,
+  Mail,
+  Home,
+  MapPin,
+  Building,
+  Upload,
+  Loader2,
   ArrowLeft,
   Map,
   Compass,
@@ -319,7 +319,7 @@ export default function EditProfile() {
       const data = await response.json();
       if (response.ok && data.success) {
         toast.success("Profile details saved successfully!");
-        
+
         // Fetch fully populated profile (including plan details)
         try {
           const profileRes = await fetch(`${BASE_API_URL}/api/auth/profile`, {
@@ -346,7 +346,7 @@ export default function EditProfile() {
           const freshUserStr = localStorage.getItem("userData");
           let freshUser = data.data;
           if (freshUserStr) {
-            try { freshUser = JSON.parse(freshUserStr); } catch (e) {}
+            try { freshUser = JSON.parse(freshUserStr); } catch (e) { }
           }
 
           const isAdmin = freshUser?.role === "admin" || freshUser?.role === "super_admin";
@@ -389,7 +389,7 @@ export default function EditProfile() {
   return (
     <div className="space-y-6">
       <div className="max-w-5xl mx-auto">
-        
+
         {/* Back Button */}
         <button
           onClick={() => router.back()}
@@ -400,7 +400,7 @@ export default function EditProfile() {
         </button>
 
         <div className="bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col">
-          
+
           {/* Header Band */}
           <div className="bg-gradient-to-r from-[#8c4bdc] via-[#7b3ac5] to-[#c04b7e] px-8 py-10 text-white relative flex-shrink-0">
             <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -450,10 +450,10 @@ export default function EditProfile() {
           <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
             {/* Scrollable Form Inputs Area */}
             <div className="p-6 md:p-10 space-y-10 overflow-y-auto max-h-[calc(100vh-300px)] md:max-h-[calc(100vh-340px)] min-h-[350px] flex-1">
-              
+
               {/* Profile Image & Account Role Selection */}
               <div className="grid md:grid-cols-12 gap-8 pb-8 border-b border-slate-100 items-center">
-                
+
                 {/* Image Upload */}
                 <div className="md:col-span-5 flex flex-col sm:flex-row items-center gap-5">
                   <div className="relative group w-28 h-28 rounded-full overflow-hidden border-4 border-slate-100 shadow-md flex-shrink-0 bg-slate-50">
@@ -476,7 +476,7 @@ export default function EditProfile() {
                     <p className="text-xs text-slate-400 mt-0.5 mb-3">
                       JPG/PNG up to 10MB
                     </p>
-                    
+
                     <input
                       type="file"
                       ref={fileInputRef}
@@ -521,7 +521,7 @@ export default function EditProfile() {
                     onChange={handleChange}
                     className="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-[#8c4bdc]/20 focus:border-[#8c4bdc] outline-none cursor-pointer"
                   >
-                    <option value="user">Normal User (Buy & View Properties Only)</option>
+                    <option value="user">Only for Buyer (Buy & View Properties Only)</option>
                     <option value="owner">Property Owner (Buy & Sell Homes Directly)</option>
                     <option value="builder">Builder / Real Estate Developer</option>
                     <option value="dealer">Dealer / Agent / Property Consultant</option>

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import "./contactpop.css";
 import { useState, useRef } from "react";
-import { FiCheckCircle, FiSend, FiPhoneCall, FiMail, FiMapPin, FiShield, FiUser, FiSmartphone } from "react-icons/fi";
+import { FiCheckCircle, FiSend, FiPhoneCall, FiMail, FiMapPin, FiShield, FiUser, FiSmartphone, FiHome } from "react-icons/fi";
 import { toast } from "react-hot-toast";
 import { tracker } from "@/lib/tracker";
 
@@ -50,18 +50,20 @@ export default function ContactSection({ data }) {
       setMessage("Please accept the privacy policy to submit the form.");
       return;
     }
-    if (!form?.name || !form?.email || !form?.phone) {
-      toast.error("Please fill all required fields.");
-      setMessage("Please fill all required fields.");
+    if (!form?.name || !form?.phone) {
+      toast.error("Please fill all required fields (Name and Phone).");
+      setMessage("Please fill all required fields (Name and Phone).");
       return;
     }
-    // Basic email validation
-    const emailRegex =
-      /^(?!.*\.\.)(?!.*[_.-]{2})[a-zA-Z0-9]+([._-]?[a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-]?[a-zA-Z0-9]+)*\.[A-Za-z]{2,}$/;
-    if (!emailRegex.test(form?.email)) {
-      toast.error("Please enter a valid email address.");
-      setMessage("Please enter a valid email address.");
-      return;
+    // Basic email validation (only if provided)
+    if (form?.email && form.email.trim() !== "") {
+      const emailRegex =
+        /^(?!.*\.\.)(?!.*[_.-]{2})[a-zA-Z0-9]+([._-]?[a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-]?[a-zA-Z0-9]+)*\.[A-Za-z]{2,}$/;
+      if (!emailRegex.test(form.email.trim())) {
+        toast.error("Please enter a valid email address.");
+        setMessage("Please enter a valid email address.");
+        return;
+      }
     }
     // Phone validation: only digits, exactly 10 digits
     const phoneRegex = /^\d{10}$/;
@@ -180,9 +182,8 @@ export default function ContactSection({ data }) {
                   name="email"
                   value={form?.email}
                   onChange={handleChange}
-                  required
                   autoComplete="off"
-                  placeholder="Your Email Address *"
+                  placeholder="Your Email Address (Optional)"
                   className="w-full bg-slate-50/80 border border-blue-600 focus:border-blue-600 focus:bg-white focus:ring-4 focus:ring-blue-100 text-slate-900 placeholder-slate-400 pl-12 pr-5 py-3.5 rounded-xl text-sm sm:text-base outline-none transition duration-200"
                 />
               </div>
@@ -208,6 +209,28 @@ export default function ContactSection({ data }) {
                   className="w-full bg-slate-50/80 border border-blue-600 focus:border-blue-600 focus:bg-white focus:ring-4 focus:ring-blue-100 text-slate-900 placeholder-slate-400 pl-12 pr-5 py-3.5 rounded-xl text-sm sm:text-base outline-none transition duration-200"
                 />
               </div>
+            </div>
+
+            {/* PROPERTY TYPE / REQUIREMENT */}
+            <div className="relative">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-600 text-lg pointer-events-none">
+                <FiHome />
+              </div>
+              <select
+                name="website"
+                value={form?.website}
+                onChange={handleChange}
+                className="w-full bg-slate-50/80 border border-blue-600 focus:border-blue-600 focus:bg-white focus:ring-4 focus:ring-blue-100 text-slate-900 pl-12 pr-5 py-3.5 rounded-xl text-sm sm:text-base outline-none transition duration-200 appearance-none cursor-pointer"
+              >
+                <option value="">Select Property / Flat Type (Optional)</option>
+                <option value="1 BHK Flat">1 BHK Flat</option>
+                <option value="2 BHK Flat">2 BHK Flat</option>
+                <option value="3 BHK Flat">3 BHK Flat</option>
+                <option value="4+ BHK Luxury Flat">4+ BHK Luxury Flat</option>
+                <option value="Independent House / Villa">Independent House / Villa</option>
+                <option value="Commercial Shop / Office">Commercial Shop / Office</option>
+                <option value="Residential Plot / Land">Residential Plot / Land</option>
+              </select>
             </div>
 
             {/* MESSAGE TEXTAREA */}
